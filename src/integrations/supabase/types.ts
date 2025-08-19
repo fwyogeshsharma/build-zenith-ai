@@ -390,7 +390,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_project_team_member: {
+        Args: { project_uuid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       certification_type:
