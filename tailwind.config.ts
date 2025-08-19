@@ -26,7 +26,21 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					light: 'hsl(var(--primary-light))',
+					dark: 'hsl(var(--primary-dark))'
+				},
+				construction: {
+					DEFAULT: 'hsl(var(--construction))',
+					foreground: 'hsl(var(--construction-foreground))',
+					light: 'hsl(var(--construction-light))',
+					dark: 'hsl(var(--construction-dark))'
+				},
+				sustainability: {
+					DEFAULT: 'hsl(var(--sustainability))',
+					foreground: 'hsl(var(--sustainability-foreground))',
+					light: 'hsl(var(--sustainability-light))',
+					dark: 'hsl(var(--sustainability-dark))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -35,6 +49,14 @@ export default {
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
@@ -62,6 +84,24 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-construction': 'var(--gradient-construction)',
+				'gradient-sustainability': 'var(--gradient-sustainability)',
+				'gradient-hero': 'var(--gradient-hero)',
+				'gradient-card': 'var(--gradient-card)'
+			},
+			boxShadow: {
+				soft: 'var(--shadow-soft)',
+				medium: 'var(--shadow-medium)',
+				large: 'var(--shadow-large)',
+				construction: 'var(--shadow-construction)',
+				primary: 'var(--shadow-primary)'
+			},
+			transitionTimingFunction: {
+				smooth: 'var(--transition-smooth)',
+				bounce: 'var(--transition-bounce)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
