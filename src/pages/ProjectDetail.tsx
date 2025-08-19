@@ -8,8 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import DashboardSidebar from '@/components/Dashboard/DashboardSidebar';
-import { Database } from '@/integrations/supabase/types';
+import ProjectOverview from '@/components/Project/ProjectOverview';
+import ProjectTasks from '@/components/Project/ProjectTasks';
+import ProjectTeam from '@/components/Project/ProjectTeam';
+import ProjectDocuments from '@/components/Project/ProjectDocuments';
+import ProjectSchedule from '@/components/Project/ProjectSchedule';
+import ProjectAnalytics from '@/components/Project/ProjectAnalytics';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -194,109 +198,27 @@ const ProjectDetail = () => {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Project Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Location</p>
-                        <p className="font-medium">{project.location || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Start Date</p>
-                        <p className="font-medium">
-                          {project.start_date 
-                            ? new Date(project.start_date).toLocaleDateString()
-                            : 'Not set'
-                          }
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Expected Completion</p>
-                        <p className="font-medium">
-                          {project.expected_completion_date 
-                            ? new Date(project.expected_completion_date).toLocaleDateString()
-                            : 'Not set'
-                          }
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Created</p>
-                        <p className="font-medium">
-                          {new Date(project.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Users className="h-4 w-4 mr-2" />
-                      Manage Team Members
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Upload Documents
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Schedule Meeting
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      View Reports
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
+              <ProjectOverview project={project} />
             </TabsContent>
 
             <TabsContent value="tasks">
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground">Tasks functionality coming soon...</p>
-                </CardContent>
-              </Card>
+              <ProjectTasks projectId={project.id} />
             </TabsContent>
 
             <TabsContent value="team">
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground">Team management functionality coming soon...</p>
-                </CardContent>
-              </Card>
+              <ProjectTeam projectId={project.id} />
             </TabsContent>
 
             <TabsContent value="documents">
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground">Document management functionality coming soon...</p>
-                </CardContent>
-              </Card>
+              <ProjectDocuments projectId={project.id} />
             </TabsContent>
 
             <TabsContent value="schedule">
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground">Schedule functionality coming soon...</p>
-                </CardContent>
-              </Card>
+              <ProjectSchedule projectId={project.id} />
             </TabsContent>
 
             <TabsContent value="analytics">
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground">Analytics functionality coming soon...</p>
-                </CardContent>
-              </Card>
+              <ProjectAnalytics projectId={project.id} />
             </TabsContent>
           </Tabs>
         </div>

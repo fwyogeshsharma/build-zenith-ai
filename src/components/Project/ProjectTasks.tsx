@@ -1,0 +1,418 @@
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+type Task = Database['public']['Tables']['tasks']['Row'];
+type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
+
+interface ProjectTasksProps {
+  projectId: string;
+}
+
+const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { toast } = useToast();
+
+  const [newTask, setNewTask] = useState<Partial<TaskInsert>>({
+    title: '',
+    description: '',
+    status: 'pending',
+    priority: 'medium',
+    phase: 'concept',
+    project_id: projectId
+  });
+
+  useEffect(() => {
+    fetchTasks();
+  }, [projectId]);
+
+  const fetchTasks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTasks(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error loading tasks",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createTask = async () => {
+    if (!newTask.title?.trim()) {
+      toast({
+        title: "Error",
+        description: "Task title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert({
+          title: newTask.title!,
+          description: newTask.description,
+          status: newTask.status!,
+          priority: newTask.priority!,
+          phase: newTask.phase!,
+          due_date: newTask.due_date,
+          project_id: projectId,
+          created_by: (await supabase.auth.getUser()).data.user?.id || ''
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setTasks([data, ...tasks]);
+      setIsCreateOpen(false);
+      setNewTask({
+        title: '',
+        description: '',
+        status: 'pending',
+        priority: 'medium',
+        phase: 'concept',
+        project_id: projectId
+      });
+
+      toast({
+        title: "Task created",
+        description: "New task has been added to the project",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error creating task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateTaskStatus = async (taskId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ 
+          status,
+          completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null
+        })
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      setTasks(tasks.map(task => 
+        task.id === taskId 
+          ? { ...task, status, completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null }
+          : task
+      ));
+
+      toast({
+        title: "Task updated",
+        description: `Task marked as ${status}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      case 'in_progress': return <Clock className="h-4 w-4 text-blue-600" />;
+      case 'blocked': return <AlertCircle className="h-4 w-4 text-red-600" />;
+      default: return <Clock className="h-4 w-4 text-gray-400" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'in_progress': return 'bg-blue-100 text-blue-800';
+      case 'blocked': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || task.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  if (loading) {
+    return <div className="text-center p-8">Loading tasks...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header with Actions */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between">
+        <div className="flex gap-2">
+          <div className="relative flex-1 sm:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search tasks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-32">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Tasks</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="blocked">Blocked</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Task
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create New Task</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Task Title *</Label>
+                <Input
+                  id="title"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  placeholder="Enter task title"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  placeholder="Task description..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select value={newTask.priority} onValueChange={(value) => setNewTask({ ...newTask, priority: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="phase">Phase</Label>
+                  <Select value={newTask.phase} onValueChange={(value) => setNewTask({ ...newTask, phase: value as any })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="concept">Concept</SelectItem>
+                      <SelectItem value="design">Design</SelectItem>
+                      <SelectItem value="pre_construction">Pre-Construction</SelectItem>
+                      <SelectItem value="execution">Execution</SelectItem>
+                      <SelectItem value="handover">Handover</SelectItem>
+                      <SelectItem value="operations_maintenance">Operations & Maintenance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="due_date">Due Date</Label>
+                <Input
+                  id="due_date"
+                  type="date"
+                  value={newTask.due_date || ''}
+                  onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button onClick={createTask} className="flex-1">
+                  Create Task
+                </Button>
+                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Tasks List */}
+      {filteredTasks.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-muted-foreground">
+              {tasks.length === 0 ? 'No tasks created yet' : 'No tasks match your search'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {filteredTasks.map((task) => (
+            <Card key={task.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      {getStatusIcon(task.status)}
+                      <h3 className="font-semibold truncate">{task.title}</h3>
+                      <Badge variant="outline" className={getPriorityColor(task.priority)}>
+                        {task.priority}
+                      </Badge>
+                      <Badge variant="outline" className={getStatusColor(task.status)}>
+                        {task.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    
+                    {task.description && (
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {task.description}
+                      </p>
+                    )}
+                    
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span>Phase: {task.phase.replace('_', ' ')}</span>
+                      {task.due_date && (
+                        <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>
+                      )}
+                      {task.assigned_to && (
+                        <div className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          <span>Assigned</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 ml-4">
+                    {task.status !== 'completed' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateTaskStatus(task.id, 'completed')}
+                      >
+                        Complete
+                      </Button>
+                    )}
+                    {task.status === 'pending' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateTaskStatus(task.id, 'in_progress')}
+                      >
+                        Start
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Task Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-gray-600">
+              {tasks.filter(t => t.status === 'pending').length}
+            </div>
+            <div className="text-sm text-muted-foreground">Pending</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-blue-600">
+              {tasks.filter(t => t.status === 'in_progress').length}
+            </div>
+            <div className="text-sm text-muted-foreground">In Progress</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {tasks.filter(t => t.status === 'completed').length}
+            </div>
+            <div className="text-sm text-muted-foreground">Completed</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-red-600">
+              {tasks.filter(t => t.status === 'blocked').length}
+            </div>
+            <div className="text-sm text-muted-foreground">Blocked</div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default ProjectTasks;
