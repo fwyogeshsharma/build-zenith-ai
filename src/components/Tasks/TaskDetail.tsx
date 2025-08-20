@@ -9,6 +9,19 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TaskDocuments } from './TaskDocuments';
 import { EditTaskDialog } from './EditTaskDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Calendar, 
   User, 
@@ -16,7 +29,8 @@ import {
   Edit,
   Clock,
   Flag,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 
 interface Task {
@@ -52,6 +66,7 @@ interface TaskDetailProps {
 
 export const TaskDetail = ({ task, open, onOpenChange, onTaskUpdated, projects }: TaskDetailProps) => {
   const [editingTask, setEditingTask] = useState(false);
+  const { toast } = useToast();
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -78,6 +93,31 @@ export const TaskDetail = ({ task, open, onOpenChange, onTaskUpdated, projects }
     return new Date(dueDate) < new Date();
   };
 
+  const handleDeleteTask = async () => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', task.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Task deleted successfully",
+      });
+      onTaskUpdated();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete task",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,10 +141,34 @@ export const TaskDetail = ({ task, open, onOpenChange, onTaskUpdated, projects }
                   )}
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setEditingTask(true)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setEditingTask(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Task</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{task.title}"? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteTask} className="bg-destructive hover:bg-destructive/90">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </DialogHeader>
 

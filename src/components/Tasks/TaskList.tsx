@@ -11,6 +11,16 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { EditTaskDialog } from './EditTaskDialog';
@@ -61,6 +71,7 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -106,12 +117,14 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
     }
   };
 
-  const deleteTask = async (taskId: string) => {
+  const handleDeleteTask = async () => {
+    if (!deletingTask) return;
+    
     try {
       const { error } = await supabase
         .from('tasks')
         .delete()
-        .eq('id', taskId);
+        .eq('id', deletingTask.id);
 
       if (error) throw error;
 
@@ -120,6 +133,7 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
         description: "Task deleted successfully",
       });
       onTaskUpdate();
+      setDeletingTask(null);
     } catch (error) {
       console.error('Error deleting task:', error);
       toast({
@@ -325,7 +339,7 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                               Mark Complete
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                              onClick={() => deleteTask(task.id)}
+                              onClick={() => setDeletingTask(task)}
                               className="text-destructive focus:text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
@@ -364,6 +378,24 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
           projects={projects}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingTask} onOpenChange={(open) => !open && setDeletingTask(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingTask?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTask} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
