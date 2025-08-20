@@ -47,16 +47,6 @@ const App = () => (
                 <ProjectDetail />
               </ProtectedRoute>
             } />
-            <Route path="/tasks" element={
-              <ProtectedRoute>
-                <Tasks />
-              </ProtectedRoute>
-            } />
-            <Route path="/team" element={
-              <ProtectedRoute>
-                <Team />
-              </ProtectedRoute>
-            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
