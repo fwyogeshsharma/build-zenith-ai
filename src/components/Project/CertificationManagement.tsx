@@ -22,9 +22,17 @@ const certificationTypes = [
   'leed',
   'breeam',
   'igbc',
-  'iso',
-  'energy_star',
+  'griha',
   'well',
+  'lbc',
+  'iso_9001',
+  'iso_45001',
+  'ohsas',
+  'energy_star',
+  'green_globes',
+  'edge',
+  'sites',
+  'fitwel',
   'other'
 ];
 
@@ -120,7 +128,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
           certification_body: formData.certification_body,
           target_level: formData.target_level,
           expected_date: formData.expected_date,
-          current_status: formData.current_status,
+          current_status: formData.current_status as any,
           progress_percentage: 0
         })
         .select()
@@ -339,12 +347,13 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="planning">Planning</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="on_hold">On Hold</SelectItem>
-                    <SelectItem value="achieved">Achieved</SelectItem>
-                  </SelectContent>
+                    <SelectContent>
+                      <SelectItem value="planning">Planning</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="on_hold">On Hold</SelectItem>
+                      <SelectItem value="achieved">Achieved</SelectItem>
+                      <SelectItem value="expired">Expired</SelectItem>
+                    </SelectContent>
                 </Select>
               </div>
 

@@ -108,7 +108,9 @@ export type Database = {
           achieved_date: string | null
           certification_body: string | null
           created_at: string
-          current_status: string | null
+          current_status:
+            | Database["public"]["Enums"]["certification_status"]
+            | null
           documents: Json | null
           expected_date: string | null
           id: string
@@ -123,7 +125,9 @@ export type Database = {
           achieved_date?: string | null
           certification_body?: string | null
           created_at?: string
-          current_status?: string | null
+          current_status?:
+            | Database["public"]["Enums"]["certification_status"]
+            | null
           documents?: Json | null
           expected_date?: string | null
           id?: string
@@ -138,7 +142,9 @@ export type Database = {
           achieved_date?: string | null
           certification_body?: string | null
           created_at?: string
-          current_status?: string | null
+          current_status?:
+            | Database["public"]["Enums"]["certification_status"]
+            | null
           documents?: Json | null
           expected_date?: string | null
           id?: string
@@ -537,6 +543,12 @@ export type Database = {
       }
     }
     Enums: {
+      certification_status:
+        | "planning"
+        | "in_progress"
+        | "on_hold"
+        | "achieved"
+        | "expired"
       certification_type:
         | "leed"
         | "igbc"
@@ -545,6 +557,15 @@ export type Database = {
         | "energy_star"
         | "well"
         | "other"
+        | "griha"
+        | "lbc"
+        | "iso_9001"
+        | "iso_45001"
+        | "ohsas"
+        | "green_globes"
+        | "edge"
+        | "sites"
+        | "fitwel"
       project_phase:
         | "concept"
         | "design"
@@ -705,6 +726,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      certification_status: [
+        "planning",
+        "in_progress",
+        "on_hold",
+        "achieved",
+        "expired",
+      ],
       certification_type: [
         "leed",
         "igbc",
@@ -713,6 +741,15 @@ export const Constants = {
         "energy_star",
         "well",
         "other",
+        "griha",
+        "lbc",
+        "iso_9001",
+        "iso_45001",
+        "ohsas",
+        "green_globes",
+        "edge",
+        "sites",
+        "fitwel",
       ],
       project_phase: [
         "concept",
