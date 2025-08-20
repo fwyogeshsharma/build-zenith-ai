@@ -17,7 +17,11 @@ import {
   Award,
   BarChart3,
   CheckCircle,
-  Clock
+  Clock,
+  Bot,
+  Search,
+  Filter,
+  Leaf
 } from 'lucide-react';
 import CertificationTracker from '@/components/Project/CertificationTracker';
 import { Input } from '@/components/ui/input';

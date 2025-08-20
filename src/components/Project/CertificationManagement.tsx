@@ -22,17 +22,10 @@ const certificationTypes = [
   'leed',
   'breeam',
   'igbc',
-  'griha',
-  'well',
-  'lbc',
-  'iso_9001',
-  'iso_45001',
-  'ohsas',
+  'iso',
   'energy_star',
-  'green_globes',
-  'edge',
-  'sites',
-  'fitwel'
+  'well',
+  'other'
 ];
 
 const CertificationManagement = ({ projectId }: CertificationManagementProps) => {
