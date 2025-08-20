@@ -128,7 +128,7 @@ const Auth = () => {
             <div className="bg-construction/20 p-3 rounded-xl">
               <Building2 className="h-8 w-8 text-construction" />
             </div>
-            <h1 className="text-3xl font-bold text-white">ConstructAI</h1>
+            <h1 className="text-3xl font-bold text-white">FutureBuilt</h1>
           </div>
           <p className="text-white/80">AI-powered construction project management</p>
         </div>
