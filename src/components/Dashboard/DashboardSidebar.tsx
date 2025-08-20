@@ -26,13 +26,7 @@ interface SidebarProps {
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderOpen },
-  { name: 'AI Insights', href: '/ai-insights', icon: Bot },
-  { name: 'Team', href: '/team', icon: Users },
   { name: 'Certifications', href: '/certifications', icon: Leaf },
-  { name: 'Tasks', href: '/tasks', icon: Target },
-  { name: 'Documents', href: '/documents', icon: FileText },
-  { name: 'Schedule', href: '/schedule', icon: Calendar },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

@@ -12,7 +12,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  MoreHorizontal
+  MoreHorizontal,
+  Trash2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -39,6 +40,7 @@ interface ProjectCardProps {
   project: Project;
   onViewDetails?: (projectId: string) => void;
   onEdit?: (projectId: string) => void;
+  onDelete?: (projectId: string) => void;
 }
 
 const getProjectTypeColor = (type: string) => {
@@ -93,7 +95,7 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const ProjectCard = ({ project, onViewDetails, onEdit }: ProjectCardProps) => {
+const ProjectCard = ({ project, onViewDetails, onEdit, onDelete }: ProjectCardProps) => {
   const completionDate = new Date(project.expected_completion_date);
   const isOverdue = completionDate < new Date() && project.status !== 'completed';
 
@@ -122,6 +124,13 @@ const ProjectCard = ({ project, onViewDetails, onEdit }: ProjectCardProps) => {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onEdit?.(project.id)}>
                 Edit Project
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onDelete?.(project.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Project
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
