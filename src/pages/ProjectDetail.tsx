@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Settings, Users, FileText, Calendar, BarChart3, Trash2 } from 'lucide-react';
+import { ArrowLeft, Settings, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,11 +22,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import DashboardSidebar from '@/components/Dashboard/DashboardSidebar';
 import ProjectOverview from '@/components/Project/ProjectOverview';
-import ProjectTasks from '@/components/Project/ProjectTasks';
-import ProjectTeam from '@/components/Project/ProjectTeam';
-import ProjectDocuments from '@/components/Project/ProjectDocuments';
-import ProjectSchedule from '@/components/Project/ProjectSchedule';
-import ProjectAnalytics from '@/components/Project/ProjectAnalytics';
 import ProjectLifecycle from '@/components/Project/ProjectLifecycle';
 
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -165,10 +160,6 @@ const ProjectDetail = () => {
               <Badge className={getStatusColor(project.status)}>
                 {project.status}
               </Badge>
-              <Button onClick={() => navigate(`/projects/${id}/edit`)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" className="text-destructive hover:text-destructive">
@@ -253,11 +244,6 @@ const ProjectDetail = () => {
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="lifecycle">Lifecycle</TabsTrigger>
-              <TabsTrigger value="tasks">Tasks</TabsTrigger>
-              <TabsTrigger value="team">Team</TabsTrigger>
-              <TabsTrigger value="documents">Documents</TabsTrigger>
-              <TabsTrigger value="schedule">Schedule</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -266,26 +252,6 @@ const ProjectDetail = () => {
 
             <TabsContent value="lifecycle">
               <ProjectLifecycle projectId={project.id} />
-            </TabsContent>
-
-            <TabsContent value="tasks">
-              <ProjectTasks projectId={project.id} />
-            </TabsContent>
-
-            <TabsContent value="team">
-              <ProjectTeam projectId={project.id} />
-            </TabsContent>
-
-            <TabsContent value="documents">
-              <ProjectDocuments projectId={project.id} />
-            </TabsContent>
-
-            <TabsContent value="schedule">
-              <ProjectSchedule projectId={project.id} />
-            </TabsContent>
-
-            <TabsContent value="analytics">
-              <ProjectAnalytics projectId={project.id} />
             </TabsContent>
           </Tabs>
         </div>
