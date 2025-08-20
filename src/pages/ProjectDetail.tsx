@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Settings, Trash2 } from 'lucide-react';
+import { ArrowLeft, Settings, Trash2, Brain, Users, FileText, Calendar, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +23,11 @@ import { Database } from '@/integrations/supabase/types';
 import DashboardSidebar from '@/components/Dashboard/DashboardSidebar';
 import ProjectOverview from '@/components/Project/ProjectOverview';
 import ProjectLifecycle from '@/components/Project/ProjectLifecycle';
+import ProjectTasks from '@/components/Project/ProjectTasks';
+import ProjectTeam from '@/components/Project/ProjectTeam';
+import ProjectDocuments from '@/components/Project/ProjectDocuments';
+import ProjectSchedule from '@/components/Project/ProjectSchedule';
+import ProjectAnalytics from '@/components/Project/ProjectAnalytics';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -244,6 +249,27 @@ const ProjectDetail = () => {
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="lifecycle">Lifecycle</TabsTrigger>
+              <TabsTrigger value="ai-insights">
+                <Brain className="h-4 w-4 mr-2" />
+                AI Insights
+              </TabsTrigger>
+              <TabsTrigger value="tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="team">
+                <Users className="h-4 w-4 mr-2" />
+                Team
+              </TabsTrigger>
+              <TabsTrigger value="documents">
+                <FileText className="h-4 w-4 mr-2" />
+                Documents
+              </TabsTrigger>
+              <TabsTrigger value="schedule">
+                <Calendar className="h-4 w-4 mr-2" />
+                Schedule
+              </TabsTrigger>
+              <TabsTrigger value="analytics">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Analytics
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -252,6 +278,40 @@ const ProjectDetail = () => {
 
             <TabsContent value="lifecycle">
               <ProjectLifecycle projectId={project.id} />
+            </TabsContent>
+
+            <TabsContent value="ai-insights">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="h-5 w-5" />
+                    AI Insights
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">AI-powered insights and recommendations for your project will be displayed here.</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="tasks">
+              <ProjectTasks projectId={project.id} />
+            </TabsContent>
+
+            <TabsContent value="team">
+              <ProjectTeam projectId={project.id} />
+            </TabsContent>
+
+            <TabsContent value="documents">
+              <ProjectDocuments projectId={project.id} />
+            </TabsContent>
+
+            <TabsContent value="schedule">
+              <ProjectSchedule projectId={project.id} />
+            </TabsContent>
+
+            <TabsContent value="analytics">
+              <ProjectAnalytics projectId={project.id} />
             </TabsContent>
           </Tabs>
         </div>
