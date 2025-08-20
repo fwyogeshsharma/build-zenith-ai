@@ -4,12 +4,29 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Award, Plus, Calendar, FileText, CheckCircle, Clock, AlertCircle, Settings, Target } from 'lucide-react';
+import { Award, Plus, Calendar, FileText, CheckCircle, Clock, AlertCircle, Settings, Target, Trash2, MoreVertical } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import CertificateRequirements from './CertificateRequirements';
@@ -243,6 +260,48 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
     return type.toUpperCase().replace('_', ' ');
   };
 
+  const handleDeleteCertification = async (certificationId: string, certificationType: string) => {
+    try {
+      // Delete related requirements first (due to foreign key constraints)
+      await supabase
+        .from('certificate_requirements')
+        .delete()
+        .eq('certificate_id', certificationId);
+
+      // Delete related tasks
+      await supabase
+        .from('tasks')
+        .delete()
+        .eq('certificate_id', certificationId);
+
+      // Finally delete the certification
+      const { error } = await supabase
+        .from('certifications')
+        .delete()
+        .eq('id', certificationId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Certification deleted",
+        description: `${formatCertificationType(certificationType)} certification has been removed from the project`,
+      });
+
+      // Clear selected certificate if it was the one being deleted
+      if (selectedCertificate === certificationId) {
+        setSelectedCertificate(null);
+      }
+
+      fetchCertifications();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting certification",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div>Loading certifications...</div>;
   }
@@ -391,14 +450,16 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
               {certifications.map((cert) => (
                 <Card 
                   key={cert.id} 
-                  className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                  className={`hover:shadow-lg transition-shadow ${
                     selectedCertificate === cert.id ? 'ring-2 ring-primary' : ''
                   }`}
-                  onClick={() => setSelectedCertificate(cert.id)}
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <div>
+                      <div 
+                        className="flex-1 cursor-pointer"
+                        onClick={() => setSelectedCertificate(cert.id)}
+                      >
                         <CardTitle className="flex items-center gap-2">
                           <Award className="h-5 w-5 text-amber-500" />
                           {formatCertificationType(cert.type)}
@@ -409,16 +470,56 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                           </p>
                         )}
                       </div>
-                      <Badge className={getStatusColor(cert.current_status)}>
-                        <div className="flex items-center gap-1">
-                          {getStatusIcon(cert.current_status)}
-                          {cert.current_status.replace('_', ' ')}
-                        </div>
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getStatusColor(cert.current_status)}>
+                          <div className="flex items-center gap-1">
+                            {getStatusIcon(cert.current_status)}
+                            {cert.current_status.replace('_', ' ')}
+                          </div>
+                        </Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete Certification
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Certification</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete the {formatCertificationType(cert.type)} certification? 
+                                    This will permanently remove all associated requirements and tasks. This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteCertification(cert.id, cert.type)}
+                                    className="bg-destructive hover:bg-destructive/90"
+                                  >
+                                    Delete Certification
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="space-y-4">
+                  <CardContent 
+                    className="space-y-4 cursor-pointer"
+                    onClick={() => setSelectedCertificate(cert.id)}
+                  >
                     {cert.target_level && (
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Target Level</span>
