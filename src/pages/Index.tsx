@@ -15,7 +15,7 @@ const Index = () => {
             <div className="bg-white/20 p-4 rounded-2xl">
               <Building2 className="h-12 w-12 text-white" />
             </div>
-            <h1 className="text-5xl font-bold text-white">ConstructAI</h1>
+            <h1 className="text-5xl font-bold text-white">FutureBuilt</h1>
           </div>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
             AI-powered project management platform for real estate construction projects. 

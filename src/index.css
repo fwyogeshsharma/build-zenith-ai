@@ -19,11 +19,11 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 15%;
 
-    /* Construction Blue - Professional & Trust */
-    --primary: 210 85% 45%;
+    /* Green - Growth & Innovation */
+    --primary: 145 60% 45%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 210 85% 65%;
-    --primary-dark: 210 85% 35%;
+    --primary-light: 145 60% 65%;
+    --primary-dark: 145 60% 35%;
 
     /* Construction Orange - Energy & Action */
     --construction: 25 85% 55%;
@@ -62,10 +62,10 @@ All colors MUST be HSL.
     --radius: 0.75rem;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 85% 45%), hsl(210 85% 65%));
+    --gradient-primary: linear-gradient(135deg, hsl(145 60% 45%), hsl(145 60% 65%));
     --gradient-construction: linear-gradient(135deg, hsl(25 85% 55%), hsl(25 85% 70%));
     --gradient-sustainability: linear-gradient(135deg, hsl(145 60% 45%), hsl(145 60% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(210 85% 45%) 0%, hsl(25 85% 55%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(145 60% 45%) 0%, hsl(145 60% 65%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(215 16% 98%) 100%);
 
     /* Shadows */
@@ -73,7 +73,7 @@ All colors MUST be HSL.
     --shadow-medium: 0 4px 16px hsl(215 25% 15% / 0.12);
     --shadow-large: 0 8px 32px hsl(215 25% 15% / 0.16);
     --shadow-construction: 0 4px 20px hsl(25 85% 55% / 0.2);
-    --shadow-primary: 0 4px 20px hsl(210 85% 45% / 0.2);
+    --shadow-primary: 0 4px 20px hsl(145 60% 45% / 0.2);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -82,12 +82,12 @@ All colors MUST be HSL.
     /* Sidebar */
     --sidebar-background: 215 25% 15%;
     --sidebar-foreground: 215 16% 88%;
-    --sidebar-primary: 210 85% 45%;
+    --sidebar-primary: 145 60% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 215 25% 20%;
     --sidebar-accent-foreground: 215 16% 88%;
     --sidebar-border: 215 25% 25%;
-    --sidebar-ring: 210 85% 45%;
+    --sidebar-ring: 145 60% 45%;
   }
 
   .dark {
@@ -100,10 +100,10 @@ All colors MUST be HSL.
     --popover: 215 25% 12%;
     --popover-foreground: 215 16% 88%;
 
-    --primary: 210 85% 55%;
+    --primary: 145 60% 55%;
     --primary-foreground: 0 0% 0%;
-    --primary-light: 210 85% 70%;
-    --primary-dark: 210 85% 45%;
+    --primary-light: 145 60% 70%;
+    --primary-dark: 145 60% 45%;
 
     --construction: 25 85% 60%;
     --construction-foreground: 0 0% 0%;
@@ -132,10 +132,10 @@ All colors MUST be HSL.
     --ring: 210 85% 55%;
 
     /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 85% 55%), hsl(210 85% 70%));
+    --gradient-primary: linear-gradient(135deg, hsl(145 60% 55%), hsl(145 60% 70%));
     --gradient-construction: linear-gradient(135deg, hsl(25 85% 60%), hsl(25 85% 75%));
     --gradient-sustainability: linear-gradient(135deg, hsl(145 60% 55%), hsl(145 60% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(210 85% 55%) 0%, hsl(25 85% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(145 60% 55%) 0%, hsl(145 60% 70%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(215 25% 12%) 0%, hsl(215 25% 16%) 100%);
 
     /* Dark mode shadows */
@@ -143,16 +143,16 @@ All colors MUST be HSL.
     --shadow-medium: 0 4px 16px hsl(0 0% 0% / 0.3);
     --shadow-large: 0 8px 32px hsl(0 0% 0% / 0.4);
     --shadow-construction: 0 4px 20px hsl(25 85% 60% / 0.3);
-    --shadow-primary: 0 4px 20px hsl(210 85% 55% / 0.3);
+    --shadow-primary: 0 4px 20px hsl(145 60% 55% / 0.3);
 
     --sidebar-background: 215 25% 5%;
     --sidebar-foreground: 215 16% 88%;
-    --sidebar-primary: 210 85% 55%;
+    --sidebar-primary: 145 60% 55%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 215 25% 12%;
     --sidebar-accent-foreground: 215 16% 88%;
     --sidebar-border: 215 25% 16%;
-    --sidebar-ring: 210 85% 55%;
+    --sidebar-ring: 145 60% 55%;
   }
 }
 

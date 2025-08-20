@@ -100,12 +100,20 @@ const Tasks = () => {
       if (error) throw error;
 
       // Filter out tasks with invalid assignee data
-      const validTasks = (data || []).map(task => ({
-        ...task,
-        assignee: task.assignee && typeof task.assignee === 'object' && 'first_name' in task.assignee 
-          ? task.assignee 
-          : undefined
-      }));
+      const validTasks = (data || []).map(task => {
+        // Check if assignee is valid or an error
+        const isValidAssignee = task.assignee && 
+          typeof task.assignee === 'object' && 
+          task.assignee !== null && 
+          !Array.isArray(task.assignee) &&
+          !('error' in task.assignee) &&
+          'first_name' in task.assignee;
+          
+        return {
+          ...task,
+          assignee: isValidAssignee ? (task.assignee as unknown as { first_name: string; last_name: string; email: string; }) : null
+        };
+      });
 
       setTasks(validTasks);
       calculateStats(validTasks);
