@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Info, CheckCircle, Clock, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import DashboardSidebar from '@/components/Dashboard/DashboardSidebar';
 import { Database } from '@/integrations/supabase/types';
+import { getProjectTemplate, getAllProjectTemplates } from '@/lib/projectTemplates';
+import { applyProjectTemplate } from '@/lib/templateApplier';
 
 type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
 
@@ -33,12 +37,18 @@ const NewProject = () => {
     expected_completion_date: '',
   });
 
+  const [selectedTemplate, setSelectedTemplate] = useState(getProjectTemplate('new_construction'));
+  const [applyingTemplate, setApplyingTemplate] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     setLoading(true);
+    setApplyingTemplate(true);
+    
     try {
+      // Create the project
       const { data, error } = await supabase
         .from('projects')
         .insert({
@@ -53,10 +63,25 @@ const NewProject = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Project created successfully",
-        description: `${formData.name} has been created.`,
-      });
+      // Apply the project template
+      const templateResult = await applyProjectTemplate(
+        data.id,
+        formData.project_type!,
+        user.id
+      );
+
+      if (templateResult.success) {
+        toast({
+          title: "Project created successfully",
+          description: `${formData.name} has been created with ${templateResult.tasksCreated} tasks, ${templateResult.phasesCreated} phases, and ${templateResult.certificationsCreated} certifications.`,
+        });
+      } else {
+        toast({
+          title: "Project created with warnings",
+          description: `${formData.name} was created but template application failed: ${templateResult.error}`,
+          variant: "destructive",
+        });
+      }
 
       navigate(`/projects/${data.id}`);
     } catch (error: any) {
@@ -67,11 +92,49 @@ const NewProject = () => {
       });
     } finally {
       setLoading(false);
+      setApplyingTemplate(false);
     }
   };
 
   const updateFormData = (field: keyof ProjectInsert, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Update selected template when project type changes
+    if (field === 'project_type') {
+      setSelectedTemplate(getProjectTemplate(value));
+      
+      // Auto-fill budget range and dates based on template
+      const template = getProjectTemplate(value);
+      if (template.defaultBudgetRange && !formData.budget) {
+        setFormData(prev => ({ 
+          ...prev, 
+          [field]: value,
+          budget: template.defaultBudgetRange!.min 
+        }));
+      }
+      
+      // Set estimated completion date
+      if (template.estimatedDuration && formData.start_date) {
+        const startDate = new Date(formData.start_date);
+        const completionDate = new Date(startDate.getTime() + template.estimatedDuration * 7 * 24 * 60 * 60 * 1000);
+        setFormData(prev => ({ 
+          ...prev, 
+          [field]: value,
+          expected_completion_date: completionDate.toISOString().split('T')[0]
+        }));
+      }
+    }
+    
+    // Auto-calculate completion date when start date changes
+    if (field === 'start_date' && value && selectedTemplate.estimatedDuration) {
+      const startDate = new Date(value);
+      const completionDate = new Date(startDate.getTime() + selectedTemplate.estimatedDuration * 7 * 24 * 60 * 60 * 1000);
+      setFormData(prev => ({ 
+        ...prev, 
+        [field]: value,
+        expected_completion_date: completionDate.toISOString().split('T')[0]
+      }));
+    }
   };
 
   return (
@@ -151,16 +214,11 @@ const NewProject = () => {
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="new_construction">New Construction</SelectItem>
-                          <SelectItem value="renovation_repair">Renovation & Repair</SelectItem>
-                          <SelectItem value="interior_fitout">Interior Fitout</SelectItem>
-                          <SelectItem value="land_development">Land Development</SelectItem>
-                          <SelectItem value="sustainable_green">Sustainable & Green</SelectItem>
-                          <SelectItem value="affordable_housing">Affordable Housing</SelectItem>
-                          <SelectItem value="luxury">Luxury</SelectItem>
-                          <SelectItem value="mixed_use">Mixed Use</SelectItem>
-                          <SelectItem value="co_living_working">Co-living/Working</SelectItem>
-                          <SelectItem value="redevelopment">Redevelopment</SelectItem>
+                          {getAllProjectTemplates().map(template => (
+                            <SelectItem key={template.type} value={template.type}>
+                              {template.emoji} {template.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -205,6 +263,78 @@ const NewProject = () => {
                       </Select>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Template Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Info className="h-5 w-5" />
+                    {selectedTemplate.emoji} {selectedTemplate.name} Template
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground">{selectedTemplate.description}</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-semibold mb-2">Key Focus Areas:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedTemplate.emphasis.map((item, index) => (
+                          <Badge key={index} variant="secondary">{item}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-2">AI-Powered Tools:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedTemplate.ai_focus.map((item, index) => (
+                          <Badge key={index} variant="outline">{item}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-success" />
+                      <div>
+                        <p className="text-sm font-medium">{selectedTemplate.tasks.length} Tasks</p>
+                        <p className="text-xs text-muted-foreground">Pre-defined workflow</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">{selectedTemplate.estimatedDuration} weeks</p>
+                        <p className="text-xs text-muted-foreground">Estimated duration</p>
+                      </div>
+                    </div>
+                    
+                    {selectedTemplate.defaultBudgetRange && (
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-green-600" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            ${(selectedTemplate.defaultBudgetRange.min / 1000).toFixed(0)}K - ${(selectedTemplate.defaultBudgetRange.max / 1000000).toFixed(1)}M
+                          </p>
+                          <p className="text-xs text-muted-foreground">Typical budget range</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                      This template will automatically create {selectedTemplate.phases.length} lifecycle phases, 
+                      {selectedTemplate.tasks.length} tasks, and {selectedTemplate.certifications.length} certification 
+                      tracking items when you create your project.
+                    </AlertDescription>
+                  </Alert>
                 </CardContent>
               </Card>
 
@@ -267,12 +397,12 @@ const NewProject = () => {
                   {loading ? (
                     <div className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                      Creating...
+                      {applyingTemplate ? 'Applying Template...' : 'Creating...'}
                     </div>
                   ) : (
                     <>
                       <Save className="h-4 w-4 mr-2" />
-                      Create Project
+                      Create Project with Template
                     </>
                   )}
                 </Button>
