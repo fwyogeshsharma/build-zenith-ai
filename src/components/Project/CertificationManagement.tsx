@@ -8,9 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Award, Plus, Calendar, FileText, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Award, Plus, Calendar, FileText, CheckCircle, Clock, AlertCircle, Settings, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import CertificateRequirements from './CertificateRequirements';
 
 interface CertificationManagementProps {
   projectId: string;
@@ -35,31 +37,58 @@ const certificationTypes = [
 
 const CertificationManagement = ({ projectId }: CertificationManagementProps) => {
   const [certifications, setCertifications] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedCertificate, setSelectedCertificate] = useState<string | null>(null);
+  const [useTemplate, setUseTemplate] = useState(false);
   const [formData, setFormData] = useState({
     type: '',
     certification_body: '',
     target_level: '',
     expected_date: '',
-    current_status: 'planning'
+    current_status: 'planning',
+    template_id: ''
   });
   const { toast } = useToast();
 
   useEffect(() => {
     fetchCertifications();
+    fetchTemplates();
   }, [projectId]);
 
   const fetchCertifications = async () => {
     try {
       const { data, error } = await supabase
         .from('certifications')
-        .select('*')
+        .select(`
+          *,
+          certificate_requirements (
+            id,
+            is_completed,
+            is_mandatory
+          )
+        `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCertifications(data || []);
+      
+      // Calculate progress for each certification based on requirements
+      const certsWithProgress = (data || []).map(cert => {
+        const requirements = cert.certificate_requirements || [];
+        const completed = requirements.filter((req: any) => req.is_completed).length;
+        const calculatedProgress = requirements.length > 0 
+          ? Math.round((completed / requirements.length) * 100)
+          : cert.progress_percentage || 0;
+        
+        return {
+          ...cert,
+          calculated_progress: calculatedProgress
+        };
+      });
+
+      setCertifications(certsWithProgress);
     } catch (error: any) {
       toast({
         title: "Error loading certifications",
@@ -71,11 +100,26 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
     }
   };
 
+  const fetchTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('certificate_templates')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setTemplates(data || []);
+    } catch (error: any) {
+      console.error('Error loading templates:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      const { error } = await supabase
+      // Insert the certification first
+      const { data: certification, error: certError } = await supabase
         .from('certifications')
         .insert({
           project_id: projectId,
@@ -85,13 +129,22 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
           expected_date: formData.expected_date,
           current_status: formData.current_status,
           progress_percentage: 0
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (certError) throw certError;
+
+      // If using a template, create requirements and tasks
+      if (useTemplate && formData.template_id) {
+        await applyTemplate(certification.id, formData.template_id);
+      }
 
       toast({
         title: "Certification added",
-        description: "New certification has been added to the project",
+        description: useTemplate 
+          ? "New certification with template requirements has been added"
+          : "New certification has been added to the project",
       });
 
       setIsDialogOpen(false);
@@ -100,8 +153,10 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
         certification_body: '',
         target_level: '',
         expected_date: '',
-        current_status: 'planning'
+        current_status: 'planning',
+        template_id: ''
       });
+      setUseTemplate(false);
       fetchCertifications();
     } catch (error: any) {
       toast({
@@ -109,6 +164,57 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const applyTemplate = async (certificationId: string, templateId: string) => {
+    try {
+      const template = templates.find(t => t.id === templateId);
+      if (!template) return;
+
+      // Get current user ID
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id;
+
+      // Create requirements from template
+      if (template.default_requirements && template.default_requirements.length > 0) {
+        const requirementsData = template.default_requirements.map((req: any) => ({
+          certificate_id: certificationId,
+          requirement_text: req.text,
+          requirement_category: req.category || 'General',
+          is_mandatory: req.mandatory !== false
+        }));
+
+        const { error: reqError } = await supabase
+          .from('certificate_requirements')
+          .insert(requirementsData);
+
+        if (reqError) throw reqError;
+      }
+
+      // Create tasks from template
+      if (template.default_tasks && template.default_tasks.length > 0) {
+        const tasksData = template.default_tasks.map((task: any) => ({
+          project_id: projectId,
+          certificate_id: certificationId,
+          title: task.title,
+          description: `Template task for ${template.name} certification`,
+          phase: task.phase,
+          priority: task.priority || 'medium',
+          status: 'pending',
+          created_by: userId,
+          ai_generated: true
+        }));
+
+        const { error: taskError } = await supabase
+          .from('tasks')
+          .insert(tasksData);
+
+        if (taskError) throw taskError;
+      }
+    } catch (error: any) {
+      console.error('Error applying template:', error);
+      throw error;
     }
   };
 
@@ -156,6 +262,38 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
               <DialogTitle>Add New Certification</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Template Toggle */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="use-template"
+                  checked={useTemplate}
+                  onChange={(e) => setUseTemplate(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="use-template" className="text-sm">
+                  Use certification template (auto-create requirements & tasks)
+                </Label>
+              </div>
+
+              {useTemplate && (
+                <div>
+                  <Label htmlFor="template">Template</Label>
+                  <Select value={formData.template_id} onValueChange={(value) => setFormData({...formData, template_id: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          {template.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <div>
                 <Label htmlFor="type">Certification Type</Label>
                 <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
@@ -240,77 +378,116 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {certifications.map((cert) => (
-            <Card key={cert.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Award className="h-5 w-5 text-amber-500" />
-                      {formatCertificationType(cert.type)}
-                    </CardTitle>
-                    {cert.certification_body && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {cert.certification_body}
-                      </p>
+        <Tabs defaultValue="list" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="list">Certifications List</TabsTrigger>
+            <TabsTrigger value="requirements">Requirements Detail</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="list" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {certifications.map((cert) => (
+                <Card 
+                  key={cert.id} 
+                  className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                    selectedCertificate === cert.id ? 'ring-2 ring-primary' : ''
+                  }`}
+                  onClick={() => setSelectedCertificate(cert.id)}
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Award className="h-5 w-5 text-amber-500" />
+                          {formatCertificationType(cert.type)}
+                        </CardTitle>
+                        {cert.certification_body && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {cert.certification_body}
+                          </p>
+                        )}
+                      </div>
+                      <Badge className={getStatusColor(cert.current_status)}>
+                        <div className="flex items-center gap-1">
+                          {getStatusIcon(cert.current_status)}
+                          {cert.current_status.replace('_', ' ')}
+                        </div>
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {cert.target_level && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Target Level</span>
+                        <Badge variant="outline">{cert.target_level}</Badge>
+                      </div>
                     )}
-                  </div>
-                  <Badge className={getStatusColor(cert.current_status)}>
-                    <div className="flex items-center gap-1">
-                      {getStatusIcon(cert.current_status)}
-                      {cert.current_status.replace('_', ' ')}
+
+                    {cert.expected_date && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">
+                          Expected: {new Date(cert.expected_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
+
+                    {cert.achieved_date && (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="text-sm text-green-700">
+                          Achieved: {new Date(cert.achieved_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Progress</span>
+                          <span className="text-sm font-medium">{cert.calculated_progress || 0}%</span>
+                        </div>
+                        <Progress value={cert.calculated_progress || 0} className="h-2" />
+                      </div>
+
+                    {cert.current_status === 'achieved' && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="flex items-center gap-2 text-green-800">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="text-sm font-medium">Certification Achieved!</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="text-xs text-muted-foreground text-center">
+                      Click to view requirements
                     </div>
-                  </Badge>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {cert.target_level && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Target Level</span>
-                    <Badge variant="outline">{cert.target_level}</Badge>
-                  </div>
-                )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
 
-                {cert.expected_date && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      Expected: {new Date(cert.expected_date).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
-
-                {cert.achieved_date && (
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-green-700">
-                      Achieved: {new Date(cert.achieved_date).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Progress</span>
-                    <span className="text-sm font-medium">{cert.progress_percentage || 0}%</span>
-                  </div>
-                  <Progress value={cert.progress_percentage || 0} className="h-2" />
-                </div>
-
-                {cert.current_status === 'achieved' && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 text-green-800">
-                      <CheckCircle className="h-4 w-4" />
-                      <span className="text-sm font-medium">Certification Achieved!</span>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+          <TabsContent value="requirements" className="space-y-6">
+            {selectedCertificate ? (
+              <CertificateRequirements
+                certificateId={selectedCertificate}
+                certificationType={certifications.find(c => c.id === selectedCertificate)?.type || ''}
+                onRequirementUpdate={fetchCertifications}
+              />
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Select a Certification</h3>
+                  <p className="text-muted-foreground">
+                    Click on a certification from the list to view its detailed requirements
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       )}
 
       {/* Certification Summary */}
@@ -341,7 +518,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-amber-600">
-                  {Math.round(certifications.reduce((acc, cert) => acc + (cert.progress_percentage || 0), 0) / certifications.length)}%
+                  {Math.round(certifications.reduce((acc, cert) => acc + (cert.calculated_progress || 0), 0) / certifications.length)}%
                 </div>
                 <div className="text-sm text-muted-foreground">Avg Progress</div>
               </div>

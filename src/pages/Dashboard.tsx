@@ -13,11 +13,13 @@ import {
   Users, 
   Calendar,
   Plus,
-  Search,
-  Filter,
-  Bot,
-  Leaf
+  Target,
+  Award,
+  BarChart3,
+  CheckCircle,
+  Clock
 } from 'lucide-react';
+import CertificationTracker from '@/components/Project/CertificationTracker';
 import { Input } from '@/components/ui/input';
 
 interface Project {

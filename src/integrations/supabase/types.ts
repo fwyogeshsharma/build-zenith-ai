@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      certificate_requirements: {
+        Row: {
+          certificate_id: string
+          completion_date: string | null
+          created_at: string
+          evidence_documents: Json | null
+          id: string
+          is_completed: boolean | null
+          is_mandatory: boolean | null
+          notes: string | null
+          requirement_category: string | null
+          requirement_text: string
+          updated_at: string
+        }
+        Insert: {
+          certificate_id: string
+          completion_date?: string | null
+          created_at?: string
+          evidence_documents?: Json | null
+          id?: string
+          is_completed?: boolean | null
+          is_mandatory?: boolean | null
+          notes?: string | null
+          requirement_category?: string | null
+          requirement_text: string
+          updated_at?: string
+        }
+        Update: {
+          certificate_id?: string
+          completion_date?: string | null
+          created_at?: string
+          evidence_documents?: Json | null
+          id?: string
+          is_completed?: boolean | null
+          is_mandatory?: boolean | null
+          notes?: string | null
+          requirement_category?: string | null
+          requirement_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_requirements_certificate_id_fkey"
+            columns: ["certificate_id"]
+            isOneToOne: false
+            referencedRelation: "certifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certificate_templates: {
+        Row: {
+          created_at: string
+          default_requirements: Json | null
+          default_tasks: Json | null
+          description: string | null
+          estimated_duration_weeks: number | null
+          id: string
+          lifecycle_phases: string[] | null
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_requirements?: Json | null
+          default_tasks?: Json | null
+          description?: string | null
+          estimated_duration_weeks?: number | null
+          id?: string
+          lifecycle_phases?: string[] | null
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_requirements?: Json | null
+          default_tasks?: Json | null
+          description?: string | null
+          estimated_duration_weeks?: number | null
+          id?: string
+          lifecycle_phases?: string[] | null
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       certifications: {
         Row: {
           achieved_date: string | null
@@ -369,6 +458,7 @@ export type Database = {
         Row: {
           ai_generated: boolean | null
           assigned_to: string | null
+          certificate_id: string | null
           completed_date: string | null
           created_at: string
           created_by: string
@@ -386,6 +476,7 @@ export type Database = {
         Insert: {
           ai_generated?: boolean | null
           assigned_to?: string | null
+          certificate_id?: string | null
           completed_date?: string | null
           created_at?: string
           created_by: string
@@ -403,6 +494,7 @@ export type Database = {
         Update: {
           ai_generated?: boolean | null
           assigned_to?: string | null
+          certificate_id?: string | null
           completed_date?: string | null
           created_at?: string
           created_by?: string
@@ -423,6 +515,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_certificate_id_fkey"
+            columns: ["certificate_id"]
+            isOneToOne: false
+            referencedRelation: "certifications"
             referencedColumns: ["id"]
           },
         ]

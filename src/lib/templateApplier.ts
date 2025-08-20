@@ -2,6 +2,95 @@ import { supabase } from '@/integrations/supabase/client';
 import { getProjectTemplate } from './projectTemplates';
 import { Database } from '@/integrations/supabase/types';
 
+export const applyCertificateTemplate = async (
+  projectId: string,
+  certificationType: string,
+  userId: string
+): Promise<{ success: boolean; error?: string; tasksCreated?: number; requirementsCreated?: number }> => {
+  try {
+    // Get certificate template based on type
+    const { data: template, error: templateError } = await supabase
+      .from('certificate_templates')
+      .select('*')
+      .eq('type', certificationType)
+      .single();
+
+    if (templateError || !template) {
+      return { success: false, error: 'Certificate template not found' };
+    }
+
+    // First create the certification
+    const { data: certification, error: certError } = await supabase
+      .from('certifications')
+      .insert({
+        project_id: projectId,
+        type: certificationType as any,
+        current_status: 'planning',
+        progress_percentage: 0
+      })
+      .select()
+      .single();
+
+    if (certError) throw certError;
+
+    let requirementsCreated = 0;
+    let tasksCreated = 0;
+
+    // Create requirements from template
+    if (template.default_requirements && Array.isArray(template.default_requirements) && template.default_requirements.length > 0) {
+      const requirementsData = (template.default_requirements as any[]).map((req: any) => ({
+        certificate_id: certification.id,
+        requirement_text: req.text,
+        requirement_category: req.category || 'General',
+        is_mandatory: req.mandatory !== false
+      }));
+
+      const { data: requirements, error: reqError } = await supabase
+        .from('certificate_requirements')
+        .insert(requirementsData)
+        .select();
+
+      if (reqError) throw reqError;
+      requirementsCreated = requirements?.length || 0;
+    }
+
+    // Create tasks from template
+    if (template.default_tasks && Array.isArray(template.default_tasks) && template.default_tasks.length > 0) {
+      const tasksData = (template.default_tasks as any[]).map((task: any) => ({
+        project_id: projectId,
+        certificate_id: certification.id,
+        title: task.title,
+        description: `Template task for ${template.name} certification`,
+        phase: task.phase,
+        priority: task.priority || 'medium',
+        status: 'pending',
+        created_by: userId,
+        ai_generated: true
+      }));
+
+      const { data: tasks, error: taskError } = await supabase
+        .from('tasks')
+        .insert(tasksData)
+        .select();
+
+      if (taskError) throw taskError;
+      tasksCreated = tasks?.length || 0;
+    }
+
+    return {
+      success: true,
+      tasksCreated,
+      requirementsCreated
+    };
+  } catch (error: any) {
+    console.error('Error applying certificate template:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
 type ProjectType = Database['public']['Enums']['project_type'];
 
 export interface ApplyTemplateResult {
