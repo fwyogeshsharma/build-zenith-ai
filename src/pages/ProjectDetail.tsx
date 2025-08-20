@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+import DashboardSidebar from '@/components/Dashboard/DashboardSidebar';
 import ProjectOverview from '@/components/Project/ProjectOverview';
 import ProjectTasks from '@/components/Project/ProjectTasks';
 import ProjectTeam from '@/components/Project/ProjectTeam';

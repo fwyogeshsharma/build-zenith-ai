@@ -13,8 +13,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
+type UserRole = Database['public']['Enums']['user_role'];
+
 type TeamMember = Database['public']['Tables']['project_team_members']['Row'] & {
-  profile?: {
+  profiles?: {
     first_name: string;
     last_name: string;
     email: string;
@@ -32,7 +34,7 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
   const [loading, setLoading] = useState(true);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'project_manager' | 'contractor' | 'architect'>('contractor');
+  const [inviteRole, setInviteRole] = useState<UserRole>('contractor');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -45,7 +47,7 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
         .from('project_team_members')
         .select(`
           *,
-          profile:profiles!inner(
+          profiles(
             first_name,
             last_name,
             email,
@@ -56,7 +58,7 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
         .eq('project_id', projectId);
 
       if (error) throw error;
-      setTeamMembers(data || []);
+      setTeamMembers((data as any) || []);
     } catch (error: any) {
       toast({
         title: "Error loading team members",
@@ -93,7 +95,7 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
 
       setIsInviteOpen(false);
       setInviteEmail('');
-      setInviteRole('team_member');
+      setInviteRole('contractor');
       
       toast({
         title: "Invitation sent",
@@ -111,7 +113,7 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
     }
   };
 
-  const updateMemberRole = async (memberId: string, newRole: string) => {
+  const updateMemberRole = async (memberId: string, newRole: UserRole) => {
     try {
       const { error } = await supabase
         .from('project_team_members')
@@ -173,8 +175,8 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
     switch (role) {
       case 'admin': return 'bg-yellow-100 text-yellow-800';
       case 'project_manager': return 'bg-blue-100 text-blue-800';
-      case 'team_member': return 'bg-green-100 text-green-800';
-      case 'viewer': return 'bg-gray-100 text-gray-800';
+      case 'contractor': return 'bg-green-100 text-green-800';
+      case 'client': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -228,8 +230,8 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="viewer">Viewer - Can view project</SelectItem>
-                    <SelectItem value="team_member">Team Member - Can view and edit</SelectItem>
+                    <SelectItem value="client">Client - Can view project</SelectItem>
+                    <SelectItem value="contractor">Contractor - Can view and edit</SelectItem>
                     <SelectItem value="project_manager">Project Manager - Full access</SelectItem>
                     <SelectItem value="admin">Admin - Full control</SelectItem>
                   </SelectContent>
@@ -264,16 +266,16 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={member.profile?.avatar_url} />
+                      <AvatarImage src={member.profiles?.avatar_url} />
                       <AvatarFallback>
-                        {getInitials(member.profile?.first_name, member.profile?.last_name)}
+                        {getInitials(member.profiles?.first_name, member.profiles?.last_name)}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="font-semibold">
-                          {member.profile?.first_name} {member.profile?.last_name}
+                          {member.profiles?.first_name} {member.profiles?.last_name}
                         </h4>
                         {getRoleIcon(member.role)}
                         <Badge variant="outline" className={getRoleColor(member.role)}>
@@ -284,12 +286,12 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                         <div className="flex items-center gap-1">
                           <Mail className="h-3 w-3" />
-                          <span>{member.profile?.email}</span>
+                          <span>{member.profiles?.email}</span>
                         </div>
-                        {member.profile?.phone && (
+                        {member.profiles?.phone && (
                           <div className="flex items-center gap-1">
                             <Phone className="h-3 w-3" />
-                            <span>{member.profile.phone}</span>
+                            <span>{member.profiles.phone}</span>
                           </div>
                         )}
                       </div>
@@ -315,9 +317,9 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
                         <Shield className="h-4 w-4 mr-2" />
                         Make Project Manager
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateMemberRole(member.id, 'team_member')}>
+                      <DropdownMenuItem onClick={() => updateMemberRole(member.id, 'contractor')}>
                         <Settings className="h-4 w-4 mr-2" />
-                        Make Team Member
+                        Make Contractor
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => removeMember(member.id)}
@@ -358,18 +360,18 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-green-600">
-              {teamMembers.filter(m => m.role === 'team_member').length}
+              {teamMembers.filter(m => m.role === 'contractor').length}
             </div>
-            <div className="text-sm text-muted-foreground">Team Members</div>
+            <div className="text-sm text-muted-foreground">Contractors</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-gray-600">
-              {teamMembers.filter(m => m.role === 'viewer').length}
+              {teamMembers.filter(m => m.role === 'client').length}
             </div>
-            <div className="text-sm text-muted-foreground">Viewers</div>
+            <div className="text-sm text-muted-foreground">Clients</div>
           </CardContent>
         </Card>
       </div>
