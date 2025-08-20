@@ -13,6 +13,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { EditTaskDialog } from './EditTaskDialog';
+import { TaskDetail } from './TaskDetail';
 import { 
   MoreHorizontal, 
   Calendar, 
@@ -61,6 +62,7 @@ const statusColumns = [
 export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) => {
   const { toast } = useToast();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
 
   const getPriorityColor = (priority: string) => {
@@ -182,9 +184,14 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
                     } ${draggedTask?.id === task.id ? 'opacity-50' : ''}`}
                   >
                     <CardContent className="p-3">
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <h4 className="font-medium text-sm leading-tight">{task.title}</h4>
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 
+                              className="font-medium text-sm leading-tight cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => setViewingTask(task)}
+                            >
+                              {task.title}
+                            </h4>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
@@ -273,6 +280,17 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
           task={editingTask}
           open={!!editingTask}
           onOpenChange={(open) => !open && setEditingTask(null)}
+          onTaskUpdated={onTaskUpdate}
+          projects={projects}
+        />
+      )}
+
+      {/* Task Detail Dialog */}
+      {viewingTask && (
+        <TaskDetail
+          task={viewingTask}
+          open={!!viewingTask}
+          onOpenChange={(open) => !open && setViewingTask(null)}
           onTaskUpdated={onTaskUpdate}
           projects={projects}
         />

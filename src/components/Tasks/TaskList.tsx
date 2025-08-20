@@ -14,6 +14,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { EditTaskDialog } from './EditTaskDialog';
+import { TaskDetail } from './TaskDetail';
 import { 
   MoreHorizontal, 
   Calendar, 
@@ -59,6 +60,7 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
   const { toast } = useToast();
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -211,7 +213,12 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-foreground mb-1">{task.title}</h3>
+                        <h3 
+                          className="font-semibold text-foreground mb-1 cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => setViewingTask(task)}
+                        >
+                          {task.title}
+                        </h3>
                         {task.description && (
                           <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                             {task.description}
@@ -342,6 +349,17 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
           task={editingTask}
           open={!!editingTask}
           onOpenChange={(open) => !open && setEditingTask(null)}
+          onTaskUpdated={onTaskUpdate}
+          projects={projects}
+        />
+      )}
+
+      {/* Task Detail Dialog */}
+      {viewingTask && (
+        <TaskDetail
+          task={viewingTask}
+          open={!!viewingTask}
+          onOpenChange={(open) => !open && setViewingTask(null)}
           onTaskUpdated={onTaskUpdate}
           projects={projects}
         />

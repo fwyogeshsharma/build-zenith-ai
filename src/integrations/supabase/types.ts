@@ -83,6 +83,7 @@ export type Database = {
           phase: Database["public"]["Enums"]["project_phase"] | null
           project_id: string
           tags: string[] | null
+          task_id: string | null
           updated_at: string
           uploaded_by: string
         }
@@ -98,6 +99,7 @@ export type Database = {
           phase?: Database["public"]["Enums"]["project_phase"] | null
           project_id: string
           tags?: string[] | null
+          task_id?: string | null
           updated_at?: string
           uploaded_by: string
         }
@@ -113,6 +115,7 @@ export type Database = {
           phase?: Database["public"]["Enums"]["project_phase"] | null
           project_id?: string
           tags?: string[] | null
+          task_id?: string | null
           updated_at?: string
           uploaded_by?: string
         }
