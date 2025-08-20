@@ -16,6 +16,7 @@ import ProjectTeam from '@/components/Project/ProjectTeam';
 import ProjectDocuments from '@/components/Project/ProjectDocuments';
 import ProjectSchedule from '@/components/Project/ProjectSchedule';
 import ProjectAnalytics from '@/components/Project/ProjectAnalytics';
+import ProjectLifecycle from '@/components/Project/ProjectLifecycle';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -192,6 +193,7 @@ const ProjectDetail = () => {
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="lifecycle">Lifecycle</TabsTrigger>
               <TabsTrigger value="tasks">Tasks</TabsTrigger>
               <TabsTrigger value="team">Team</TabsTrigger>
               <TabsTrigger value="documents">Documents</TabsTrigger>
@@ -201,6 +203,10 @@ const ProjectDetail = () => {
 
             <TabsContent value="overview" className="space-y-6">
               <ProjectOverview project={project} />
+            </TabsContent>
+
+            <TabsContent value="lifecycle">
+              <ProjectLifecycle projectId={project.id} />
             </TabsContent>
 
             <TabsContent value="tasks">
