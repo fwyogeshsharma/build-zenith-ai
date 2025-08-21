@@ -5,16 +5,19 @@
   Referrer-Policy: strict-origin-when-cross-origin
 
 /assets/*.js
-  Content-Type: application/javascript
+  Content-Type: application/javascript; charset=utf-8
 
 /assets/*.mjs  
-  Content-Type: application/javascript
+  Content-Type: application/javascript; charset=utf-8
+
+/src/*.js
+  Content-Type: application/javascript; charset=utf-8
+
+/src/*.mjs
+  Content-Type: application/javascript; charset=utf-8
 
 /*.js
-  Content-Type: application/javascript
+  Content-Type: application/javascript; charset=utf-8
 
 /*.mjs
-  Content-Type: application/javascript
-
-/src/*
-  Content-Type: application/javascript
+  Content-Type: application/javascript; charset=utf-8
