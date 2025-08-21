@@ -153,28 +153,7 @@ export const applyProjectTemplate = async (
       tasksCreated = tasks?.length || 0;
     }
 
-    // Create certifications
-    if (template.certifications.length > 0) {
-      const certificationsData = template.certifications.map(cert => ({
-        project_id: projectId,
-        type: cert.type as any,
-        target_level: cert.target_level,
-        requirements: cert.requirements,
-        current_status: 'planning' as any,
-        progress_percentage: 0,
-        expected_date: cert.expected_weeks 
-          ? new Date(Date.now() + cert.expected_weeks * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          : null,
-      }));
-
-      const { data: certifications, error: certificationsError } = await supabase
-        .from('certifications')
-        .insert(certificationsData)
-        .select();
-
-      if (certificationsError) throw certificationsError;
-      certificationsCreated = certifications?.length || 0;
-    }
+    // Don't create certifications by default - users will add them manually
 
     return {
       success: true,

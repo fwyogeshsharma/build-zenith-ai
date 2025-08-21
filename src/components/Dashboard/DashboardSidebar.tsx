@@ -46,7 +46,7 @@ const SidebarContent = ({ className }: SidebarProps) => {
             <Building2 className="h-6 w-6 text-construction" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-sidebar-foreground">FutureBuilt</h1>
+            <h1 className="text-lg font-bold text-sidebar-foreground">FutureBuild</h1>
             <p className="text-xs text-sidebar-foreground/60">Project Management</p>
           </div>
         </div>

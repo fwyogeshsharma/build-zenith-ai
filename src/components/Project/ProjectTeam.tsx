@@ -43,22 +43,34 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
 
   const fetchTeamMembers = async () => {
     try {
-      const { data, error } = await supabase
+      // First get team member records
+      const { data: teamMemberData, error: teamError } = await supabase
         .from('project_team_members')
-        .select(`
-          *,
-          profiles(
-            first_name,
-            last_name,
-            email,
-            avatar_url,
-            phone
-          )
-        `)
+        .select('id, role, joined_at, user_id, permissions')
         .eq('project_id', projectId);
+      
+      if (teamError) throw teamError;
+      if (!teamMemberData || teamMemberData.length === 0) {
+        setTeamMembers([]);
+        return;
+      }
 
-      if (error) throw error;
-      setTeamMembers((data as any) || []);
+      // Then get profile data for those users
+      const userIds = teamMemberData.map(member => member.user_id);
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name, email, avatar_url, phone')
+        .in('user_id', userIds);
+      
+      if (profileError) throw profileError;
+
+      // Combine the data
+      const combinedData = teamMemberData.map(member => ({
+        ...member,
+        profiles: profileData?.find(profile => profile.user_id === member.user_id) || null
+      }));
+
+      setTeamMembers(combinedData as any);
     } catch (error: any) {
       toast({
         title: "Error loading team members",
