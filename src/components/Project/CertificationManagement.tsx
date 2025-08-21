@@ -362,7 +362,20 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
               {useTemplate && (
                 <div>
                   <Label htmlFor="template">Template</Label>
-                  <Select value={formData.template_id} onValueChange={(value) => setFormData({...formData, template_id: value})}>
+                  <Select 
+                    value={formData.template_id} 
+                    onValueChange={(value) => {
+                      const selectedTemplate = templates.find(t => t.id === value);
+                      const newFormData = { ...formData, template_id: value };
+                      
+                      // Auto-set version for LEED v4.1 template
+                      if (selectedTemplate && selectedTemplate.name === 'LEED v4.1 Template') {
+                        newFormData.version = 'v4.1';
+                      }
+                      
+                      setFormData(newFormData);
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a template" />
                     </SelectTrigger>
