@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, MoreVertical } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, MoreVertical, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
@@ -38,6 +38,7 @@ interface ProjectTasksProps {
 
 const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [taskDocuments, setTaskDocuments] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -55,6 +56,7 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
 
   useEffect(() => {
     fetchTasks();
+    fetchTaskDocuments();
   }, [projectId]);
 
   const fetchTasks = async () => {
@@ -75,6 +77,30 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTaskDocuments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('documents')
+        .select('task_id')
+        .eq('project_id', projectId)
+        .not('task_id', 'is', null);
+
+      if (error) throw error;
+      
+      // Count documents per task
+      const documentCounts: Record<string, number> = {};
+      (data || []).forEach((doc) => {
+        if (doc.task_id) {
+          documentCounts[doc.task_id] = (documentCounts[doc.task_id] || 0) + 1;
+        }
+      });
+      
+      setTaskDocuments(documentCounts);
+    } catch (error: any) {
+      console.error('Error loading task documents:', error);
     }
   };
 
@@ -116,6 +142,9 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
         phase: 'concept',
         project_id: projectId
       });
+
+      // Refresh document counts
+      fetchTaskDocuments();
 
       toast({
         title: "Task created",
@@ -171,6 +200,9 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
       if (error) throw error;
 
       setTasks(tasks.filter(task => task.id !== taskId));
+
+      // Refresh document counts since we might have deleted tasks with documents
+      fetchTaskDocuments();
 
       toast({
         title: "Task deleted",
@@ -382,6 +414,12 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
                         <div className="flex items-center gap-1">
                           <User className="h-3 w-3" />
                           <span>Assigned</span>
+                        </div>
+                      )}
+                      {taskDocuments[task.id] && (
+                        <div className="flex items-center gap-1">
+                          <FileText className="h-3 w-3" />
+                          <span>{taskDocuments[task.id]} document{taskDocuments[task.id] !== 1 ? 's' : ''}</span>
                         </div>
                       )}
                     </div>
