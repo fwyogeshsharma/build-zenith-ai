@@ -13,13 +13,20 @@ import { Database } from '@/integrations/supabase/types';
 
 type Document = Database['public']['Tables']['documents']['Row'];
 type DocumentInsert = Database['public']['Tables']['documents']['Insert'];
+type DocumentWithTask = Document & {
+  task?: {
+    id: string;
+    title: string;
+  } | null;
+};
 
 interface ProjectDocumentsProps {
   projectId: string;
 }
 
 const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<DocumentWithTask[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPhase, setFilterPhase] = useState('all');
@@ -30,23 +37,28 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
   const [newDocument, setNewDocument] = useState<Partial<DocumentInsert>>({
     name: '',
     phase: 'concept',
+    task_id: null,
     tags: []
   });
 
   useEffect(() => {
     fetchDocuments();
+    fetchTasks();
   }, [projectId]);
 
   const fetchDocuments = async () => {
     try {
       const { data, error } = await supabase
         .from('documents')
-        .select('*')
+        .select(`
+          *,
+          task:tasks!documents_task_id_fkey(id, title)
+        `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDocuments(data || []);
+      setDocuments((data || []) as any);
     } catch (error: any) {
       toast({
         title: "Error loading documents",
@@ -55,6 +67,21 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTasks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('id, title')
+        .eq('project_id', projectId)
+        .order('title');
+
+      if (error) throw error;
+      setTasks(data || []);
+    } catch (error: any) {
+      console.error('Error loading tasks:', error);
     }
   };
 
@@ -83,6 +110,7 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
           file_size: uploadFile.size,
           mime_type: uploadFile.type,
           phase: newDocument.phase,
+          task_id: newDocument.task_id,
           tags: newDocument.tags,
           uploaded_by: (await supabase.auth.getUser()).data.user?.id || ''
         })
@@ -91,10 +119,11 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
 
       if (error) throw error;
 
-      setDocuments([data, ...documents]);
+      // Refresh documents list to include the new document with task info
+      fetchDocuments();
       setIsUploadOpen(false);
       setUploadFile(null);
-      setNewDocument({ name: '', phase: 'concept', tags: [] });
+      setNewDocument({ name: '', phase: 'concept', task_id: null, tags: [] });
 
       toast({
         title: "Document uploaded",
@@ -267,6 +296,26 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
                 </Select>
               </div>
 
+              <div>
+                <Label htmlFor="task">Linked Task (optional)</Label>
+                <Select 
+                  value={newDocument.task_id || ''} 
+                  onValueChange={(value) => setNewDocument({ ...newDocument, task_id: value || null })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a task or leave empty for general document" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No specific task</SelectItem>
+                    {tasks.map((task) => (
+                      <SelectItem key={task.id} value={task.id}>
+                        {task.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex gap-2 pt-4">
                 <Button onClick={handleFileUpload} className="flex-1" disabled={!uploadFile}>
                   Upload Document
@@ -304,6 +353,11 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
                         <Badge variant="outline" className={getPhaseColor(document.phase || '')}>
                           {document.phase?.replace('_', ' ')}
                         </Badge>
+                        {document.task && (
+                          <Badge variant="secondary" className="text-xs">
+                            Task: {document.task.title}
+                          </Badge>
+                        )}
                         <span className="text-sm text-muted-foreground">
                           {formatFileSize(document.file_size)}
                         </span>

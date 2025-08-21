@@ -120,6 +120,7 @@ export type Database = {
           target_level: string | null
           type: Database["public"]["Enums"]["certification_type"]
           updated_at: string
+          version: string | null
         }
         Insert: {
           achieved_date?: string | null
@@ -137,6 +138,7 @@ export type Database = {
           target_level?: string | null
           type: Database["public"]["Enums"]["certification_type"]
           updated_at?: string
+          version?: string | null
         }
         Update: {
           achieved_date?: string | null
@@ -154,6 +156,7 @@ export type Database = {
           target_level?: string | null
           type?: Database["public"]["Enums"]["certification_type"]
           updated_at?: string
+          version?: string | null
         }
         Relationships: [
           {

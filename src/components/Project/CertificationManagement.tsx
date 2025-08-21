@@ -64,6 +64,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
     type: '',
     certification_body: '',
     target_level: '',
+    version: '',
     expected_date: '',
     current_status: 'planning',
     template_id: ''
@@ -144,6 +145,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
           type: formData.type as any,
           certification_body: formData.certification_body,
           target_level: formData.target_level,
+          version: formData.version,
           expected_date: formData.expected_date,
           current_status: formData.current_status as any,
           progress_percentage: 0
@@ -170,6 +172,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
         type: '',
         certification_body: '',
         target_level: '',
+        version: '',
         expected_date: '',
         current_status: 'planning',
         template_id: ''
@@ -411,6 +414,16 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
               </div>
 
               <div>
+                <Label htmlFor="version">Version</Label>
+                <Input
+                  id="version"
+                  value={formData.version}
+                  onChange={(e) => setFormData({...formData, version: e.target.value})}
+                  placeholder="e.g., LEED v4.1, ISO 9001:2015, IGBC v3"
+                />
+              </div>
+
+              <div>
                 <Label htmlFor="expected_date">Expected Achievement Date</Label>
                 <Input
                   id="expected_date"
@@ -487,6 +500,11 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                         {cert.certification_body && (
                           <p className="text-sm text-muted-foreground mt-1">
                             {cert.certification_body}
+                          </p>
+                        )}
+                        {cert.version && (
+                          <p className="text-xs text-muted-foreground mt-1 font-medium">
+                            Version: {cert.version}
                           </p>
                         )}
                       </div>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -14,13 +15,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { EditTaskDialog } from './EditTaskDialog';
 import { TaskDetail } from './TaskDetail';
+import { TaskDocumentUpload } from './TaskDocumentUpload';
 import { 
   MoreHorizontal, 
   Calendar, 
   User, 
   Building2,
   Edit,
-  Trash2
+  Trash2,
+  FileText
 } from 'lucide-react';
 
 interface Task {
@@ -64,6 +67,7 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [uploadingToTask, setUploadingToTask] = useState<Task | null>(null);
 
   const getPriorityColor = (priority: string) => {
     const colors = {
@@ -203,6 +207,10 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit Task
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setUploadingToTask(task)}>
+                                <FileText className="h-4 w-4 mr-2" />
+                                Add Document
+                              </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => deleteTask(task.id)}
                                 className="text-destructive focus:text-destructive"
@@ -294,6 +302,26 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
           onTaskUpdated={onTaskUpdate}
           projects={projects}
         />
+      )}
+
+      {/* Document Upload Dialog */}
+      {uploadingToTask && (
+        <Dialog open={!!uploadingToTask} onOpenChange={(open) => !open && setUploadingToTask(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Upload Document to "{uploadingToTask.title}"</DialogTitle>
+            </DialogHeader>
+            <TaskDocumentUpload
+              taskId={uploadingToTask.id}
+              projectId={uploadingToTask.project_id}
+              onUploadComplete={() => {
+                setUploadingToTask(null);
+                onTaskUpdate();
+              }}
+              onCancel={() => setUploadingToTask(null)}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
