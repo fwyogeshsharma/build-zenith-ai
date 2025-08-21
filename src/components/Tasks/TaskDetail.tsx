@@ -62,9 +62,10 @@ interface TaskDetailProps {
   onOpenChange: (open: boolean) => void;
   onTaskUpdated: () => void;
   projects: any[];
+  refreshTrigger?: number;
 }
 
-export const TaskDetail = ({ task, open, onOpenChange, onTaskUpdated, projects }: TaskDetailProps) => {
+export const TaskDetail = ({ task, open, onOpenChange, onTaskUpdated, projects, refreshTrigger }: TaskDetailProps) => {
   const [editingTask, setEditingTask] = useState(false);
   const { toast } = useToast();
 
@@ -266,7 +267,7 @@ export const TaskDetail = ({ task, open, onOpenChange, onTaskUpdated, projects }
             </TabsContent>
 
             <TabsContent value="documents" className="mt-6">
-              <TaskDocuments taskId={task.id} projectId={task.project_id} />
+              <TaskDocuments taskId={task.id} projectId={task.project_id} refreshTrigger={refreshTrigger} />
             </TabsContent>
           </Tabs>
         </DialogContent>

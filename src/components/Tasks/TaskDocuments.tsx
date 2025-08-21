@@ -14,9 +14,10 @@ type Document = Database['public']['Tables']['documents']['Row'];
 interface TaskDocumentsProps {
   taskId: string;
   projectId: string;
+  refreshTrigger?: number;
 }
 
-export const TaskDocuments = ({ taskId, projectId }: TaskDocumentsProps) => {
+export const TaskDocuments = ({ taskId, projectId, refreshTrigger }: TaskDocumentsProps) => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -24,7 +25,7 @@ export const TaskDocuments = ({ taskId, projectId }: TaskDocumentsProps) => {
 
   useEffect(() => {
     fetchDocuments();
-  }, [taskId]);
+  }, [taskId, refreshTrigger]);
 
   const fetchDocuments = async () => {
     try {

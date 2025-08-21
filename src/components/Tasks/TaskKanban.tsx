@@ -68,6 +68,7 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [uploadingToTask, setUploadingToTask] = useState<Task | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const getPriorityColor = (priority: string) => {
     const colors = {
@@ -301,6 +302,7 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
           onOpenChange={(open) => !open && setViewingTask(null)}
           onTaskUpdated={onTaskUpdate}
           projects={projects}
+          refreshTrigger={refreshTrigger}
         />
       )}
 
@@ -317,6 +319,7 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
               onUploadComplete={() => {
                 setUploadingToTask(null);
                 onTaskUpdate();
+                setRefreshTrigger(prev => prev + 1);
               }}
               onCancel={() => setUploadingToTask(null)}
             />
