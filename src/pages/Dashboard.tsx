@@ -155,7 +155,7 @@ const Dashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                Welcome back, {user?.email?.split('@')[0]}! 👋
+                Welcome back, {user?.user_metadata?.first_name || user?.email?.split('@')[0]}! 👋
               </h1>
               <p className="text-muted-foreground">
                 Here's what's happening with your construction projects today.
