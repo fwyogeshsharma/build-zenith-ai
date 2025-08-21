@@ -96,11 +96,18 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
     }
 
     try {
-      // In a real app, you'd upload to Supabase Storage first
-      // For now, we'll just create a document record with a mock file path
       const fileName = uploadFile.name;
+      const fileExt = fileName.split('.').pop();
       const filePath = `projects/${projectId}/${Date.now()}-${fileName}`;
-      
+
+      // Upload file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, uploadFile);
+
+      if (uploadError) throw uploadError;
+
+      // Create document record
       const { data, error } = await supabase
         .from('documents')
         .insert({
@@ -189,6 +196,22 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
   };
   const deleteDocument = async (documentId: string) => {
     try {
+      // First get the document to find the file path
+      const documentToDelete = documents.find(doc => doc.id === documentId);
+      
+      if (documentToDelete) {
+        // Delete the file from Supabase Storage
+        const { error: storageError } = await supabase.storage
+          .from('documents')
+          .remove([documentToDelete.file_path]);
+
+        if (storageError) {
+          console.warn('Error deleting file from storage:', storageError);
+          // Continue with database deletion even if storage deletion fails
+        }
+      }
+
+      // Delete the database record
       const { error } = await supabase
         .from('documents')
         .delete()
