@@ -242,6 +242,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
       case 'in_progress': return 'bg-blue-100 text-blue-800';
       case 'planning': return 'bg-gray-100 text-gray-800';
       case 'on_hold': return 'bg-yellow-100 text-yellow-800';
+      case 'expired': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -252,6 +253,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
       case 'in_progress': return <Clock className="h-4 w-4" />;
       case 'planning': return <FileText className="h-4 w-4" />;
       case 'on_hold': return <AlertCircle className="h-4 w-4" />;
+      case 'expired': return <AlertCircle className="h-4 w-4" />;
       default: return <FileText className="h-4 w-4" />;
     }
   };
