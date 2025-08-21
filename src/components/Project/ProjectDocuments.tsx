@@ -299,14 +299,14 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
               <div>
                 <Label htmlFor="task">Linked Task (optional)</Label>
                 <Select 
-                  value={newDocument.task_id || ''} 
-                  onValueChange={(value) => setNewDocument({ ...newDocument, task_id: value || null })}
+                  value={newDocument.task_id || 'none'} 
+                  onValueChange={(value) => setNewDocument({ ...newDocument, task_id: value === 'none' ? null : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a task or leave empty for general document" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No specific task</SelectItem>
+                    <SelectItem value="none">No specific task</SelectItem>
                     {tasks.map((task) => (
                       <SelectItem key={task.id} value={task.id}>
                         {task.title}
