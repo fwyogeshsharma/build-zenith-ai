@@ -24,7 +24,7 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderOpen },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
@@ -42,8 +42,8 @@ const SidebarContent = ({ className }: SidebarProps) => {
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="bg-construction/20 p-2 rounded-lg">
-            <Building2 className="h-6 w-6 text-construction" />
+          <div className="bg-white/20 p-2 rounded-lg">
+            <Building2 className="h-6 w-6 text-white" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-sidebar-foreground">FutureBuild</h1>

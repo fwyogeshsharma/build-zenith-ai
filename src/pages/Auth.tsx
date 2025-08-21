@@ -125,8 +125,8 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="bg-construction/20 p-3 rounded-xl">
-              <Building2 className="h-8 w-8 text-construction" />
+            <div className="bg-white/20 p-3 rounded-xl">
+              <Building2 className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white">FutureBuild</h1>
           </div>
