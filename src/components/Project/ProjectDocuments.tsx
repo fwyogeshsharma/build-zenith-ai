@@ -184,8 +184,11 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
 
       if (error) throw error;
 
+      // Construct full URL - Supabase returns a relative path
+      const fullUrl = `https://hlbtaungfhcszwoihppf.supabase.co/storage/v1${data.signedUrl}`;
+      
       // Open in new tab
-      window.open(data.signedUrl, '_blank');
+      window.open(fullUrl, '_blank');
     } catch (error: any) {
       toast({
         title: "Error viewing document",
