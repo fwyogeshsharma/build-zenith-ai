@@ -14,7 +14,7 @@ import { Database } from '@/integrations/supabase/types';
 type Document = Database['public']['Tables']['documents']['Row'];
 type DocumentInsert = Database['public']['Tables']['documents']['Insert'];
 type DocumentWithTask = Document & {
-  task?: {
+  tasks?: {
     id: string;
     title: string;
   } | null;
@@ -52,7 +52,7 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
         .from('documents')
         .select(`
           *,
-          task:tasks!documents_task_id_fkey(id, title)
+          tasks!documents_task_id_fkey(id, title)
         `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
@@ -353,9 +353,9 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
                         <Badge variant="outline" className={getPhaseColor(document.phase || '')}>
                           {document.phase?.replace('_', ' ')}
                         </Badge>
-                        {document.task && (
+                        {document.tasks && (
                           <Badge variant="secondary" className="text-xs">
-                            Task: {document.task.title}
+                            Task: {document.tasks.title}
                           </Badge>
                         )}
                         <span className="text-sm text-muted-foreground">
