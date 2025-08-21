@@ -187,6 +187,8 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
 
   const applyTemplate = async (certificationId: string, templateId: string) => {
     try {
+      // Refresh templates to get latest data
+      await fetchTemplates();
       const template = templates.find(t => t.id === templateId);
       if (!template) return;
 
@@ -210,19 +212,35 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
         if (reqError) throw reqError;
       }
 
-      // Create tasks from template
+      // Create tasks from template with phase validation
       if (template.default_tasks && template.default_tasks.length > 0) {
-        const tasksData = template.default_tasks.map((task: any) => ({
-          project_id: projectId,
-          certificate_id: certificationId,
-          title: task.title,
-          description: `Template task for ${template.name} certification`,
-          phase: task.phase,
-          priority: task.priority || 'medium',
-          status: 'pending',
-          created_by: userId,
-          ai_generated: true
-        }));
+        const validPhases = ['concept', 'design', 'pre_construction', 'execution', 'handover', 'operations_maintenance', 'renovation_demolition'];
+        
+        const tasksData = template.default_tasks.map((task: any) => {
+          // Map invalid phases to valid ones
+          let validPhase = task.phase;
+          if (task.phase === 'construction') validPhase = 'execution';
+          if (task.phase === 'commissioning_handover') validPhase = 'handover';
+          if (task.phase === 'operation_maintenance') validPhase = 'operations_maintenance';
+          if (task.phase === 'planning_design') validPhase = 'design';
+          
+          // Ensure phase is valid
+          if (!validPhases.includes(validPhase)) {
+            validPhase = 'execution'; // Default fallback
+          }
+
+          return {
+            project_id: projectId,
+            certificate_id: certificationId,
+            title: task.title,
+            description: `Template task for ${template.name} certification`,
+            phase: validPhase,
+            priority: task.priority || 'medium',
+            status: 'pending',
+            created_by: userId,
+            ai_generated: true
+          };
+        });
 
         const { error: taskError } = await supabase
           .from('tasks')
