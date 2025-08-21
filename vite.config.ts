@@ -37,6 +37,8 @@ export default defineConfig(({ mode }) => ({
     sourcemap: false,
     target: 'esnext',
     minify: 'esbuild',
+    outDir: 'dist',
+    emptyOutDir: true,
   },
   esbuild: {
     target: 'esnext',
