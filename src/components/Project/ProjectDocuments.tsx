@@ -138,6 +138,55 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
     }
   };
 
+  const downloadDocument = async (doc: DocumentWithTask) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .download(doc.file_path);
+
+      if (error) throw error;
+
+      // Create blob URL and trigger download
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download started",
+        description: `Downloading ${doc.name}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error downloading document",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const viewDocument = async (doc: DocumentWithTask) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(doc.file_path, 3600); // 1 hour expiry
+
+      if (error) throw error;
+
+      // Open in new tab
+      window.open(data.signedUrl, '_blank');
+    } catch (error: any) {
+      toast({
+        title: "Error viewing document",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
   const deleteDocument = async (documentId: string) => {
     try {
       const { error } = await supabase
@@ -384,10 +433,10 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
                   </div>
                   
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => viewDocument(document)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => downloadDocument(document)}>
                       <Download className="h-4 w-4" />
                     </Button>
                     <Button 

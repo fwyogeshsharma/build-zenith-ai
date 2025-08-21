@@ -28,21 +28,29 @@ import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, M
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
+import { TaskDetail } from '../Tasks/TaskDetail';
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
+type TaskWithProject = Task & {
+  project: {
+    name: string;
+    status: string;
+  };
+};
 
 interface ProjectTasksProps {
   projectId: string;
 }
 
 const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<TaskWithProject[]>([]);
   const [taskDocuments, setTaskDocuments] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [viewingTask, setViewingTask] = useState<TaskWithProject | null>(null);
   const { toast } = useToast();
 
   const [newTask, setNewTask] = useState<Partial<TaskInsert>>({
@@ -63,12 +71,15 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
     try {
       const { data, error } = await supabase
         .from('tasks')
-        .select('*')
+        .select(`
+          *,
+          project:projects(name, status)
+        `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTasks(data || []);
+      setTasks((data || []) as TaskWithProject[]);
     } catch (error: any) {
       toast({
         title: "Error loading tasks",
@@ -132,7 +143,8 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
 
       if (error) throw error;
 
-      setTasks([data, ...tasks]);
+      // Refetch tasks to get the updated task with project info
+      fetchTasks();
       setIsCreateOpen(false);
       setNewTask({
         title: '',
@@ -384,7 +396,7 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
       ) : (
         <div className="grid gap-4">
           {filteredTasks.map((task) => (
-            <Card key={task.id} className="hover:shadow-md transition-shadow">
+            <Card key={task.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setViewingTask(task)}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
@@ -425,7 +437,7 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex gap-2 ml-4" onClick={(e) => e.stopPropagation()}>
                     {task.status !== 'completed' && (
                       <Button
                         size="sm"
@@ -524,6 +536,20 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Task Detail Dialog */}
+      {viewingTask && (
+        <TaskDetail
+          task={viewingTask}
+          open={!!viewingTask}
+          onOpenChange={(open) => !open && setViewingTask(null)}
+          onTaskUpdated={() => {
+            fetchTasks();
+            fetchTaskDocuments();
+          }}
+          projects={[]} // We don't need projects array for viewing
+        />
+      )}
     </div>
   );
 };
