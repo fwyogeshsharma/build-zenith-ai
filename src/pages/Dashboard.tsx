@@ -226,7 +226,7 @@ const Dashboard = () => {
               <Button 
                 size="sm" 
                 className="bg-construction hover:bg-construction-dark"
-                onClick={() => window.location.href = '/new-project'}
+                onClick={() => window.location.href = '/projects/new'}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 New Project
@@ -286,8 +286,8 @@ const Dashboard = () => {
                     <ProjectCard
                       key={project.id}
                       project={project}
-                      onViewDetails={(id) => window.location.href = `/project/${id}`}
-                      onEdit={(id) => window.location.href = `/edit-project/${id}`}
+                      onViewDetails={(id) => window.location.href = `/projects/${id}`}
+                      onEdit={(id) => window.location.href = `/projects/${id}`}
                       onDelete={openDeleteDialog}
                     />
                   ))}
@@ -303,7 +303,7 @@ const Dashboard = () => {
                   </p>
                   <Button 
                     className="bg-construction hover:bg-construction-dark"
-                    onClick={() => window.location.href = '/new-project'}
+                    onClick={() => window.location.href = '/projects/new'}
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Create First Project

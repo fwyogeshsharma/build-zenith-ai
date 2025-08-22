@@ -100,7 +100,10 @@ const ProjectCard = ({ project, onViewDetails, onEdit, onDelete }: ProjectCardPr
   const isOverdue = completionDate < new Date() && project.status !== 'completed';
 
   return (
-    <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-large transition-all duration-300 hover:scale-[1.02]">
+    <Card 
+      className="bg-gradient-card border-0 shadow-medium hover:shadow-large transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+      onClick={() => onViewDetails?.(project.id)}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
@@ -114,7 +117,11 @@ const ProjectCard = ({ project, onViewDetails, onEdit, onDelete }: ProjectCardPr
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

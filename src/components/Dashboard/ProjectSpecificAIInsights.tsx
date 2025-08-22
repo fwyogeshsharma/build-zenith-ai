@@ -140,7 +140,7 @@ const ProjectSpecificAIInsights = ({ recentProjects }: ProjectSpecificAIInsights
 
   const handleInsightClick = (insight: AIInsight) => {
     if (insight.projectId) {
-      window.location.href = `/project/${insight.projectId}`;
+      window.location.href = `/projects/${insight.projectId}`;
     }
   };
 
