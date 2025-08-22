@@ -191,60 +191,6 @@ const ProjectDetail = () => {
             </div>
           </div>
 
-          {/* Project Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Current Phase</p>
-                    <Badge variant="outline" className={getPhaseColor(project.current_phase)}>
-                      {project.current_phase}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Progress</p>
-                    <p className="text-2xl font-bold">{project.progress_percentage || 0}%</p>
-                  </div>
-                </div>
-                <Progress value={project.progress_percentage || 0} className="mt-2" />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Budget</p>
-                    <p className="text-2xl font-bold">
-                      {project.budget ? `$${project.budget.toLocaleString()}` : 'Not set'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Type</p>
-                    <p className="text-lg font-semibold capitalize">
-                      {project.project_type.replace('_', ' ')}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Project Details Tabs */}
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList>
