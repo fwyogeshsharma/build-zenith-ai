@@ -16,7 +16,7 @@ import {
 import DashboardSidebar from '@/components/Dashboard/DashboardSidebar';
 import StatCard from '@/components/Dashboard/StatCard';
 import ProjectCard from '@/components/Dashboard/ProjectCard';
-import AIInsightsCard from '@/components/Dashboard/AIInsightsCard';
+import ProjectSpecificAIInsights from '@/components/Dashboard/ProjectSpecificAIInsights';
 import RecentActivity from '@/components/Dashboard/RecentActivity';
 import { 
   Building2, 
@@ -55,12 +55,16 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [teamMembersCount, setTeamMembersCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProjects();
+    fetchAllProjects();
+    fetchTeamMembersCount();
   }, []);
 
   const fetchProjects = async () => {
@@ -77,6 +81,36 @@ const Dashboard = () => {
       console.error('Error fetching projects:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAllProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*');
+
+      if (error) throw error;
+      setAllProjects(data || []);
+    } catch (error) {
+      console.error('Error fetching all projects:', error);
+    }
+  };
+
+  const fetchTeamMembersCount = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('project_team_members')
+        .select('user_id')
+        .neq('user_id', user?.id);
+
+      if (error) throw error;
+      
+      // Count unique team members
+      const uniqueMembers = new Set(data?.map(member => member.user_id) || []);
+      setTeamMembersCount(uniqueMembers.size);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
     }
   };
 
@@ -114,34 +148,56 @@ const Dashboard = () => {
     setDeleteDialogOpen(true);
   };
 
+  const activeProjects = allProjects.filter(p => p.status === 'active').length;
+  const completedProjects = allProjects.filter(p => p.status === 'completed').length;
+  const onHoldProjects = allProjects.filter(p => p.status === 'on_hold').length;
+  const avgProgress = Math.round(allProjects.reduce((acc, p) => acc + (p.progress_percentage || 0), 0) / (allProjects.length || 1));
+  const onScheduleProjects = allProjects.filter(p => 
+    p.expected_completion_date && new Date(p.expected_completion_date) > new Date() && p.status !== 'completed'
+  ).length;
+
   const stats = [
     {
       title: 'Active Projects',
-      value: projects.filter(p => p.status === 'active').length,
+      value: activeProjects,
       description: 'Currently in progress',
       icon: Building2,
-      trend: { value: 12, isPositive: true }
+      trend: { value: Math.round((activeProjects / (allProjects.length || 1)) * 100), isPositive: true }
+    },
+    {
+      title: 'Completed Projects',
+      value: completedProjects,
+      description: 'Successfully finished',
+      icon: CheckCircle,
+      trend: { value: Math.round((completedProjects / (allProjects.length || 1)) * 100), isPositive: true }
+    },
+    {
+      title: 'On Hold Projects',
+      value: onHoldProjects,
+      description: 'Temporarily paused',
+      icon: Clock,
+      trend: { value: Math.round((onHoldProjects / (allProjects.length || 1)) * 100), isPositive: false }
     },
     {
       title: 'Avg Progress',
-      value: `${Math.round(projects.reduce((acc, p) => acc + p.progress_percentage, 0) / projects.length || 0)}%`,
+      value: `${avgProgress}%`,
       description: 'Across all projects',
       icon: TrendingUp,
-      trend: { value: 8, isPositive: true }
+      trend: { value: avgProgress, isPositive: avgProgress > 50 }
     },
     {
       title: 'Team Members',
-      value: 24,
+      value: teamMembersCount + 1, // +1 for the current user
       description: 'Active contributors',
       icon: Users,
-      trend: { value: 3, isPositive: true }
+      trend: { value: teamMembersCount, isPositive: true }
     },
     {
       title: 'On Schedule',
-      value: projects.filter(p => new Date(p.expected_completion_date) > new Date()).length,
+      value: onScheduleProjects,
       description: 'Projects on track',
       icon: Calendar,
-      trend: { value: 5, isPositive: false }
+      trend: { value: Math.round((onScheduleProjects / (allProjects.length || 1)) * 100), isPositive: onScheduleProjects > 0 }
     }
   ];
 
@@ -167,7 +223,11 @@ const Dashboard = () => {
                 <Bot className="mr-2 h-4 w-4" />
                 AI Assistant
               </Button>
-              <Button size="sm" className="bg-construction hover:bg-construction-dark">
+              <Button 
+                size="sm" 
+                className="bg-construction hover:bg-construction-dark"
+                onClick={() => window.location.href = '/new-project'}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 New Project
               </Button>
@@ -178,7 +238,7 @@ const Dashboard = () => {
         {/* Main content */}
         <main className="flex-1 overflow-auto p-6">
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {stats.map((stat, index) => (
               <StatCard
                 key={index}
@@ -226,8 +286,8 @@ const Dashboard = () => {
                     <ProjectCard
                       key={project.id}
                       project={project}
-                      onViewDetails={(id) => console.log('View project:', id)}
-                      onEdit={(id) => console.log('Edit project:', id)}
+                      onViewDetails={(id) => window.location.href = `/project/${id}`}
+                      onEdit={(id) => window.location.href = `/edit-project/${id}`}
                       onDelete={openDeleteDialog}
                     />
                   ))}
@@ -241,7 +301,10 @@ const Dashboard = () => {
                   <p className="text-muted-foreground mb-4">
                     Get started by creating your first construction project.
                   </p>
-                  <Button className="bg-construction hover:bg-construction-dark">
+                  <Button 
+                    className="bg-construction hover:bg-construction-dark"
+                    onClick={() => window.location.href = '/new-project'}
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     Create First Project
                   </Button>
@@ -251,7 +314,7 @@ const Dashboard = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              <AIInsightsCard />
+              <ProjectSpecificAIInsights recentProjects={projects} />
               <RecentActivity />
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Settings, Trash2, Brain, Users, FileText, Calendar, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Settings, Trash2, Brain, Users, FileText, Calendar, BarChart3, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +28,7 @@ import ProjectTeam from '@/components/Project/ProjectTeam';
 import ProjectDocuments from '@/components/Project/ProjectDocuments';
 import ProjectSchedule from '@/components/Project/ProjectSchedule';
 import ProjectAnalytics from '@/components/Project/ProjectAnalytics';
+import CertificationManagement from '@/components/Project/CertificationManagement';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -249,6 +250,10 @@ const ProjectDetail = () => {
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="lifecycle">Lifecycle</TabsTrigger>
+              <TabsTrigger value="certifications">
+                <Award className="h-4 w-4 mr-2" />
+                Certifications
+              </TabsTrigger>
               <TabsTrigger value="ai-insights">
                 <Brain className="h-4 w-4 mr-2" />
                 AI Insights
@@ -278,6 +283,10 @@ const ProjectDetail = () => {
 
             <TabsContent value="lifecycle">
               <ProjectLifecycle projectId={project.id} />
+            </TabsContent>
+
+            <TabsContent value="certifications">
+              <CertificationManagement projectId={project.id} />
             </TabsContent>
 
             <TabsContent value="ai-insights">
