@@ -16,7 +16,6 @@ import {
 import DashboardSidebar from '@/components/Dashboard/DashboardSidebar';
 import StatCard from '@/components/Dashboard/StatCard';
 import ProjectCard from '@/components/Dashboard/ProjectCard';
-import ProjectSpecificAIInsights from '@/components/Dashboard/ProjectSpecificAIInsights';
 import RecentActivity from '@/components/Dashboard/RecentActivity';
 import { 
   Building2, 
@@ -310,7 +309,6 @@ const Dashboard = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              <ProjectSpecificAIInsights recentProjects={projects} />
               <RecentActivity />
             </div>
           </div>

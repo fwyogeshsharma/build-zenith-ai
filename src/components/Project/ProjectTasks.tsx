@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, MoreVertical, FileText } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, MoreVertical, FileText, Bot } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
@@ -438,6 +438,18 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
                   </div>
                   
                   <div className="flex gap-2 ml-4" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => toast({
+                        title: "AI Task Insight",
+                        description: `Analyzing task: ${task.title}. AI recommendations will be generated based on task context, priority, and project phase.`,
+                      })}
+                      className="flex items-center gap-1"
+                    >
+                      <Bot className="h-3 w-3" />
+                      AI Insights
+                    </Button>
                     {task.status !== 'completed' && (
                       <Button
                         size="sm"

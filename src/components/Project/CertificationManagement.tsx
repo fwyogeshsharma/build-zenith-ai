@@ -26,7 +26,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Award, Plus, Calendar, FileText, CheckCircle, Clock, AlertCircle, Settings, Target, Trash2, MoreVertical } from 'lucide-react';
+import { Award, Plus, Calendar, FileText, CheckCircle, Clock, AlertCircle, Settings, Target, Trash2, MoreVertical, Bot } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import CertificateRequirements from './CertificateRequirements';
@@ -522,6 +522,21 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast({
+                              title: "AI Certification Insight",
+                              description: `Analyzing ${formatCertificationType(cert.type)} certification. AI recommendations will be generated based on requirements progress, timeline, and compliance status.`,
+                            });
+                          }}
+                          className="flex items-center gap-1"
+                        >
+                          <Bot className="h-3 w-3" />
+                          AI Insights
+                        </Button>
                         <Badge className={getStatusColor(cert.current_status)}>
                           <div className="flex items-center gap-1">
                             {getStatusIcon(cert.current_status)}
