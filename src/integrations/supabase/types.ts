@@ -322,6 +322,57 @@ export type Database = {
         }
         Relationships: []
       }
+      progress_entries: {
+        Row: {
+          actual_value: number | null
+          created_at: string
+          created_by: string
+          entry_type: string
+          evidence_documents: Json | null
+          id: string
+          notes: string | null
+          phase: string
+          progress_percentage: number
+          project_id: string
+          target_value: number | null
+          task_id: string | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_value?: number | null
+          created_at?: string
+          created_by: string
+          entry_type: string
+          evidence_documents?: Json | null
+          id?: string
+          notes?: string | null
+          phase: string
+          progress_percentage: number
+          project_id: string
+          target_value?: number | null
+          task_id?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_value?: number | null
+          created_at?: string
+          created_by?: string
+          entry_type?: string
+          evidence_documents?: Json | null
+          id?: string
+          notes?: string | null
+          phase?: string
+          progress_percentage?: number
+          project_id?: string
+          target_value?: number | null
+          task_id?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_phases: {
         Row: {
           actual_cost: number | null
@@ -472,6 +523,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          actual_hours: number | null
           ai_generated: boolean | null
           assigned_to: string | null
           certificate_id: string | null
@@ -481,15 +533,20 @@ export type Database = {
           dependencies: Json | null
           description: string | null
           due_date: string | null
+          estimated_hours: number | null
           id: string
+          last_progress_update: string | null
           phase: Database["public"]["Enums"]["project_phase"]
           priority: string
+          progress_notes: string | null
+          progress_percentage: number | null
           project_id: string
           status: string
           title: string
           updated_at: string
         }
         Insert: {
+          actual_hours?: number | null
           ai_generated?: boolean | null
           assigned_to?: string | null
           certificate_id?: string | null
@@ -499,15 +556,20 @@ export type Database = {
           dependencies?: Json | null
           description?: string | null
           due_date?: string | null
+          estimated_hours?: number | null
           id?: string
+          last_progress_update?: string | null
           phase: Database["public"]["Enums"]["project_phase"]
           priority?: string
+          progress_notes?: string | null
+          progress_percentage?: number | null
           project_id: string
           status?: string
           title: string
           updated_at?: string
         }
         Update: {
+          actual_hours?: number | null
           ai_generated?: boolean | null
           assigned_to?: string | null
           certificate_id?: string | null
@@ -517,9 +579,13 @@ export type Database = {
           dependencies?: Json | null
           description?: string | null
           due_date?: string | null
+          estimated_hours?: number | null
           id?: string
+          last_progress_update?: string | null
           phase?: Database["public"]["Enums"]["project_phase"]
           priority?: string
+          progress_notes?: string | null
+          progress_percentage?: number | null
           project_id?: string
           status?: string
           title?: string
