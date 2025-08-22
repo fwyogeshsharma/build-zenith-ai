@@ -25,6 +25,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { EditTaskDialog } from './EditTaskDialog';
 import { TaskDetail } from './TaskDetail';
+import { TaskProgressDialog } from '../Progress/TaskProgressDialog';
+import { Progress } from '@/components/ui/progress';
 import { 
   MoreHorizontal, 
   Calendar, 
@@ -34,7 +36,8 @@ import {
   Trash2,
   Play,
   Pause,
-  CheckCircle
+  CheckCircle,
+  TrendingUp
 } from 'lucide-react';
 
 interface Task {
@@ -49,6 +52,10 @@ interface Task {
   assigned_to: string | null;
   project_id: string;
   phase: string;
+  progress_percentage?: number;
+  actual_hours?: number;
+  estimated_hours?: number;
+  progress_notes?: string;
   project: {
     name: string;
     status: string;
@@ -72,6 +79,7 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+  const [progressingTask, setProgressingTask] = useState<Task | null>(null);
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -97,7 +105,10 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
     try {
       const { error } = await supabase
         .from('tasks')
-        .update({ status: newStatus })
+        .update({ 
+          status: newStatus,
+          progress_percentage: newStatus === 'completed' ? 100 : (newStatus === 'in_progress' ? 50 : 0)
+        })
         .eq('id', taskId);
 
       if (error) throw error;
@@ -176,7 +187,7 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                     setSelectedTasks([]);
                   }}
                 >
-                  Start Selected
+                  Start Selected (50%)
                 </Button>
                 <Button
                   size="sm"
@@ -186,7 +197,7 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                     setSelectedTasks([]);
                   }}
                 >
-                  Complete Selected
+                  Complete Selected (100%)
                 </Button>
                 <Button
                   size="sm"
@@ -252,6 +263,17 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                             </Badge>
                           )}
                         </div>
+
+                        {/* Progress Bar */}
+                        {task.progress_percentage !== undefined && task.progress_percentage > 0 && (
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between text-sm mb-1">
+                              <span className="text-muted-foreground">Progress</span>
+                              <span className="font-medium">{task.progress_percentage}%</span>
+                            </div>
+                            <Progress value={task.progress_percentage} className="h-2" />
+                          </div>
+                        )}
                         
                         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
@@ -281,6 +303,17 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                       </div>
                       
                       <div className="flex items-center gap-2">
+                        {/* Progress Button */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setProgressingTask(task)}
+                          className="h-8"
+                        >
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          Progress
+                        </Button>
+                        
                         {/* Quick Actions */}
                         {task.status === 'pending' && (
                           <Button
@@ -396,6 +429,15 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Task Progress Dialog */}
+      {progressingTask && (
+        <TaskProgressDialog
+          task={{ ...progressingTask, project_id: progressingTask.project_id }}
+          open={!!progressingTask}
+          onOpenChange={(open) => !open && setProgressingTask(null)}
+          onProgressUpdated={onTaskUpdate}
+        />
+      )}
     </div>
   );
 };

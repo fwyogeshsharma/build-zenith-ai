@@ -24,11 +24,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, MoreVertical, FileText, Bot } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, MoreVertical, FileText, Bot, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import { TaskDetail } from '../Tasks/TaskDetail';
+import { TaskProgressDialog } from '../Progress/TaskProgressDialog';
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
@@ -51,6 +52,7 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [viewingTask, setViewingTask] = useState<TaskWithProject | null>(null);
+  const [progressTask, setProgressTask] = useState<TaskWithProject | null>(null);
   const { toast } = useToast();
 
   const [newTask, setNewTask] = useState<Partial<TaskInsert>>({
@@ -441,6 +443,15 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => setProgressTask(task)}
+                      className="flex items-center gap-1"
+                    >
+                      <TrendingUp className="h-3 w-3" />
+                      Progress
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => toast({
                         title: "AI Task Insight",
                         description: `Analyzing task: ${task.title}. AI recommendations will be generated based on task context, priority, and project phase.`,
@@ -560,6 +571,18 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
             fetchTaskDocuments();
           }}
           projects={[]} // We don't need projects array for viewing
+        />
+      )}
+      {/* Task Progress Dialog */}
+      {progressTask && (
+        <TaskProgressDialog
+          task={{ ...progressTask, project_id: progressTask.project_id }}
+          open={!!progressTask}
+          onOpenChange={(open) => !open && setProgressTask(null)}
+          onProgressUpdated={() => {
+            fetchTasks();
+            fetchTaskDocuments();
+          }}
         />
       )}
     </div>

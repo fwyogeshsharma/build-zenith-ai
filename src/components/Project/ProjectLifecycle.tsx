@@ -26,6 +26,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import CertificationManagement from './CertificationManagement';
+import { PhaseProgressDialog } from '../Progress/PhaseProgressDialog';
 
 interface ProjectLifecycleProps {
   projectId: string;
@@ -115,11 +116,13 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
   const [currentPhase, setCurrentPhase] = useState('concept');
   const [phaseProgress, setPhaseProgress] = useState<Record<string, number>>({});
   const [activeCertifications, setActiveCertifications] = useState<any[]>([]);
+  const [progressingPhase, setProgressingPhase] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchProjectPhase();
     fetchCertifications();
+    fetchPhaseProgress();
   }, [projectId]);
 
   const fetchProjectPhase = async () => {
@@ -141,6 +144,26 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
       }
     } catch (error: any) {
       console.error('Error fetching project phase:', error);
+    }
+  };
+
+  const fetchPhaseProgress = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('project_phases')
+        .select('phase, progress_percentage')
+        .eq('project_id', projectId);
+
+      if (error) throw error;
+      
+      const progressMap: Record<string, number> = {};
+      data?.forEach(phase => {
+        progressMap[phase.phase] = phase.progress_percentage || 0;
+      });
+      
+      setPhaseProgress(progressMap);
+    } catch (error: any) {
+      console.error('Error fetching phase progress:', error);
     }
   };
 
@@ -206,6 +229,15 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
               <div className="text-right">
                 <div className="text-2xl font-bold text-primary">{progress}%</div>
                 <div className="text-sm text-muted-foreground">Progress</div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setProgressingPhase({ id: stage.id, name: stage.name, progress_percentage: progress })}
+                  className="mt-2"
+                >
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  Update Progress
+                </Button>
               </div>
             )}
           </div>
@@ -413,6 +445,20 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Phase Progress Dialog */}
+      {progressingPhase && (
+        <PhaseProgressDialog
+          projectId={projectId}
+          phase={progressingPhase}
+          open={!!progressingPhase}
+          onOpenChange={(open) => !open && setProgressingPhase(null)}
+          onProgressUpdated={() => {
+            fetchProjectPhase();
+            fetchPhaseProgress();
+          }}
+        />
+      )}
     </div>
   );
 };
