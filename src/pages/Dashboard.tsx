@@ -219,10 +219,6 @@ const Dashboard = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm">
-                <Bot className="mr-2 h-4 w-4" />
-                AI Assistant
-              </Button>
               <Button 
                 size="sm" 
                 className="bg-construction hover:bg-construction-dark"
