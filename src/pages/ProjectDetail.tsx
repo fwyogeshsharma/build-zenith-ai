@@ -38,6 +38,7 @@ const ProjectDetail = () => {
   const { toast } = useToast();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
     if (id) {
@@ -166,33 +167,58 @@ const ProjectDetail = () => {
               <Badge className={getStatusColor(project.status)}>
                 {project.status}
               </Badge>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive hover:text-destructive">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Project</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete "{project.name}"? This will permanently delete the project and all associated data including tasks, documents, and team members. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteProject} className="bg-destructive hover:bg-destructive/90">
-                      Delete Project
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Badge className={getPhaseColor(project.current_phase)}>
+                {project.current_phase.replace('_', ' ')}
+              </Badge>
+              
+              {/* Quick Action Buttons */}
+              <div className="flex items-center gap-2 ml-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setActiveTab("overview")}
+                  className="flex items-center gap-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  Edit Project
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => setActiveTab("team")}
+                  className="flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Manage Team
+                </Button>
+                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{project.name}"? This will permanently delete the project and all associated data including tasks, documents, and team members. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteProject} className="bg-destructive hover:bg-destructive/90">
+                        Delete Project
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </div>
 
           {/* Project Details Tabs */}
-          <Tabs defaultValue="overview" className="space-y-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="lifecycle">Lifecycle</TabsTrigger>
