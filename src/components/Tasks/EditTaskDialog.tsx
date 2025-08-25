@@ -149,21 +149,6 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
               />
             </div>
             
-            <div>
-              <Label htmlFor="project">Project</Label>
-              <Select value={formData.project_id} onValueChange={(value) => setFormData(prev => ({ ...prev, project_id: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
             
             <div>
               <Label htmlFor="phase">Phase</Label>

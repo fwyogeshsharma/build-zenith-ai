@@ -24,7 +24,7 @@ export const TaskDocumentUpload = ({ taskId, projectId, onUploadComplete, onCanc
 
   const [newDocument, setNewDocument] = useState<Partial<DocumentInsert>>({
     name: '',
-    phase: 'concept',
+    phase: undefined,
     tags: []
   });
 
@@ -137,14 +137,14 @@ export const TaskDocumentUpload = ({ taskId, projectId, onUploadComplete, onCanc
       </div>
 
       <div>
-        <Label htmlFor="phase">Project Phase</Label>
+        <Label htmlFor="phase">Project Phase (optional)</Label>
         <Select 
-          value={newDocument.phase} 
+          value={newDocument.phase || ''} 
           onValueChange={(value) => setNewDocument({ ...newDocument, phase: value as any })}
           disabled={uploading}
         >
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue placeholder="Select phase (optional)" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="concept">Concept</SelectItem>

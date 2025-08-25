@@ -355,7 +355,6 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
       <Tabs defaultValue="stages" className="space-y-4">
         <TabsList>
           <TabsTrigger value="stages">Lifecycle Stages</TabsTrigger>
-          <TabsTrigger value="certifications">Certifications</TabsTrigger>
           <TabsTrigger value="ai-insights">AI Insights</TabsTrigger>
         </TabsList>
 
@@ -367,9 +366,6 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
           </div>
         </TabsContent>
 
-        <TabsContent value="certifications" className="space-y-6">
-          <CertificationManagement projectId={projectId} />
-        </TabsContent>
 
         <TabsContent value="ai-insights" className="space-y-6">
           <Card>
