@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          activity_type: string
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          project_id: string | null
+          task_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          project_id?: string | null
+          task_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          project_id?: string | null
+          task_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       certificate_requirements: {
         Row: {
           certificate_id: string
@@ -100,6 +136,33 @@ export type Database = {
           name?: string
           type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      certificate_versions: {
+        Row: {
+          certification_type: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          version: string
+        }
+        Insert: {
+          certification_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          version: string
+        }
+        Update: {
+          certification_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          version?: string
         }
         Relationships: []
       }
@@ -616,6 +679,18 @@ export type Database = {
       is_project_team_member: {
         Args: { project_uuid: string }
         Returns: boolean
+      }
+      log_activity: {
+        Args: {
+          p_activity_type: string
+          p_description: string
+          p_metadata?: Json
+          p_project_id?: string
+          p_task_id?: string
+          p_title: string
+          p_user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {

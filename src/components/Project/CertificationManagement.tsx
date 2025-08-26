@@ -56,6 +56,7 @@ const certificationTypes = [
 const CertificationManagement = ({ projectId }: CertificationManagementProps) => {
   const [certifications, setCertifications] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
+  const [certificateVersions, setCertificateVersions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<string | null>(null);
@@ -74,7 +75,30 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
   useEffect(() => {
     fetchCertifications();
     fetchTemplates();
+    fetchCertificateVersions();
   }, [projectId]);
+
+  const fetchCertificateVersions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('certificate_versions')
+        .select('*')
+        .eq('is_active', true)
+        .order('certification_type, version');
+
+      if (error) throw error;
+      setCertificateVersions(data || []);
+    } catch (error: any) {
+      console.error('Error loading certificate versions:', error);
+    }
+  };
+
+  const getVersionsForType = (type: string) => {
+    if (!type) return [];
+    return certificateVersions.filter(v => 
+      v.certification_type.toLowerCase() === type.toLowerCase()
+    );
+  };
 
   const fetchCertifications = async () => {
     try {
@@ -392,7 +416,10 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
 
               <div>
                 <Label htmlFor="type">Certification Type</Label>
-                <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                <Select 
+                  value={formData.type} 
+                  onValueChange={(value) => setFormData({...formData, type: value, version: ''})}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select certification type" />
                   </SelectTrigger>
@@ -428,12 +455,21 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
 
               <div>
                 <Label htmlFor="version">Version</Label>
-                <Input
-                  id="version"
-                  value={formData.version}
-                  onChange={(e) => setFormData({...formData, version: e.target.value})}
-                  placeholder="e.g., LEED v4.1, ISO 9001:2015, IGBC v3"
-                />
+                <Select 
+                  value={formData.version} 
+                  onValueChange={(value) => setFormData({...formData, version: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select version" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getVersionsForType(formData.type).map((version) => (
+                      <SelectItem key={version.version} value={version.version}>
+                        {version.version} - {version.description}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
