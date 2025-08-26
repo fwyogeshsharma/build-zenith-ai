@@ -95,6 +95,63 @@ const ProjectDetail = () => {
     if (!project) return;
     
     try {
+      // Delete related data first to avoid foreign key constraint errors
+      
+      // Delete progress entries
+      await supabase
+        .from('progress_entries')
+        .delete()
+        .eq('project_id', project.id);
+      
+      // Delete certificate requirements
+      await supabase
+        .from('certificate_requirements')
+        .delete()
+        .in('certificate_id', 
+          (await supabase
+            .from('certifications')
+            .select('id')
+            .eq('project_id', project.id)
+          ).data?.map(c => c.id) || []
+        );
+      
+      // Delete certifications
+      await supabase
+        .from('certifications')
+        .delete()
+        .eq('project_id', project.id);
+      
+      // Delete documents
+      await supabase
+        .from('documents')
+        .delete()
+        .eq('project_id', project.id);
+      
+      // Delete tasks
+      await supabase
+        .from('tasks')
+        .delete()
+        .eq('project_id', project.id);
+      
+      // Delete project phases
+      await supabase
+        .from('project_phases')
+        .delete()
+        .eq('project_id', project.id);
+      
+      // Delete invitations
+      await supabase
+        .from('invitations')
+        .delete()
+        .eq('project_id', project.id);
+      
+      // Delete team members
+      await supabase
+        .from('project_team_members')
+        .delete()
+        .eq('project_id', project.id);
+      
+      // Finally delete the project
       const { error } = await supabase
         .from('projects')
         .delete()
@@ -107,11 +164,11 @@ const ProjectDetail = () => {
         description: "Project deleted successfully",
       });
       navigate('/projects');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting project:', error);
       toast({
         title: "Error",
-        description: "Failed to delete project",
+        description: error.message || "Failed to delete project",
         variant: "destructive",
       });
     }
