@@ -1,17 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Plus, Mail, Phone, MoreHorizontal, UserMinus, Settings, Crown, Shield } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
+import { InviteDialog } from '@/components/Team/InviteDialog';
 
 type UserRole = Database['public']['Enums']['user_role'];
 
@@ -33,8 +30,6 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<UserRole>('contractor');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -82,47 +77,12 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
     }
   };
 
-  const inviteTeamMember = async () => {
-    if (!inviteEmail.trim()) {
-      toast({
-        title: "Error",
-        description: "Email is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // In a real app, you'd first check if the user exists or send an invitation
-      // For now, we'll assume the user exists and add them directly
-      const { error } = await supabase
-        .from('project_team_members')
-        .insert({
-          project_id: projectId,
-          user_id: 'placeholder-user-id', // In real app, get this from user lookup
-          role: inviteRole
-        });
-
-      if (error) throw error;
-
-      setIsInviteOpen(false);
-      setInviteEmail('');
-      setInviteRole('contractor');
-      
-      toast({
-        title: "Invitation sent",
-        description: `Invitation sent to ${inviteEmail}`,
-      });
-
-      // Refresh team members
-      fetchTeamMembers();
-    } catch (error: any) {
-      toast({
-        title: "Error sending invitation",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+  const handleInviteSuccess = () => {
+    fetchTeamMembers();
+    toast({
+      title: "Invitation sent",
+      description: "Team member invitation has been sent successfully",
+    });
   };
 
   const updateMemberRole = async (memberId: string, newRole: UserRole) => {
@@ -212,56 +172,18 @@ const ProjectTeam = ({ projectId }: ProjectTeamProps) => {
           </p>
         </div>
         
-        <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Invite Member
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Invite Team Member</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="colleague@company.com"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="role">Role</Label>
-                <Select value={inviteRole} onValueChange={(value: any) => setInviteRole(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="client">Client - Can view project</SelectItem>
-                    <SelectItem value="contractor">Contractor - Can view and edit</SelectItem>
-                    <SelectItem value="project_manager">Project Manager - Full access</SelectItem>
-                    <SelectItem value="admin">Admin - Full control</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button onClick={inviteTeamMember} className="flex-1">
-                  Send Invitation
-                </Button>
-                <Button variant="outline" onClick={() => setIsInviteOpen(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsInviteOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Invite Member
+        </Button>
       </div>
+
+      <InviteDialog
+        isOpen={isInviteOpen}
+        onClose={() => setIsInviteOpen(false)}
+        projectId={projectId}
+        onInviteSuccess={handleInviteSuccess}
+      />
 
       {/* Team Members List */}
       {teamMembers.length === 0 ? (
