@@ -28,6 +28,7 @@ import ProjectTeam from '@/components/Project/ProjectTeam';
 import ProjectDocuments from '@/components/Project/ProjectDocuments';
 import ProjectSchedule from '@/components/Project/ProjectSchedule';
 import ProjectAnalytics from '@/components/Project/ProjectAnalytics';
+import { EditProjectDialog } from '@/components/Project/EditProjectDialog';
 import CertificationManagement from '@/components/Project/CertificationManagement';
 
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -39,6 +40,7 @@ const ProjectDetail = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -95,63 +97,7 @@ const ProjectDetail = () => {
     if (!project) return;
     
     try {
-      // Delete related data first to avoid foreign key constraint errors
-      
-      // Delete progress entries
-      await supabase
-        .from('progress_entries')
-        .delete()
-        .eq('project_id', project.id);
-      
-      // Delete certificate requirements
-      await supabase
-        .from('certificate_requirements')
-        .delete()
-        .in('certificate_id', 
-          (await supabase
-            .from('certifications')
-            .select('id')
-            .eq('project_id', project.id)
-          ).data?.map(c => c.id) || []
-        );
-      
-      // Delete certifications
-      await supabase
-        .from('certifications')
-        .delete()
-        .eq('project_id', project.id);
-      
-      // Delete documents
-      await supabase
-        .from('documents')
-        .delete()
-        .eq('project_id', project.id);
-      
-      // Delete tasks
-      await supabase
-        .from('tasks')
-        .delete()
-        .eq('project_id', project.id);
-      
-      // Delete project phases
-      await supabase
-        .from('project_phases')
-        .delete()
-        .eq('project_id', project.id);
-      
-      // Delete invitations
-      await supabase
-        .from('invitations')
-        .delete()
-        .eq('project_id', project.id);
-      
-      // Delete team members
-      await supabase
-        .from('project_team_members')
-        .delete()
-        .eq('project_id', project.id);
-      
-      // Finally delete the project
+      // With CASCADE constraints, we only need to delete the project
       const { error } = await supabase
         .from('projects')
         .delete()
@@ -232,7 +178,7 @@ const ProjectDetail = () => {
               <div className="flex items-center gap-2 ml-4">
                 <Button 
                   variant="outline" 
-                  onClick={() => setActiveTab("overview")}
+                  onClick={() => setIsEditDialogOpen(true)}
                   className="flex items-center gap-2"
                 >
                   <Settings className="h-4 w-4" />
@@ -354,6 +300,19 @@ const ProjectDetail = () => {
           </Tabs>
         </div>
       </div>
+
+      {/* Edit Project Dialog */}
+      {project && (
+        <EditProjectDialog
+          isOpen={isEditDialogOpen}
+          onClose={() => setIsEditDialogOpen(false)}
+          project={project}
+          onProjectUpdated={(updatedProject) => {
+            setProject(updatedProject);
+            fetchProject(project.id); // Refresh the project data
+          }}
+        />
+      )}
     </div>
   );
 };

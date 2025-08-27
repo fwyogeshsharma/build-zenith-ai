@@ -24,12 +24,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, MoreVertical, FileText, Bot, TrendingUp } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, MoreVertical, FileText, Bot, TrendingUp, Wrench, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import { TaskDetail } from '../Tasks/TaskDetail';
 import { TaskProgressDialog } from '../Progress/TaskProgressDialog';
+import { TaskResourcesDialog } from '../Tasks/TaskResourcesDialog';
+import { TaskGanttChart } from './TaskGanttChart';
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
@@ -53,6 +55,8 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [viewingTask, setViewingTask] = useState<TaskWithProject | null>(null);
   const [progressTask, setProgressTask] = useState<TaskWithProject | null>(null);
+  const [resourcesTask, setResourcesTask] = useState<TaskWithProject | null>(null);
+  const [showGantt, setShowGantt] = useState(false);
   const { toast } = useToast();
 
   const [newTask, setNewTask] = useState<Partial<TaskInsert>>({
@@ -75,13 +79,13 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
         .from('tasks')
         .select(`
           *,
-          project:projects(name, status)
+          project:projects!tasks_project_id_fkey(name, status)
         `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTasks((data || []) as TaskWithProject[]);
+      setTasks((data || []) as any[]);
     } catch (error: any) {
       toast({
         title: "Error loading tasks",
@@ -295,6 +299,14 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
               <SelectItem value="blocked">Blocked</SelectItem>
             </SelectContent>
           </Select>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowGantt(!showGantt)}
+            className="flex items-center gap-2"
+          >
+            <Calendar className="h-4 w-4" />
+            {showGantt ? 'List View' : 'Gantt Chart'}
+          </Button>
         </div>
 
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -386,8 +398,12 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
         </Dialog>
       </div>
 
-      {/* Tasks List */}
-      {filteredTasks.length === 0 ? (
+      {/* Tasks List or Gantt Chart */}
+      {showGantt ? (
+        <TaskGanttChart projectId={projectId} />
+      ) : (
+        <>
+          {filteredTasks.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground">
@@ -443,11 +459,11 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => setProgressTask(task)}
+                      onClick={() => setResourcesTask(task)}
                       className="flex items-center gap-1"
                     >
-                      <TrendingUp className="h-3 w-3" />
-                      Progress
+                      <Wrench className="h-3 w-3" />
+                      Resources
                     </Button>
                     <Button
                       size="sm"
@@ -517,12 +533,14 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+           ))}
+         </div>
+       )}
+       </>
+     )}
 
-      {/* Task Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+     {/* Task Statistics */}
+     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-gray-600">
@@ -558,10 +576,10 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
             <div className="text-sm text-muted-foreground">Blocked</div>
           </CardContent>
         </Card>
-      </div>
+       </div>
 
-      {/* Task Detail Dialog */}
-      {viewingTask && (
+       {/* Task Detail Dialog */}
+       {viewingTask && (
         <TaskDetail
           task={viewingTask}
           open={!!viewingTask}
@@ -579,10 +597,17 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
           task={{ ...progressTask, project_id: progressTask.project_id }}
           open={!!progressTask}
           onOpenChange={(open) => !open && setProgressTask(null)}
-          onProgressUpdated={() => {
-            fetchTasks();
-            fetchTaskDocuments();
-          }}
+          onProgressUpdated={fetchTasks}
+        />
+      )}
+
+      {/* Task Resources Dialog */}
+      {resourcesTask && (
+        <TaskResourcesDialog
+          isOpen={!!resourcesTask}
+          onClose={() => setResourcesTask(null)}
+          taskId={resourcesTask.id}
+          taskTitle={resourcesTask.title}
         />
       )}
     </div>

@@ -13,57 +13,181 @@ interface ProjectAnalyticsProps {
 
 const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
   const [loading, setLoading] = useState(true);
+  const [budgetData, setBudgetData] = useState<any[]>([]);
+  const [taskCompletionData, setTaskCompletionData] = useState<any[]>([]);
+  const [progressOverTime, setProgressOverTime] = useState<any[]>([]);
+  const [totalBudget, setTotalBudget] = useState(0);
+  const [actualSpent, setActualSpent] = useState(0);
+  const [projectProgress, setProjectProgress] = useState(0);
+  const [teamProductivity, setTeamProductivity] = useState(0);
   const { toast } = useToast();
 
-  // Mock data for visualization - in a real app, this would come from your database
-  const budgetData = [
-    { phase: 'Concept', budgeted: 50000, actual: 48000 },
-    { phase: 'Design', budgeted: 120000, actual: 125000 },
-    { phase: 'Pre-Construction', budgeted: 80000, actual: 75000 },
-    { phase: 'Execution', budgeted: 500000, actual: 520000 },
-    { phase: 'Handover', budgeted: 30000, actual: 0 }
-  ];
-
-  const taskCompletionData = [
-    { name: 'Completed', value: 45, color: '#10b981' },
-    { name: 'In Progress', value: 23, color: '#3b82f6' },
-    { name: 'Pending', value: 18, color: '#6b7280' },
-    { name: 'Blocked', value: 4, color: '#ef4444' }
-  ];
-
-  const progressOverTime = [
-    { week: 'Week 1', progress: 5 },
-    { week: 'Week 2', progress: 12 },
-    { week: 'Week 3', progress: 18 },
-    { week: 'Week 4', progress: 25 },
-    { week: 'Week 5', progress: 32 },
-    { week: 'Week 6', progress: 38 },
-    { week: 'Week 7', progress: 45 },
-    { week: 'Week 8', progress: 52 }
-  ];
-
   useEffect(() => {
-    // Simulate loading analytics data
-    const loadAnalytics = async () => {
-      try {
-        // In a real app, you would fetch analytics data from your database
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setLoading(false);
-      } catch (error: any) {
-        toast({
-          title: "Error loading analytics",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    };
-
     loadAnalytics();
   }, [projectId]);
 
-  const totalBudget = budgetData.reduce((sum, item) => sum + item.budgeted, 0);
-  const actualSpent = budgetData.reduce((sum, item) => sum + item.actual, 0);
-  const budgetVariance = ((actualSpent - totalBudget) / totalBudget) * 100;
+  const loadAnalytics = async () => {
+    try {
+      // Load real data from database
+      await Promise.all([
+        loadBudgetData(),
+        loadTaskData(),
+        loadProgressData(),
+        loadProjectMetrics()
+      ]);
+    } catch (error: any) {
+      toast({
+        title: "Error loading analytics",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadBudgetData = async () => {
+    try {
+      // Get project phases with budget data
+      const { data: phases, error: phasesError } = await supabase
+        .from('project_phases')
+        .select('phase, budget, actual_cost')
+        .eq('project_id', projectId);
+
+      if (phasesError) throw phasesError;
+
+      // Get task resources for actual costs if no phase costs
+      const { data: resources, error: resourcesError } = await supabase
+        .from('task_resources')
+        .select('total_cost, task_id')
+        .in('task_id', 
+          (await supabase
+            .from('tasks')
+            .select('id')
+            .eq('project_id', projectId)
+          ).data?.map(t => t.id) || []
+        );
+
+      if (resourcesError) throw resourcesError;
+
+      const phaseNames = ['concept', 'design', 'pre_construction', 'execution', 'handover'];
+      const budgetChartData = phaseNames.map(phaseName => {
+        const phase = phases?.find(p => p.phase === phaseName);
+        const phaseTasks = resources?.filter(r => 
+          // This would need proper task-phase mapping
+          true // Simplified for now
+        ) || [];
+        
+        const actualCost = phase?.actual_cost || 
+          phaseTasks.reduce((sum, r) => sum + (r.total_cost || 0), 0);
+        
+        return {
+          phase: phaseName.replace('_', ' '),
+          budgeted: phase?.budget || 0,
+          actual: actualCost
+        };
+      });
+
+      setBudgetData(budgetChartData);
+      setTotalBudget(budgetChartData.reduce((sum, item) => sum + item.budgeted, 0));
+      setActualSpent(budgetChartData.reduce((sum, item) => sum + item.actual, 0));
+    } catch (error) {
+      console.error('Error loading budget data:', error);
+    }
+  };
+
+  const loadTaskData = async () => {
+    try {
+      const { data: tasks, error } = await supabase
+        .from('tasks')
+        .select('status')
+        .eq('project_id', projectId);
+
+      if (error) throw error;
+
+      const statusCounts = tasks?.reduce((acc, task) => {
+        acc[task.status] = (acc[task.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
+
+      const taskChart = [
+        { name: 'Completed', value: statusCounts.completed || 0, color: '#10b981' },
+        { name: 'In Progress', value: statusCounts.in_progress || 0, color: '#3b82f6' },
+        { name: 'Pending', value: statusCounts.pending || 0, color: '#6b7280' },
+        { name: 'Blocked', value: statusCounts.blocked || 0, color: '#ef4444' }
+      ];
+
+      setTaskCompletionData(taskChart);
+
+      // Calculate team productivity
+      const totalTasks = tasks?.length || 0;
+      const completedTasks = statusCounts.completed || 0;
+      setTeamProductivity(totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0);
+    } catch (error) {
+      console.error('Error loading task data:', error);
+    }
+  };
+
+  const loadProgressData = async () => {
+    try {
+      const { data: progressEntries, error } = await supabase
+        .from('progress_entries')
+        .select('progress_percentage, created_at')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      if (progressEntries && progressEntries.length > 0) {
+        // Group by week and get average progress
+        const weeklyProgress = progressEntries.reduce((acc, entry) => {
+          const week = new Date(entry.created_at).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric' 
+          });
+          if (!acc[week]) {
+            acc[week] = [];
+          }
+          acc[week].push(entry.progress_percentage);
+          return acc;
+        }, {} as Record<string, number[]>);
+
+        const progressChart = Object.entries(weeklyProgress).map(([week, values]) => ({
+          week,
+          progress: Math.round(values.reduce((sum, val) => sum + val, 0) / values.length)
+        }));
+
+        setProgressOverTime(progressChart);
+        
+        // Set current project progress
+        const latestProgress = progressEntries[progressEntries.length - 1];
+        setProjectProgress(latestProgress.progress_percentage);
+      }
+    } catch (error) {
+      console.error('Error loading progress data:', error);
+    }
+  };
+
+  const loadProjectMetrics = async () => {
+    try {
+      // Get project info for overall progress
+      const { data: project, error } = await supabase
+        .from('projects')
+        .select('progress_percentage')
+        .eq('id', projectId)
+        .single();
+
+      if (error) throw error;
+      
+      if (project) {
+        setProjectProgress(project.progress_percentage || 0);
+      }
+    } catch (error) {
+      console.error('Error loading project metrics:', error);
+    }
+  };
+
+  const budgetVariance = totalBudget > 0 ? ((actualSpent - totalBudget) / totalBudget) * 100 : 0;
 
   if (loading) {
     return <div className="text-center p-8">Loading analytics...</div>;

@@ -48,7 +48,15 @@ export type Database = {
           title?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "activities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       certificate_requirements: {
         Row: {
@@ -223,6 +231,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "certifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_certifications_project_id"
             columns: ["project_id"]
             isOneToOne: false
@@ -282,6 +297,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "documents_task_id_fkey"
             columns: ["task_id"]
             isOneToOne: false
@@ -339,6 +361,68 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           status?: string
           token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          carbon_emission_factor: number | null
+          chemical_composition: Json | null
+          cost_per_unit: number | null
+          created_at: string
+          created_by: string
+          density: number | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          material_category: string | null
+          name: string
+          properties: Json | null
+          supplier_info: Json | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          carbon_emission_factor?: number | null
+          chemical_composition?: Json | null
+          cost_per_unit?: number | null
+          created_at?: string
+          created_by: string
+          density?: number | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          material_category?: string | null
+          name: string
+          properties?: Json | null
+          supplier_info?: Json | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          carbon_emission_factor?: number | null
+          chemical_composition?: Json | null
+          cost_per_unit?: number | null
+          created_at?: string
+          created_by?: string
+          density?: number | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          material_category?: string | null
+          name?: string
+          properties?: Json | null
+          supplier_info?: Json | null
+          unit?: string
           updated_at?: string
         }
         Relationships: []
@@ -434,7 +518,68 @@ export type Database = {
           unit?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "progress_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_metrics: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          metadata: Json | null
+          metric_name: string
+          metric_type: string
+          phase: string | null
+          project_id: string
+          recorded_date: string
+          target_value: number | null
+          unit: string | null
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          metric_type: string
+          phase?: string | null
+          project_id: string
+          recorded_date?: string
+          target_value?: number | null
+          unit?: string | null
+          value: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          metric_type?: string
+          phase?: string | null
+          project_id?: string
+          recorded_date?: string
+          target_value?: number | null
+          unit?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_metrics_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_phases: {
         Row: {
@@ -487,6 +632,13 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "project_phases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
         ]
       }
       project_team_members: {
@@ -517,6 +669,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_team_members_project_id"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_team_members_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -584,6 +743,78 @@ export type Database = {
         }
         Relationships: []
       }
+      task_resources: {
+        Row: {
+          allocated_hours: number | null
+          cost_per_unit: number | null
+          created_at: string
+          created_by: string
+          end_date: string | null
+          id: string
+          material_id: string | null
+          notes: string | null
+          quantity: number
+          resource_name: string
+          resource_type: string
+          start_date: string | null
+          task_id: string
+          total_cost: number | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          allocated_hours?: number | null
+          cost_per_unit?: number | null
+          created_at?: string
+          created_by: string
+          end_date?: string | null
+          id?: string
+          material_id?: string | null
+          notes?: string | null
+          quantity?: number
+          resource_name: string
+          resource_type: string
+          start_date?: string | null
+          task_id: string
+          total_cost?: number | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          allocated_hours?: number | null
+          cost_per_unit?: number | null
+          created_at?: string
+          created_by?: string
+          end_date?: string | null
+          id?: string
+          material_id?: string | null
+          notes?: string | null
+          quantity?: number
+          resource_name?: string
+          resource_type?: string
+          start_date?: string | null
+          task_id?: string
+          total_cost?: number | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_resources_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_resources_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           actual_hours: number | null
@@ -604,7 +835,10 @@ export type Database = {
           progress_notes: string | null
           progress_percentage: number | null
           project_id: string
+          required_skills: Json | null
           status: string
+          task_permissions: Json | null
+          team_members: Json | null
           title: string
           updated_at: string
         }
@@ -627,7 +861,10 @@ export type Database = {
           progress_notes?: string | null
           progress_percentage?: number | null
           project_id: string
+          required_skills?: Json | null
           status?: string
+          task_permissions?: Json | null
+          team_members?: Json | null
           title: string
           updated_at?: string
         }
@@ -650,7 +887,10 @@ export type Database = {
           progress_notes?: string | null
           progress_percentage?: number | null
           project_id?: string
+          required_skills?: Json | null
           status?: string
+          task_permissions?: Json | null
+          team_members?: Json | null
           title?: string
           updated_at?: string
         }
@@ -667,6 +907,13 @@ export type Database = {
             columns: ["certificate_id"]
             isOneToOne: false
             referencedRelation: "certifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
