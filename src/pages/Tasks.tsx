@@ -92,14 +92,14 @@ const Tasks = () => {
         .from('tasks')
         .select(`
           *,
-          projects!tasks_project_id_fkey(name, status),
+          project:projects(name, status),
           assignee:profiles!tasks_assigned_to_fkey(first_name, last_name, email)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Filter out tasks with invalid data
+      // Filter out tasks with invalid assignee data
       const validTasks = (data || []).map(task => {
         // Check if assignee is valid or an error
         const isValidAssignee = task.assignee && 
@@ -108,24 +108,15 @@ const Tasks = () => {
           !Array.isArray(task.assignee) &&
           !('error' in task.assignee) &&
           'first_name' in task.assignee;
-
-        // Check if project is valid or an error
-        const isValidProject = task.projects && 
-          typeof task.projects === 'object' && 
-          task.projects !== null && 
-          !Array.isArray(task.projects) &&
-          !('error' in task.projects) &&
-          'name' in task.projects;
           
         return {
           ...task,
-          assignee: isValidAssignee ? (task.assignee as unknown as { first_name: string; last_name: string; email: string; }) : null,
-          project: isValidProject ? (task.projects as unknown as { name: string; status: string; }) : { name: 'Unknown Project', status: 'active' }
+          assignee: isValidAssignee ? (task.assignee as unknown as { first_name: string; last_name: string; email: string; }) : null
         };
       });
 
-      setTasks(validTasks as Task[]);
-      calculateStats(validTasks as Task[]);
+      setTasks(validTasks);
+      calculateStats(validTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
