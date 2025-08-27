@@ -71,7 +71,7 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
   });
 
   const generateToken = () => {
-    return crypto.randomUUID();
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   };
 
   const onSubmit = async (data: InviteFormData) => {

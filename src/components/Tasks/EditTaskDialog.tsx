@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 
 interface Task {
   id: string;
@@ -46,7 +47,9 @@ interface EditTaskDialogProps {
 
 export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projects }: EditTaskDialogProps) => {
   const { toast } = useToast();
+  const { logActivity } = useActivityLogger();
   const [loading, setLoading] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -70,8 +73,39 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
         due_date: task.due_date ? task.due_date.split('T')[0] : '',
         assigned_to: task.assigned_to || ''
       });
+      fetchTeamMembers(task.project_id);
     }
   }, [task]);
+
+  const fetchTeamMembers = async (projectId: string) => {
+    try {
+      const { data: teamData, error } = await supabase
+        .from('project_team_members')
+        .select('user_id, role')
+        .eq('project_id', projectId);
+
+      if (error) throw error;
+
+      if (teamData && teamData.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, first_name, last_name, email')
+          .in('user_id', teamData.map(t => t.user_id));
+
+        const membersWithProfiles = teamData.map(member => {
+          const profile = profilesData?.find(p => p.user_id === member.user_id);
+          return {
+            ...member,
+            profiles: profile || null
+          };
+        }).filter(member => member.profiles !== null);
+
+        setTeamMembers(membersWithProfiles);
+      }
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +132,15 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
         .eq('id', task.id);
 
       if (error) throw error;
+
+      // Log the activity
+      await logActivity(
+        'task_updated',
+        'Task Updated',
+        `Updated task: ${updateData.title}`,
+        task.project_id,
+        task.id
+      );
 
       toast({
         title: "Success",
@@ -206,6 +249,23 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
                 value={formData.due_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
               />
+            </div>
+
+            <div>
+              <Label htmlFor="assigned_to">Assigned To</Label>
+              <Select value={formData.assigned_to} onValueChange={(value) => setFormData(prev => ({ ...prev, assigned_to: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select team member" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Unassigned</SelectItem>
+                  {teamMembers.map((member) => (
+                    <SelectItem key={member.user_id} value={member.user_id}>
+                      {member.profiles?.first_name} {member.profiles?.last_name} ({member.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           

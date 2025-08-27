@@ -88,30 +88,39 @@ const Tasks = () => {
 
   const fetchTasks = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: tasksData, error } = await supabase
         .from('tasks')
-        .select(`
-          *,
-          project:projects(name, status),
-          assignee:profiles!tasks_assigned_to_fkey(first_name, last_name, email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Filter out tasks with invalid assignee data
-      const validTasks = (data || []).map(task => {
-        // Check if assignee is valid or an error
-        const isValidAssignee = task.assignee && 
-          typeof task.assignee === 'object' && 
-          task.assignee !== null && 
-          !Array.isArray(task.assignee) &&
-          !('error' in task.assignee) &&
-          'first_name' in task.assignee;
-          
+      // Fetch projects separately
+      const { data: projectsData } = await supabase
+        .from('projects')
+        .select('id, name, status');
+
+      // Fetch profiles separately for assignees
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name, email');
+
+      // Transform the data to match our Task interface
+      const validTasks: Task[] = (tasksData || []).map(task => {
+        const project = projectsData?.find(p => p.id === task.project_id);
+        const assignee = profilesData?.find(p => p.user_id === task.assigned_to);
+        
         return {
           ...task,
-          assignee: isValidAssignee ? (task.assignee as unknown as { first_name: string; last_name: string; email: string; }) : null
+          project: {
+            name: project?.name || 'Unknown Project',
+            status: project?.status || 'active'
+          },
+          assignee: assignee ? {
+            first_name: assignee.first_name,
+            last_name: assignee.last_name,
+            email: assignee.email
+          } : undefined
         };
       });
 
@@ -171,7 +180,15 @@ const Tasks = () => {
     const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
     const matchesProject = projectFilter === 'all' || task.project_id === projectFilter;
-    const matchesAssignee = assigneeFilter === 'all' || task.assigned_to === assigneeFilter;
+    
+    let matchesAssignee = true;
+    if (assigneeFilter === 'all') {
+      matchesAssignee = true;
+    } else if (assigneeFilter === '') {
+      matchesAssignee = !task.assigned_to;
+    } else {
+      matchesAssignee = task.assignee?.email === assigneeFilter;
+    }
     
     return matchesSearch && matchesStatus && matchesPriority && matchesProject && matchesAssignee;
   });
@@ -329,6 +346,21 @@ const Tasks = () => {
                       {projects.map((project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Assignee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Assignees</SelectItem>
+                      <SelectItem value="">Unassigned</SelectItem>
+                      {getUniqueAssignees().map((assignee) => (
+                        <SelectItem key={assignee.email} value={assignee.email}>
+                          {assignee.first_name} {assignee.last_name}
                         </SelectItem>
                       ))}
                     </SelectContent>

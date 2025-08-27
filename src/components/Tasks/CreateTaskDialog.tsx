@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { TeamMemberSelect } from './TeamMemberSelect';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 
 interface CreateTaskDialogProps {
   open: boolean;
@@ -24,6 +26,7 @@ interface CreateTaskDialogProps {
 export const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated, projects }: CreateTaskDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { logActivity } = useActivityLogger();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -56,11 +59,22 @@ export const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated, projects }
         due_date: formData.due_date || null,
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('tasks')
-        .insert(taskData);
+        .insert(taskData)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Log the activity
+      await logActivity(
+        'task_created',
+        'Task Created',
+        `Created task: ${taskData.title}`,
+        taskData.project_id,
+        data.id
+      );
 
       toast({
         title: "Success",
@@ -196,6 +210,16 @@ export const CreateTaskDialog = ({ open, onOpenChange, onTaskCreated, projects }
                 onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
               />
             </div>
+
+            {formData.project_id && (
+              <TeamMemberSelect
+                projectId={formData.project_id}
+                value={formData.assigned_to}
+                onChange={(value) => setFormData(prev => ({ ...prev, assigned_to: value }))}
+                label="Assigned To"
+                placeholder="Select team member"
+              />
+            )}
           </div>
           
           <div className="flex justify-end gap-3">
