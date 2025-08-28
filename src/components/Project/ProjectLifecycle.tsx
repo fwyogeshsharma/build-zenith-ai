@@ -202,8 +202,8 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
     const handlePhaseClick = () => {
       // Navigate to project detail with tasks tab and phase filter
       const currentUrl = new URL(window.location.href);
-      const projectId = currentUrl.pathname.split('/')[2]; // Assuming URL format /project/:id
-      window.location.href = `/project/${projectId}?tab=tasks&phase=${stage.id}`;
+      const projectId = currentUrl.pathname.split('/')[2]; // Assuming URL format /projects/:id
+      window.location.href = `/projects/${projectId}?tab=tasks&phase=${stage.id}`;
     };
 
     return (
