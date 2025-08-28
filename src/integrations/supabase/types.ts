@@ -827,6 +827,7 @@ export type Database = {
           dependencies: Json | null
           description: string | null
           due_date: string | null
+          duration_hours: number | null
           estimated_hours: number | null
           id: string
           last_progress_update: string | null
@@ -836,6 +837,7 @@ export type Database = {
           progress_percentage: number | null
           project_id: string
           required_skills: Json | null
+          start_date: string | null
           status: string
           task_permissions: Json | null
           team_members: Json | null
@@ -853,6 +855,7 @@ export type Database = {
           dependencies?: Json | null
           description?: string | null
           due_date?: string | null
+          duration_hours?: number | null
           estimated_hours?: number | null
           id?: string
           last_progress_update?: string | null
@@ -862,6 +865,7 @@ export type Database = {
           progress_percentage?: number | null
           project_id: string
           required_skills?: Json | null
+          start_date?: string | null
           status?: string
           task_permissions?: Json | null
           team_members?: Json | null
@@ -879,6 +883,7 @@ export type Database = {
           dependencies?: Json | null
           description?: string | null
           due_date?: string | null
+          duration_hours?: number | null
           estimated_hours?: number | null
           id?: string
           last_progress_update?: string | null
@@ -888,6 +893,7 @@ export type Database = {
           progress_percentage?: number | null
           project_id?: string
           required_skills?: Json | null
+          start_date?: string | null
           status?: string
           task_permissions?: Json | null
           team_members?: Json | null

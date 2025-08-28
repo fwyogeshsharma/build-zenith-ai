@@ -243,12 +243,12 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Team Productivity</p>
-                <p className="text-2xl font-bold">87%</p>
+                <p className="text-2xl font-bold">{teamProductivity}%</p>
                 <p className="text-xs text-muted-foreground">Tasks completed on time</p>
               </div>
               <Users className="h-8 w-8 text-green-500" />
             </div>
-            <Progress value={87} className="mt-2" />
+            <Progress value={teamProductivity} className="mt-2" />
           </CardContent>
         </Card>
 

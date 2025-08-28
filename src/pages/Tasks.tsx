@@ -67,6 +67,7 @@ const Tasks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [phaseFilter, setPhaseFilter] = useState('all');
   const [projectFilter, setProjectFilter] = useState('all');
   const [assigneeFilter, setAssigneeFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'calendar'>('list');
@@ -179,6 +180,7 @@ const Tasks = () => {
     
     const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+    const matchesPhase = phaseFilter === 'all' || task.phase === phaseFilter;
     const matchesProject = projectFilter === 'all' || task.project_id === projectFilter;
     
     let matchesAssignee = true;
@@ -190,7 +192,7 @@ const Tasks = () => {
       matchesAssignee = task.assignee?.email === assigneeFilter;
     }
     
-    return matchesSearch && matchesStatus && matchesPriority && matchesProject && matchesAssignee;
+    return matchesSearch && matchesStatus && matchesPriority && matchesPhase && matchesProject && matchesAssignee;
   });
 
   const getUniqueAssignees = () => {
@@ -324,7 +326,7 @@ const Tasks = () => {
                     </SelectContent>
                   </Select>
 
-                  <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                   <Select value={priorityFilter} onValueChange={setPriorityFilter}>
                     <SelectTrigger className="w-40">
                       <SelectValue placeholder="Priority" />
                     </SelectTrigger>
@@ -334,6 +336,22 @@ const Tasks = () => {
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="high">High</SelectItem>
                       <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={phaseFilter} onValueChange={setPhaseFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Phase" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Phases</SelectItem>
+                      <SelectItem value="concept">Concept</SelectItem>
+                      <SelectItem value="design">Design</SelectItem>
+                      <SelectItem value="pre_construction">Pre Construction</SelectItem>
+                      <SelectItem value="execution">Execution</SelectItem>
+                      <SelectItem value="handover">Handover</SelectItem>
+                      <SelectItem value="operations_maintenance">Operations & Maintenance</SelectItem>
+                      <SelectItem value="renovation_demolition">Renovation & Demolition</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -393,6 +411,56 @@ const Tasks = () => {
               </div>
             </CardHeader>
           </Card>
+
+          {/* Phase Bulk Actions */}
+          {phaseFilter !== 'all' && (
+            <Card className="border-construction/20 bg-construction/5 mb-6">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-medium">
+                      Phase Actions - {phaseFilter.replace('_', ' ').toUpperCase()}
+                    </span>
+                    <p className="text-xs text-muted-foreground">
+                      {filteredTasks.length} tasks in this phase
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          const phaseTasks = filteredTasks.filter(task => task.phase === phaseFilter);
+                          await Promise.all(
+                            phaseTasks.map(task => 
+                              supabase.from('tasks').update({ 
+                                status: 'completed',
+                                progress_percentage: 100 
+                              }).eq('id', task.id)
+                            )
+                          );
+                          toast({
+                            title: "Success",
+                            description: `Completed all ${phaseTasks.length} tasks in ${phaseFilter.replace('_', ' ')} phase`,
+                          });
+                          fetchTasks();
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Failed to complete phase tasks",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      Complete All Phase Tasks
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Task Views */}
           <div className="space-y-6">

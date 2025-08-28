@@ -141,6 +141,46 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
       if (error) throw error;
 
       // TODO: Send invitation email via edge function
+      try {
+        // Fetch project name for email
+        const { data: project } = await supabase
+          .from('projects')
+          .select('name')
+          .eq('id', projectId)
+          .single();
+
+        const { error: emailError } = await supabase.functions.invoke('send-invitation', {
+          body: {
+            email: data.email,
+            projectName: project?.name || 'Project',
+            inviterName: user.email,
+            role: data.role,
+            token,
+            acceptUrl: `${window.location.origin}/accept-invitation?token=${token}`
+          }
+        });
+
+        if (emailError) {
+          console.error('Email sending failed:', emailError);
+          toast({
+            title: "Invitation created but email failed",
+            description: "The invitation was saved but the email could not be sent.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Invitation sent successfully",
+            description: `Invitation email sent to ${data.email}`,
+          });
+        }
+      } catch (emailError) {
+        console.error('Email error:', emailError);
+        toast({
+          title: "Invitation created but email failed",
+          description: "The invitation was saved but the email could not be sent.",
+          variant: "destructive",
+        });
+      }
       
       onInviteSuccess();
       onClose();

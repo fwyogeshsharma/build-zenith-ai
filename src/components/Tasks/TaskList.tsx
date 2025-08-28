@@ -187,7 +187,7 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                     setSelectedTasks([]);
                   }}
                 >
-                  Start Selected (50%)
+                  Start Selected
                 </Button>
                 <Button
                   size="sm"
@@ -197,7 +197,7 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                     setSelectedTasks([]);
                   }}
                 >
-                  Complete Selected (100%)
+                  Complete Selected
                 </Button>
                 <Button
                   size="sm"

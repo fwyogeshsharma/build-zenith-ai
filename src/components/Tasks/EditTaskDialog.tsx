@@ -58,6 +58,8 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
     project_id: '',
     phase: 'concept' as 'concept' | 'design' | 'pre_construction' | 'execution' | 'handover' | 'operations_maintenance' | 'renovation_demolition',
     due_date: '',
+    start_date: '',
+    duration_hours: '',
     assigned_to: ''
   });
 
@@ -71,6 +73,8 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
         project_id: task.project_id,
         phase: task.phase as 'concept' | 'design' | 'pre_construction' | 'execution' | 'handover' | 'operations_maintenance' | 'renovation_demolition',
         due_date: task.due_date ? task.due_date.split('T')[0] : '',
+        start_date: (task as any).start_date ? (task as any).start_date.split('T')[0] : '',
+        duration_hours: (task as any).duration_hours ? String((task as any).duration_hours) : '',
         assigned_to: task.assigned_to || ''
       });
       fetchTeamMembers(task.project_id);
@@ -124,6 +128,8 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
         ...formData,
         assigned_to: formData.assigned_to || null,
         due_date: formData.due_date || null,
+        start_date: formData.start_date || null,
+        duration_hours: formData.duration_hours ? parseFloat(formData.duration_hours) : null,
       };
 
       const { error } = await supabase
@@ -248,6 +254,29 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
                 type="date"
                 value={formData.due_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="start_date">Start Date</Label>
+              <Input
+                id="start_date"
+                type="date"
+                value={formData.start_date}
+                onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="duration_hours">Duration (Hours)</Label>
+              <Input
+                id="duration_hours"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.duration_hours}
+                onChange={(e) => setFormData(prev => ({ ...prev, duration_hours: e.target.value }))}
+                placeholder="Expected hours"
               />
             </div>
 
