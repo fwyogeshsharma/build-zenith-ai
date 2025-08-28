@@ -199,11 +199,21 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
     const isCurrent = isCurrentStage(index);
     const progress = phaseProgress[stage.id] || 0;
 
+    const handlePhaseClick = () => {
+      // Navigate to project detail with tasks tab and phase filter
+      const currentUrl = new URL(window.location.href);
+      const projectId = currentUrl.pathname.split('/')[2]; // Assuming URL format /project/:id
+      window.location.href = `/project/${projectId}?tab=tasks&phase=${stage.id}`;
+    };
+
     return (
-      <Card className={`transition-all duration-200 ${
-        isCurrent ? 'ring-2 ring-primary shadow-lg' : 
-        isCompleted ? 'bg-muted/30' : 'opacity-75'
-      }`}>
+      <Card 
+        className={`transition-all duration-200 cursor-pointer hover:shadow-md ${
+          isCurrent ? 'ring-2 ring-primary shadow-lg' : 
+          isCompleted ? 'bg-muted/30' : 'opacity-75'
+        }`}
+        onClick={handlePhaseClick}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

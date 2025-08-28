@@ -44,14 +44,16 @@ type TaskWithProject = Task & {
 
 interface ProjectTasksProps {
   projectId: string;
+  initialPhaseFilter?: string | null;
 }
 
-const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
+const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
   const [tasks, setTasks] = useState<TaskWithProject[]>([]);
   const [taskDocuments, setTaskDocuments] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterPhase, setFilterPhase] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [viewingTask, setViewingTask] = useState<TaskWithProject | null>(null);
   const [progressTask, setProgressTask] = useState<TaskWithProject | null>(null);
@@ -71,7 +73,12 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
   useEffect(() => {
     fetchTasks();
     fetchTaskDocuments();
-  }, [projectId]);
+    
+    // Set initial phase filter if provided
+    if (initialPhaseFilter) {
+      setFilterPhase(initialPhaseFilter);
+    }
+  }, [projectId, initialPhaseFilter]);
 
   const fetchTasks = async () => {
     try {
@@ -179,12 +186,22 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
 
   const updateTaskStatus = async (taskId: string, status: string) => {
     try {
+      const updateData: any = { 
+        status,
+        completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null
+      };
+
+      // Auto-set start_date when task starts
+      if (status === 'in_progress') {
+        const task = tasks.find(t => t.id === taskId);
+        if (task && !task.start_date) {
+          updateData.start_date = new Date().toISOString().split('T')[0];
+        }
+      }
+
       const { error } = await supabase
         .from('tasks')
-        .update({ 
-          status,
-          completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null
-        })
+        .update(updateData)
         .eq('id', taskId);
 
       if (error) throw error;
@@ -265,7 +282,8 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'all' || task.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesPhase = filterPhase === 'all' || task.phase === filterPhase;
+    return matchesSearch && matchesStatus && matchesPhase;
   });
 
   if (loading) {
@@ -297,6 +315,21 @@ const ProjectTasks = ({ projectId }: ProjectTasksProps) => {
               <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="blocked">Blocked</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterPhase} onValueChange={setFilterPhase}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Phase" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Phases</SelectItem>
+              <SelectItem value="concept">Concept</SelectItem>
+              <SelectItem value="design">Design</SelectItem>
+              <SelectItem value="pre_construction">Pre-Construction</SelectItem>
+              <SelectItem value="execution">Execution</SelectItem>
+              <SelectItem value="handover">Handover</SelectItem>
+              <SelectItem value="operations_maintenance">Operations & Maintenance</SelectItem>
+              <SelectItem value="renovation_demolition">Renovation & Demolition</SelectItem>
             </SelectContent>
           </Select>
           <Button 

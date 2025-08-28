@@ -132,6 +132,11 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
         duration_hours: formData.duration_hours ? parseFloat(formData.duration_hours) : null,
       };
 
+      // Auto-set start_date when task starts
+      if (formData.status === 'in_progress' && !formData.start_date) {
+        updateData.start_date = new Date().toISOString().split('T')[0];
+      }
+
       const { error } = await supabase
         .from('tasks')
         .update(updateData)

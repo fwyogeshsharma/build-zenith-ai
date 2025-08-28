@@ -41,10 +41,25 @@ const ProjectDetail = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [initialPhaseFilter, setInitialPhaseFilter] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchProject(id);
+      
+      // Check URL parameters for tab and phase filter
+      const urlParams = new URLSearchParams(window.location.search);
+      const tab = urlParams.get('tab');
+      const phase = urlParams.get('phase');
+      
+      if (tab) {
+        setActiveTab(tab);
+      }
+      
+      if (phase) {
+        setInitialPhaseFilter(phase);
+        setActiveTab('tasks'); // Switch to tasks tab when phase filter is applied
+      }
     }
   }, [id]);
 
@@ -279,7 +294,7 @@ const ProjectDetail = () => {
             </TabsContent>
 
             <TabsContent value="tasks">
-              <ProjectTasks projectId={project.id} />
+              <ProjectTasks projectId={project.id} initialPhaseFilter={initialPhaseFilter} />
             </TabsContent>
 
             <TabsContent value="team">
