@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Users, FileText, Calendar, BarChart3, MapPin, DollarSign, Clock, Activity } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/integrations/supabase/client';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -11,7 +13,70 @@ interface ProjectOverviewProps {
   project: Project;
 }
 
+interface ProjectStats {
+  tasksCompleted: number;
+  tasksPending: number;
+  teamMembers: number;
+  documents: number;
+  certificates: number;
+}
+
 const ProjectOverview = ({ project }: ProjectOverviewProps) => {
+  const [stats, setStats] = useState<ProjectStats>({
+    tasksCompleted: 0,
+    tasksPending: 0,
+    teamMembers: 0,
+    documents: 0,
+    certificates: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjectStats();
+  }, [project.id]);
+
+  const fetchProjectStats = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch tasks counts
+      const [tasksData, teamData, documentsData, certificatesData] = await Promise.all([
+        supabase
+          .from('tasks')
+          .select('status')
+          .eq('project_id', project.id),
+        supabase
+          .from('project_team_members')
+          .select('id')
+          .eq('project_id', project.id),
+        supabase
+          .from('documents')
+          .select('id')
+          .eq('project_id', project.id),
+        supabase
+          .from('certifications')
+          .select('id')
+          .eq('project_id', project.id)
+      ]);
+
+      const tasks = tasksData.data || [];
+      const tasksCompleted = tasks.filter(task => task.status === 'completed').length;
+      const tasksPending = tasks.filter(task => task.status !== 'completed').length;
+
+      setStats({
+        tasksCompleted,
+        tasksPending,
+        teamMembers: (teamData.data?.length || 0) + 1, // +1 for project owner
+        documents: documentsData.data?.length || 0,
+        certificates: certificatesData.data?.length || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching project stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getPhaseColor = (phase: string) => {
     switch (phase) {
       case 'concept': return 'bg-blue-100 text-blue-800';
@@ -135,19 +200,27 @@ const ProjectOverview = ({ project }: ProjectOverviewProps) => {
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">5</div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {loading ? '...' : stats.tasksPending}
+                  </div>
                   <div className="text-xs text-muted-foreground">Tasks Pending</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">12</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {loading ? '...' : stats.tasksCompleted}
+                  </div>
                   <div className="text-xs text-muted-foreground">Tasks Complete</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">3</div>
+                  <div className="text-2xl font-bold text-orange-600">
+                    {loading ? '...' : stats.teamMembers}
+                  </div>
                   <div className="text-xs text-muted-foreground">Team Members</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">8</div>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {loading ? '...' : stats.documents}
+                  </div>
                   <div className="text-xs text-muted-foreground">Documents</div>
                 </div>
               </div>
