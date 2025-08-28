@@ -108,7 +108,7 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
         }
       }
 
-      // Check if there's already a pending invitation
+      // Check if there's already a pending invitation and update it, or create new one
       const { data: existingInvitation } = await supabase
         .from('invitations')
         .select('id')
@@ -117,26 +117,34 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
         .eq('status', 'pending')
         .single();
 
+      let error;
       if (existingInvitation) {
-        toast({
-          title: "Invitation already sent",
-          description: "A pending invitation already exists for this email.",
-          variant: "destructive",
-        });
-        return;
+        // Update existing invitation with new token and expiry
+        const { error: updateError } = await supabase
+          .from('invitations')
+          .update({
+            role: data.role,
+            invited_by: user.id,
+            token,
+            expires_at: expiresAt.toISOString(),
+            created_at: new Date().toISOString(), // Reset created_at to show it's a resend
+          })
+          .eq('id', existingInvitation.id);
+        error = updateError;
+      } else {
+        // Create new invitation
+        const { error: insertError } = await supabase
+          .from('invitations')
+          .insert({
+            project_id: projectId,
+            email: data.email,
+            role: data.role,
+            invited_by: user.id,
+            token,
+            expires_at: expiresAt.toISOString(),
+          });
+        error = insertError;
       }
-
-      // Create invitation
-      const { error } = await supabase
-        .from('invitations')
-        .insert({
-          project_id: projectId,
-          email: data.email,
-          role: data.role,
-          invited_by: user.id,
-          token,
-          expires_at: expiresAt.toISOString(),
-        });
 
       if (error) throw error;
 
@@ -168,9 +176,10 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
             variant: "destructive",
           });
         } else {
+          const actionText = existingInvitation ? "resent" : "sent";
           toast({
-            title: "Invitation sent successfully",
-            description: `Invitation email sent to ${data.email}`,
+            title: `Invitation ${actionText} successfully`,
+            description: `Invitation email ${actionText} to ${data.email}`,
           });
         }
       } catch (emailError) {
