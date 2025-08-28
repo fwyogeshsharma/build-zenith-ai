@@ -21,6 +21,8 @@ interface Task {
   status: string;
   priority: string;
   due_date: string | null;
+  start_date: string | null;
+  duration_hours: number | null;
   created_at: string;
   updated_at: string;
   assigned_to: string | null;
@@ -73,8 +75,8 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
         project_id: task.project_id,
         phase: task.phase as 'concept' | 'design' | 'pre_construction' | 'execution' | 'handover' | 'operations_maintenance' | 'renovation_demolition',
         due_date: task.due_date ? task.due_date.split('T')[0] : '',
-        start_date: (task as any).start_date ? (task as any).start_date.split('T')[0] : '',
-        duration_hours: (task as any).duration_hours ? String((task as any).duration_hours) : '',
+        start_date: task.start_date ? task.start_date.split('T')[0] : '',
+        duration_hours: task.duration_hours ? String(task.duration_hours) : '',
         assigned_to: task.assigned_to || ''
       });
       fetchTeamMembers(task.project_id);

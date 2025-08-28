@@ -33,11 +33,14 @@ interface Task {
   status: string;
   priority: string;
   due_date: string | null;
+  start_date: string | null;
+  duration_hours: number | null;
   created_at: string;
   updated_at: string;
   assigned_to: string | null;
   project_id: string;
   phase: string;
+  progress_percentage?: number;
   project: {
     name: string;
     status: string;

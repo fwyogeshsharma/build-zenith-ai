@@ -47,6 +47,8 @@ interface Task {
   status: string;
   priority: string;
   due_date: string | null;
+  start_date: string | null;
+  duration_hours: number | null;
   created_at: string;
   updated_at: string;
   assigned_to: string | null;
@@ -281,10 +283,24 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                             <span>{task.project.name}</span>
                           </div>
                           
+                          {task.start_date && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>Start: {format(new Date(task.start_date), 'MMM d, yyyy')}</span>
+                            </div>
+                          )}
+                          
                           {task.due_date && (
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
-                              <span>{format(new Date(task.due_date), 'MMM d, yyyy')}</span>
+                              <span>Due: {format(new Date(task.due_date), 'MMM d, yyyy')}</span>
+                            </div>
+                          )}
+                          
+                          {task.duration_hours && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>Duration: {task.duration_hours}h</span>
                             </div>
                           )}
                           
