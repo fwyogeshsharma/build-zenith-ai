@@ -67,13 +67,14 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
 
   useEffect(() => {
     if (task && open) {
+      console.log('EditTaskDialog: Setting form data with task:', task);
       setFormData({
         title: task.title || '',
         description: task.description || '',
         priority: task.priority || 'medium',
         status: task.status || 'pending',
         project_id: task.project_id || '',
-        phase: task.phase as 'concept' | 'design' | 'pre_construction' | 'execution' | 'handover' | 'operations_maintenance' | 'renovation_demolition',
+        phase: (task.phase || 'concept') as 'concept' | 'design' | 'pre_construction' | 'execution' | 'handover' | 'operations_maintenance' | 'renovation_demolition',
         due_date: task.due_date ? task.due_date.split('T')[0] : '',
         start_date: task.start_date ? task.start_date.split('T')[0] : '',
         duration_hours: task.duration_hours ? String(task.duration_hours) : '',
@@ -82,6 +83,8 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
       if (task.project_id) {
         fetchTeamMembers(task.project_id);
       }
+    } else if (open && !task) {
+      console.error('EditTaskDialog: Dialog opened without task data');
     }
   }, [task, open]);
 
@@ -175,6 +178,10 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
       setLoading(false);
     }
   };
+
+  if (!task) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

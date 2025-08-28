@@ -283,8 +283,8 @@ export const TaskDetail = ({ task, open, onOpenChange, onTaskUpdated, projects, 
       {editingTask && (
         <EditTaskDialog
           task={task}
-          open={editingTask}
-          onOpenChange={setEditingTask}
+          open={!!editingTask}
+          onOpenChange={(open) => !open && setEditingTask(false)}
           onTaskUpdated={() => {
             onTaskUpdated();
             setEditingTask(false);
