@@ -298,12 +298,12 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
 
             <div>
               <Label htmlFor="assigned_to">Assigned To</Label>
-              <Select value={formData.assigned_to} onValueChange={(value) => setFormData(prev => ({ ...prev, assigned_to: value }))}>
+              <Select value={formData.assigned_to || "unassigned"} onValueChange={(value) => setFormData(prev => ({ ...prev, assigned_to: value === "unassigned" ? "" : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select team member" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
                   {teamMembers.map((member) => (
                     <SelectItem key={member.user_id} value={member.user_id}>
                       {member.profiles?.first_name} {member.profiles?.last_name} ({member.role})
