@@ -41,7 +41,7 @@ const SidebarContent = ({ className }: SidebarProps) => {
     <div className={`flex flex-col h-full bg-sidebar text-sidebar-foreground ${className}`}>
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
+        <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="bg-white/20 p-2 rounded-lg">
             <Building2 className="h-6 w-6 text-white" />
           </div>
@@ -49,7 +49,7 @@ const SidebarContent = ({ className }: SidebarProps) => {
             <h1 className="text-lg font-bold text-sidebar-foreground">FutureBuild</h1>
             <p className="text-xs text-sidebar-foreground/60">Project Management</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Navigation */}
