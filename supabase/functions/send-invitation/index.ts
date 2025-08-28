@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { email, projectName, inviterName, role, token, acceptUrl }: InvitationRequest = await req.json();
 
     const emailResponse = await resend.emails.send({
-      from: "FutureBuild <noreply@yourdomain.com>",
+      from: "FutureBuild <onboarding@resend.dev>",
       to: [email],
       subject: `Invitation to join ${projectName} project`,
       html: `
