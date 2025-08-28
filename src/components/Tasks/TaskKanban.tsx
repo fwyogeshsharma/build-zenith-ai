@@ -85,9 +85,16 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
 
   const updateTaskStatus = async (taskId: string, newStatus: string) => {
     try {
+      const updateData: any = { status: newStatus };
+      
+      // Set start_date when task is started
+      if (newStatus === 'in_progress') {
+        updateData.start_date = new Date().toISOString().split('T')[0];
+      }
+      
       const { error } = await supabase
         .from('tasks')
-        .update({ status: newStatus })
+        .update(updateData)
         .eq('id', taskId);
 
       if (error) throw error;

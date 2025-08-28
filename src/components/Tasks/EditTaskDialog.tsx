@@ -66,22 +66,24 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
   });
 
   useEffect(() => {
-    if (task) {
+    if (task && open) {
       setFormData({
-        title: task.title,
+        title: task.title || '',
         description: task.description || '',
-        priority: task.priority,
-        status: task.status,
-        project_id: task.project_id,
+        priority: task.priority || 'medium',
+        status: task.status || 'pending',
+        project_id: task.project_id || '',
         phase: task.phase as 'concept' | 'design' | 'pre_construction' | 'execution' | 'handover' | 'operations_maintenance' | 'renovation_demolition',
         due_date: task.due_date ? task.due_date.split('T')[0] : '',
         start_date: task.start_date ? task.start_date.split('T')[0] : '',
         duration_hours: task.duration_hours ? String(task.duration_hours) : '',
         assigned_to: task.assigned_to || ''
       });
-      fetchTeamMembers(task.project_id);
+      if (task.project_id) {
+        fetchTeamMembers(task.project_id);
+      }
     }
-  }, [task]);
+  }, [task, open]);
 
   const fetchTeamMembers = async (projectId: string) => {
     try {
@@ -135,7 +137,7 @@ export const EditTaskDialog = ({ task, open, onOpenChange, onTaskUpdated, projec
       };
 
       // Auto-set start_date when task starts
-      if (formData.status === 'in_progress' && !formData.start_date) {
+      if (formData.status === 'in_progress' && !formData.start_date && task.status !== 'in_progress') {
         updateData.start_date = new Date().toISOString().split('T')[0];
       }
 

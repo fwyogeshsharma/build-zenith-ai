@@ -105,12 +105,19 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
 
   const updateTaskStatus = async (taskId: string, newStatus: string) => {
     try {
+      const updateData: any = { 
+        status: newStatus,
+        progress_percentage: newStatus === 'completed' ? 100 : (newStatus === 'in_progress' ? 50 : 0)
+      };
+      
+      // Set start_date when task is started
+      if (newStatus === 'in_progress') {
+        updateData.start_date = new Date().toISOString().split('T')[0];
+      }
+
       const { error } = await supabase
         .from('tasks')
-        .update({ 
-          status: newStatus,
-          progress_percentage: newStatus === 'completed' ? 100 : (newStatus === 'in_progress' ? 50 : 0)
-        })
+        .update(updateData)
         .eq('id', taskId);
 
       if (error) throw error;
@@ -301,6 +308,13 @@ export const TaskList = ({ tasks, onTaskUpdate, projects }: TaskListProps) => {
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
                               <span>Duration: {task.duration_hours}h</span>
+                            </div>
+                          )}
+                          
+                          {task.start_date && task.duration_hours && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>Expected: {format(new Date(new Date(task.start_date).getTime() + (task.duration_hours * 60 * 60 * 1000)), 'MMM d, yyyy')}</span>
                             </div>
                           )}
                           
