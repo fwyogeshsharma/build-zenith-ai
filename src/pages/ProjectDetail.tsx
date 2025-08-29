@@ -30,6 +30,7 @@ import ProjectSchedule from '@/components/Project/ProjectSchedule';
 import ProjectAnalytics from '@/components/Project/ProjectAnalytics';
 import { EditProjectDialog } from '@/components/Project/EditProjectDialog';
 import CertificationManagement from '@/components/Project/CertificationManagement';
+import ProjectSpecificAIInsights from '@/components/Dashboard/ProjectSpecificAIInsights';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -280,17 +281,13 @@ const ProjectDetail = () => {
             </TabsContent>
 
             <TabsContent value="ai-insights">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Brain className="h-5 w-5" />
-                    AI Insights
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">AI-powered insights and recommendations for your project will be displayed here.</p>
-                </CardContent>
-              </Card>
+              <ProjectSpecificAIInsights 
+                recentProjects={[{
+                  ...project,
+                  project_type: project.project_type as any
+                }]}
+                selectedProjectId={project.id}
+              />
             </TabsContent>
 
             <TabsContent value="tasks">
