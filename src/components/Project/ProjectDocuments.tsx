@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, Filter, FileText, Download, Eye, Trash2, Upload, File, Image, Archive } from 'lucide-react';
+import { Plus, Search, Filter, FileText, Download, Eye, Trash2, Upload, File, Image, Archive, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
@@ -32,6 +32,7 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
   const [filterPhase, setFilterPhase] = useState('all');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [viewingDocument, setViewingDocument] = useState<string | null>(null);
   const { toast } = useToast();
 
   const [newDocument, setNewDocument] = useState<Partial<DocumentInsert>>({
@@ -178,23 +179,45 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
 
   const viewDocument = async (doc: DocumentWithTask) => {
     try {
+      setViewingDocument(doc.id);
+      
       const { data, error } = await supabase.storage
         .from('documents')
         .createSignedUrl(doc.file_path, 3600); // 1 hour expiry
 
       if (error) throw error;
 
-      // Construct full URL - Supabase returns a relative path
-      const fullUrl = `https://hlbtaungfhcszwoihppf.supabase.co/storage/v1${data.signedUrl}`;
+      if (!data?.signedUrl) {
+        throw new Error('No signed URL received');
+      }
+
+      // Open in new tab - data.signedUrl is already a complete URL
+      const newWindow = window.open(data.signedUrl, '_blank');
       
-      // Open in new tab
-      window.open(fullUrl, '_blank');
+      // Check if popup was blocked
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        // Fallback: try opening in same tab
+        toast({
+          title: "Popup blocked",
+          description: "Your browser blocked the popup. Opening in current tab...",
+          variant: "default",
+        });
+        window.location.href = data.signedUrl;
+      } else {
+        toast({
+          title: "Document opened",
+          description: `Viewing ${doc.name}`,
+        });
+      }
     } catch (error: any) {
+      console.error('Error viewing document:', error);
       toast({
         title: "Error viewing document",
-        description: error.message,
+        description: error.message || 'Failed to open document',
         variant: "destructive",
       });
+    } finally {
+      setViewingDocument(null);
     }
   };
   const deleteDocument = async (documentId: string) => {
@@ -459,8 +482,17 @@ const ProjectDocuments = ({ projectId }: ProjectDocumentsProps) => {
                   </div>
                   
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => viewDocument(document)}>
-                      <Eye className="h-4 w-4" />
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => viewDocument(document)}
+                      disabled={viewingDocument === document.id}
+                    >
+                      {viewingDocument === document.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => downloadDocument(document)}>
                       <Download className="h-4 w-4" />
