@@ -279,32 +279,36 @@ export const TaskResourcesDialog = ({ isOpen, onClose, taskId, taskTitle }: Task
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>Quantity</Label>
-                    <Input
-                      type="number"
-                      value={newResource.quantity}
-                      onChange={(e) => setNewResource({ ...newResource, quantity: parseFloat(e.target.value) || 0 })}
-                    />
+                {newResource.resource_type !== 'labor' && (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label>Quantity</Label>
+                      <Input
+                        type="number"
+                        value={newResource.quantity === 0 ? '' : newResource.quantity}
+                        onChange={(e) => setNewResource({ ...newResource, quantity: parseFloat(e.target.value) || 0 })}
+                        placeholder="Enter quantity"
+                      />
+                    </div>
+                    <div>
+                      <Label>Unit</Label>
+                      <Input
+                        value={newResource.unit}
+                        onChange={(e) => setNewResource({ ...newResource, unit: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Cost per Unit ($)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={newResource.cost_per_unit === 0 ? '' : newResource.cost_per_unit}
+                        onChange={(e) => setNewResource({ ...newResource, cost_per_unit: parseFloat(e.target.value) || 0 })}
+                        placeholder="Enter cost"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label>Unit</Label>
-                    <Input
-                      value={newResource.unit}
-                      onChange={(e) => setNewResource({ ...newResource, unit: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label>Cost per Unit ($)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newResource.cost_per_unit}
-                      onChange={(e) => setNewResource({ ...newResource, cost_per_unit: parseFloat(e.target.value) || 0 })}
-                    />
-                  </div>
-                </div>
+                )}
 
                 {newResource.resource_type === 'labor' && (
                   <div>
@@ -314,6 +318,7 @@ export const TaskResourcesDialog = ({ isOpen, onClose, taskId, taskTitle }: Task
                       step="0.5"
                       value={newResource.allocated_hours || ''}
                       onChange={(e) => setNewResource({ ...newResource, allocated_hours: parseFloat(e.target.value) || undefined })}
+                      placeholder="Enter hours"
                     />
                   </div>
                 )}
