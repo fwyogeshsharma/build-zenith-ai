@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Users, FileText, Calendar, BarChart3, MapPin, DollarSign, Clock, Activity, Layers } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useProgressSync, getPhaseInfo } from '@/lib/progressSync';
@@ -236,7 +237,19 @@ const ProjectOverview = ({ project }: ProjectOverviewProps) => {
           <CardContent>
             <div className="space-y-6">
               {/* Current Phase Progress */}
-              {phaseInfo && (
+              {loading ? (
+                <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-5 w-20" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    <Skeleton className="h-4 w-8" />
+                  </div>
+                  <Skeleton className="h-3 w-full mb-2" />
+                  <Skeleton className="h-3 w-3/4" />
+                </div>
+              ) : phaseInfo && (
                 <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium flex items-center gap-2">
@@ -263,7 +276,20 @@ const ProjectOverview = ({ project }: ProjectOverviewProps) => {
                 <Progress value={currentProgress} className="h-3" />
                 
                 {/* Phase Progress Indicators */}
-                {phaseInfo && (
+                {loading ? (
+                  <div className="mt-3 space-y-2">
+                    <Skeleton className="h-3 w-24 mb-2" />
+                    <div className="grid grid-cols-1 gap-1">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Skeleton className="w-3 h-3 rounded-full" />
+                          <Skeleton className="h-3 w-32" />
+                          <Skeleton className="h-4 w-12" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : phaseInfo && (
                   <div className="mt-3 space-y-2">
                     <p className="text-xs text-muted-foreground mb-2">Phase Breakdown:</p>
                     <div className="grid grid-cols-1 gap-1">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Settings, Trash2, Brain, Users, FileText, Calendar, BarChart3, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,19 +20,49 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
+import { Skeleton } from '@/components/ui/skeleton';
 import DashboardSidebar from '@/components/Dashboard/DashboardSidebar';
 import ProjectOverview from '@/components/Project/ProjectOverview';
-import ProjectLifecycle from '@/components/Project/ProjectLifecycle';
-import ProjectTasks from '@/components/Project/ProjectTasks';
-import ProjectTeam from '@/components/Project/ProjectTeam';
-import ProjectDocuments from '@/components/Project/ProjectDocuments';
-import ProjectSchedule from '@/components/Project/ProjectSchedule';
-import ProjectAnalytics from '@/components/Project/ProjectAnalytics';
 import { EditProjectDialog } from '@/components/Project/EditProjectDialog';
-import CertificationManagement from '@/components/Project/CertificationManagement';
-import ProjectSpecificAIInsights from '@/components/Dashboard/ProjectSpecificAIInsights';
+
+// Lazy load heavy components
+const ProjectLifecycle = lazy(() => import('@/components/Project/ProjectLifecycle'));
+const ProjectTasks = lazy(() => import('@/components/Project/ProjectTasks'));
+const ProjectTeam = lazy(() => import('@/components/Project/ProjectTeam'));
+const ProjectDocuments = lazy(() => import('@/components/Project/ProjectDocuments'));
+const ProjectSchedule = lazy(() => import('@/components/Project/ProjectSchedule'));
+const ProjectAnalytics = lazy(() => import('@/components/Project/ProjectAnalytics'));
+const CertificationManagement = lazy(() => import('@/components/Project/CertificationManagement'));
+const ProjectSpecificAIInsights = lazy(() => import('@/components/Dashboard/ProjectSpecificAIInsights'));
 
 type Project = Database['public']['Tables']['projects']['Row'];
+
+// Loading fallback component
+const ComponentLoadingSkeleton = () => (
+  <div className="space-y-6">
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-48" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div key={index} className="flex items-center gap-3">
+            <Skeleton className="h-4 w-4" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-36" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-32 w-full" />
+      </CardContent>
+    </Card>
+  </div>
+);
 
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -273,41 +303,57 @@ const ProjectDetail = () => {
             </TabsContent>
 
             <TabsContent value="lifecycle">
-              <ProjectLifecycle projectId={project.id} />
+              <Suspense fallback={<ComponentLoadingSkeleton />}>
+                <ProjectLifecycle projectId={project.id} />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="certifications">
-              <CertificationManagement projectId={project.id} />
+              <Suspense fallback={<ComponentLoadingSkeleton />}>
+                <CertificationManagement projectId={project.id} />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="ai-insights">
-              <ProjectSpecificAIInsights 
-                recentProjects={[{
-                  ...project,
-                  project_type: project.project_type as any
-                }]}
-                selectedProjectId={project.id}
-              />
+              <Suspense fallback={<ComponentLoadingSkeleton />}>
+                <ProjectSpecificAIInsights 
+                  recentProjects={[{
+                    ...project,
+                    project_type: project.project_type as any
+                  }]}
+                  selectedProjectId={project.id}
+                />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="tasks">
-              <ProjectTasks projectId={project.id} initialPhaseFilter={initialPhaseFilter} />
+              <Suspense fallback={<ComponentLoadingSkeleton />}>
+                <ProjectTasks projectId={project.id} initialPhaseFilter={initialPhaseFilter} />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="team">
-              <ProjectTeam projectId={project.id} />
+              <Suspense fallback={<ComponentLoadingSkeleton />}>
+                <ProjectTeam projectId={project.id} />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="documents">
-              <ProjectDocuments projectId={project.id} />
+              <Suspense fallback={<ComponentLoadingSkeleton />}>
+                <ProjectDocuments projectId={project.id} />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="schedule">
-              <ProjectSchedule projectId={project.id} />
+              <Suspense fallback={<ComponentLoadingSkeleton />}>
+                <ProjectSchedule projectId={project.id} />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="analytics">
-              <ProjectAnalytics projectId={project.id} />
+              <Suspense fallback={<ComponentLoadingSkeleton />}>
+                <ProjectAnalytics projectId={project.id} />
+              </Suspense>
             </TabsContent>
           </Tabs>
         </div>

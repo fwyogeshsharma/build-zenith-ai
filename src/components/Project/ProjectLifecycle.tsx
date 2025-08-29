@@ -23,10 +23,12 @@ import {
   Eye,
   AlertTriangle
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import CertificationManagement from './CertificationManagement';
 import { PhaseProgressDialog } from '../Progress/PhaseProgressDialog';
+import { useProgressSync, getPhaseInfo, calculatePhaseProgress } from '@/lib/progressSync';
 
 interface ProjectLifecycleProps {
   projectId: string;
@@ -117,49 +119,53 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
   const [phaseProgress, setPhaseProgress] = useState<Record<string, number>>({});
   const [activeCertifications, setActiveCertifications] = useState<any[]>([]);
   const [progressingPhase, setProgressingPhase] = useState<any>(null);
+  const [overallProgress, setOverallProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchProjectPhase();
     fetchCertifications();
-    fetchPhaseProgress();
+    fetchAllPhaseProgress();
+  }, [projectId]);
+
+  // Set up progress sync listener
+  useEffect(() => {
+    const cleanup = useProgressSync((data) => {
+      if (data.projectId === projectId) {
+        // Refresh all progress data when any task changes
+        fetchProjectPhase();
+        fetchAllPhaseProgress();
+      }
+    });
+
+    return cleanup;
   }, [projectId]);
 
   const fetchProjectPhase = async () => {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('current_phase, progress_percentage')
-        .eq('id', projectId)
-        .single();
-
-      if (error) throw error;
-      if (data) {
-        setCurrentPhase(data.current_phase);
-        // Set progress for current phase
-        setPhaseProgress(prev => ({
-          ...prev,
-          [data.current_phase]: data.progress_percentage || 0
-        }));
-      }
+      setLoading(true);
+      const phaseInfo = await getPhaseInfo(projectId);
+      setCurrentPhase(phaseInfo.currentPhase);
+      setOverallProgress(phaseInfo.overallProgress);
     } catch (error: any) {
       console.error('Error fetching project phase:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchPhaseProgress = async () => {
+  const fetchAllPhaseProgress = async () => {
     try {
-      const { data, error } = await supabase
-        .from('project_phases')
-        .select('phase, progress_percentage')
-        .eq('project_id', projectId);
-
-      if (error) throw error;
-      
       const progressMap: Record<string, number> = {};
-      data?.forEach(phase => {
-        progressMap[phase.phase] = phase.progress_percentage || 0;
-      });
+      
+      // Get progress for each active phase using our phase-aware system
+      const activePhases = ['concept', 'design', 'pre_construction', 'execution', 'handover'];
+      
+      for (const phase of activePhases) {
+        const progress = await calculatePhaseProgress(projectId, phase);
+        progressMap[phase] = progress;
+      }
       
       setPhaseProgress(progressMap);
     } catch (error: any) {
@@ -186,7 +192,9 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
   };
 
   const isStageCompleted = (stageIndex: number) => {
-    return stageIndex < getCurrentStageIndex();
+    const currentIndex = getCurrentStageIndex();
+    // A stage is completed if it's before the current stage, OR if it has 100% progress
+    return stageIndex < currentIndex || (phaseProgress[lifecycleStages[stageIndex].id] === 100);
   };
 
   const isCurrentStage = (stageIndex: number) => {
@@ -332,33 +340,47 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between mb-4">
-            {lifecycleStages.map((stage, index) => {
-              const Icon = stage.icon;
-              const isCompleted = isStageCompleted(index);
-              const isCurrent = isCurrentStage(index);
-              
-              return (
-                <div key={stage.id} className="flex flex-col items-center">
-                  <div className={`p-3 rounded-full ${
-                    isCurrent ? 'bg-primary text-primary-foreground' :
-                    isCompleted ? 'bg-green-500 text-white' :
-                    'bg-muted text-muted-foreground'
-                  }`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="text-xs mt-2 text-center max-w-16">
-                    {stage.name.split(' ')[0]}
-                  </div>
-                  {index < lifecycleStages.length - 1 && (
-                    <div className={`h-0.5 w-12 mt-4 ${
-                      isCompleted ? 'bg-green-500' : 'bg-muted'
-                    }`} />
+          {loading ? (
+            <div className="flex items-center justify-between mb-4">
+              {Array.from({ length: 7 }).map((_, index) => (
+                <div key={index} className="flex flex-col items-center">
+                  <Skeleton className="p-3 w-11 h-11 rounded-full" />
+                  <Skeleton className="h-3 w-12 mt-2" />
+                  {index < 6 && (
+                    <Skeleton className="h-0.5 w-12 mt-4" />
                   )}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between mb-4">
+              {lifecycleStages.map((stage, index) => {
+                const Icon = stage.icon;
+                const isCompleted = isStageCompleted(index);
+                const isCurrent = isCurrentStage(index);
+                
+                return (
+                  <div key={stage.id} className="flex flex-col items-center">
+                    <div className={`p-3 rounded-full ${
+                      isCurrent ? 'bg-primary text-primary-foreground' :
+                      isCompleted ? 'bg-green-500 text-white' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="text-xs mt-2 text-center max-w-16">
+                      {stage.name.split(' ')[0]}
+                    </div>
+                    {index < lifecycleStages.length - 1 && (
+                      <div className={`h-0.5 w-12 mt-4 ${
+                        isCompleted ? 'bg-green-500' : 'bg-muted'
+                      }`} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -369,11 +391,53 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
         </TabsList>
 
         <TabsContent value="stages" className="space-y-6">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {lifecycleStages.map((stage, index) => (
-              <StageCard key={stage.id} stage={stage} index={index} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {Array.from({ length: 7 }).map((_, index) => (
+                <Card key={index} className="cursor-pointer">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="p-2 w-9 h-9 rounded-lg" />
+                        <div>
+                          <Skeleton className="h-5 w-32 mb-2" />
+                          <Skeleton className="h-4 w-20" />
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Skeleton className="h-6 w-8 mb-1" />
+                        <Skeleton className="h-3 w-12 mb-2" />
+                        <Skeleton className="h-8 w-24" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-3 w-full mt-2" />
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {Array.from({ length: 4 }).map((_, sectionIndex) => (
+                      <div key={sectionIndex}>
+                        <Skeleton className="h-4 w-16 mb-2" />
+                        <div className="space-y-1">
+                          {Array.from({ length: 3 }).map((_, itemIndex) => (
+                            <div key={itemIndex} className="flex items-center gap-2">
+                              <Skeleton className="w-3 h-3" />
+                              <Skeleton className="h-3 w-40" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {lifecycleStages.map((stage, index) => (
+                <StageCard key={stage.id} stage={stage} index={index} />
+              ))}
+            </div>
+          )}
         </TabsContent>
 
 
@@ -461,7 +525,7 @@ const ProjectLifecycle = ({ projectId }: ProjectLifecycleProps) => {
           onOpenChange={(open) => !open && setProgressingPhase(null)}
           onProgressUpdated={() => {
             fetchProjectPhase();
-            fetchPhaseProgress();
+            fetchAllPhaseProgress();
           }}
         />
       )}
