@@ -20,6 +20,17 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
   const [actualSpent, setActualSpent] = useState(0);
   const [projectProgress, setProjectProgress] = useState(0);
   const [teamProductivity, setTeamProductivity] = useState(0);
+  const [scheduleProgress, setScheduleProgress] = useState(0);
+  const [riskLevel, setRiskLevel] = useState('Low');
+  const [activeRisks, setActiveRisks] = useState(0);
+  const [projectBudget, setProjectBudget] = useState(0);
+  const [performanceIndicators, setPerformanceIndicators] = useState({
+    cpi: 1.0,
+    spi: 1.0,
+    qualityIndex: 95,
+    riskScore: 2.1
+  });
+  const [insights, setInsights] = useState<Array<{color: string, title: string, description: string}>>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,7 +44,10 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
         loadBudgetData(),
         loadTaskData(),
         loadProgressData(),
-        loadProjectMetrics()
+        loadProjectMetrics(),
+        loadScheduleData(),
+        loadRiskData(),
+        loadPerformanceIndicators()
       ]);
     } catch (error: any) {
       toast({
@@ -48,6 +62,18 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
 
   const loadBudgetData = async () => {
     try {
+      // Get actual project budget
+      const { data: project, error: projectError } = await supabase
+        .from('projects')
+        .select('budget')
+        .eq('id', projectId)
+        .single();
+
+      if (projectError) throw projectError;
+
+      const actualProjectBudget = project?.budget || 0;
+      setProjectBudget(actualProjectBudget);
+
       // Get project phases with budget data
       const { data: phases, error: phasesError } = await supabase
         .from('project_phases')
@@ -89,7 +115,10 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
       });
 
       setBudgetData(budgetChartData);
-      setTotalBudget(budgetChartData.reduce((sum, item) => sum + item.budgeted, 0));
+      
+      // Use actual project budget or fallback to phase budgets
+      const phaseBudgetSum = budgetChartData.reduce((sum, item) => sum + item.budgeted, 0);
+      setTotalBudget(actualProjectBudget > 0 ? actualProjectBudget : phaseBudgetSum);
       setActualSpent(budgetChartData.reduce((sum, item) => sum + item.actual, 0));
     } catch (error) {
       console.error('Error loading budget data:', error);
@@ -187,6 +216,198 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
     }
   };
 
+  const loadScheduleData = async () => {
+    try {
+      const { data: project, error } = await supabase
+        .from('projects')
+        .select('start_date, expected_completion_date')
+        .eq('id', projectId)
+        .single();
+
+      if (error) throw error;
+
+      if (project && project.start_date && project.expected_completion_date) {
+        const startDate = new Date(project.start_date);
+        const endDate = new Date(project.expected_completion_date);
+        const currentDate = new Date();
+
+        // Calculate elapsed vs total time
+        const totalDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+        const elapsedDays = Math.max(0, (currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        const schedulePercentage = Math.min(100, Math.max(0, (elapsedDays / totalDays) * 100));
+        setScheduleProgress(Math.round(schedulePercentage));
+      }
+    } catch (error) {
+      console.error('Error loading schedule data:', error);
+    }
+  };
+
+  const loadRiskData = async () => {
+    try {
+      // Check for various risk indicators
+      const { data: tasks, error: tasksError } = await supabase
+        .from('tasks')
+        .select('status, due_date')
+        .eq('project_id', projectId);
+
+      if (tasksError) throw tasksError;
+
+      // Calculate risk indicators
+      let riskScore = 0;
+      let risks = 0;
+
+      if (tasks) {
+        const overdueTasks = tasks.filter(task => 
+          task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
+        ).length;
+        
+        const blockedTasks = tasks.filter(task => task.status === 'blocked').length;
+
+        // Risk scoring
+        if (overdueTasks > 0) {
+          riskScore += overdueTasks * 2;
+          risks++;
+        }
+        if (blockedTasks > 0) {
+          riskScore += blockedTasks * 3;
+          risks++;
+        }
+
+        // Budget variance risk
+        const variance = Math.abs(budgetVariance);
+        if (variance > 10) {
+          riskScore += 5;
+          risks++;
+        }
+      }
+
+      setActiveRisks(risks);
+      
+      // Determine risk level
+      if (riskScore === 0) setRiskLevel('Very Low');
+      else if (riskScore <= 5) setRiskLevel('Low');
+      else if (riskScore <= 10) setRiskLevel('Medium');
+      else if (riskScore <= 15) setRiskLevel('High');
+      else setRiskLevel('Critical');
+
+    } catch (error) {
+      console.error('Error loading risk data:', error);
+    }
+  };
+
+  const loadPerformanceIndicators = async () => {
+    try {
+      // Calculate CPI (Cost Performance Index) = EV / AC
+      // For simplicity: CPI = budgeted / actual_spent
+      const cpi = totalBudget > 0 && actualSpent > 0 ? totalBudget / actualSpent : 1.0;
+      
+      // Calculate SPI (Schedule Performance Index) = EV / PV
+      // For simplicity: SPI = actual_progress / schedule_progress
+      const spi = scheduleProgress > 0 ? projectProgress / scheduleProgress : 1.0;
+      
+      // Quality Index based on task completion quality
+      const { data: tasks, error } = await supabase
+        .from('tasks')
+        .select('status, priority')
+        .eq('project_id', projectId);
+
+      if (error) throw error;
+
+      let qualityIndex = 95; // Default
+      if (tasks && tasks.length > 0) {
+        const completedTasks = tasks.filter(t => t.status === 'completed').length;
+        const highPriorityCompleted = tasks.filter(t => t.status === 'completed' && t.priority === 'high').length;
+        const totalHighPriority = tasks.filter(t => t.priority === 'high').length;
+        
+        // Quality based on high priority task completion
+        if (totalHighPriority > 0) {
+          qualityIndex = Math.round((highPriorityCompleted / totalHighPriority) * 100);
+        } else {
+          qualityIndex = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 95;
+        }
+      }
+
+      // Risk score calculation
+      let riskScore = 0;
+      const variance = Math.abs(budgetVariance);
+      if (variance > 20) riskScore += 3;
+      else if (variance > 10) riskScore += 2;
+      else if (variance > 5) riskScore += 1;
+
+      if (scheduleProgress > projectProgress + 10) riskScore += 2; // Behind schedule
+      if (activeRisks > 0) riskScore += activeRisks;
+
+      setPerformanceIndicators({
+        cpi: Math.round(cpi * 100) / 100,
+        spi: Math.round(spi * 100) / 100,
+        qualityIndex: Math.max(0, Math.min(100, qualityIndex)),
+        riskScore: Math.round(riskScore * 10) / 10
+      });
+
+      // Generate dynamic insights
+      const dynamicInsights = [];
+      
+      if (cpi > 1.05) {
+        dynamicInsights.push({
+          color: "bg-green-500",
+          title: "Budget optimization opportunity",
+          description: `Project is under budget with CPI of ${Math.round(cpi * 100) / 100}`
+        });
+      } else if (cpi < 0.95) {
+        dynamicInsights.push({
+          color: "bg-red-500",
+          title: "Budget overrun alert",
+          description: `Project is over budget with CPI of ${Math.round(cpi * 100) / 100}`
+        });
+      }
+
+      if (spi > 1.05) {
+        dynamicInsights.push({
+          color: "bg-blue-500",
+          title: "Schedule acceleration",
+          description: `Project is ahead of schedule with SPI of ${Math.round(spi * 100) / 100}`
+        });
+      } else if (spi < 0.95) {
+        dynamicInsights.push({
+          color: "bg-orange-500",
+          title: "Schedule delay warning",
+          description: `Project is behind schedule with SPI of ${Math.round(spi * 100) / 100}`
+        });
+      }
+
+      if (activeRisks > 2) {
+        dynamicInsights.push({
+          color: "bg-yellow-500",
+          title: "Risk management required",
+          description: `${activeRisks} active risks need attention`
+        });
+      }
+
+      if (qualityIndex < 80) {
+        dynamicInsights.push({
+          color: "bg-purple-500",
+          title: "Quality improvement needed",
+          description: `Quality index at ${qualityIndex}% - focus on task completion`
+        });
+      }
+
+      // If no specific insights, add generic positive ones
+      if (dynamicInsights.length === 0) {
+        dynamicInsights.push({
+          color: "bg-green-500",
+          title: "Project on track",
+          description: "All key performance indicators are within acceptable ranges"
+        });
+      }
+
+      setInsights(dynamicInsights.slice(0, 3)); // Limit to 3 insights
+
+    } catch (error) {
+      console.error('Error loading performance indicators:', error);
+    }
+  };
+
   const budgetVariance = totalBudget > 0 ? ((actualSpent - totalBudget) / totalBudget) * 100 : 0;
 
   if (loading) {
@@ -229,12 +450,12 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Schedule Progress</p>
-                <p className="text-2xl font-bold">52%</p>
-                <p className="text-xs text-muted-foreground">8 weeks elapsed</p>
+                <p className="text-2xl font-bold">{scheduleProgress}%</p>
+                <p className="text-xs text-muted-foreground">Time elapsed</p>
               </div>
               <Clock className="h-8 w-8 text-blue-500" />
             </div>
-            <Progress value={52} className="mt-2" />
+            <Progress value={scheduleProgress} className="mt-2" />
           </CardContent>
         </Card>
 
@@ -257,15 +478,25 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Risk Level</p>
-                <p className="text-2xl font-bold">Low</p>
-                <p className="text-xs text-muted-foreground">3 active risks</p>
+                <p className="text-2xl font-bold">{riskLevel}</p>
+                <p className="text-xs text-muted-foreground">{activeRisks} active risks</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-500" />
+              <AlertTriangle className={`h-8 w-8 ${
+                riskLevel === 'Very Low' || riskLevel === 'Low' ? 'text-green-500' :
+                riskLevel === 'Medium' ? 'text-yellow-500' :
+                riskLevel === 'High' ? 'text-orange-500' : 'text-red-500'
+              }`} />
             </div>
             <div className="flex gap-1 mt-2">
-              <div className="h-2 w-full bg-green-500 rounded"></div>
-              <div className="h-2 w-full bg-gray-200 rounded"></div>
-              <div className="h-2 w-full bg-gray-200 rounded"></div>
+              <div className={`h-2 w-full rounded ${
+                riskLevel === 'Very Low' || riskLevel === 'Low' ? 'bg-green-500' : 'bg-gray-200'
+              }`}></div>
+              <div className={`h-2 w-full rounded ${
+                riskLevel === 'Medium' ? 'bg-yellow-500' : 'bg-gray-200'
+              }`}></div>
+              <div className={`h-2 w-full rounded ${
+                riskLevel === 'High' || riskLevel === 'Critical' ? 'bg-red-500' : 'bg-gray-200'
+              }`}></div>
             </div>
           </CardContent>
         </Card>
@@ -369,19 +600,39 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Cost Performance Index (CPI)</span>
-              <Badge className="bg-green-100 text-green-800">0.98 (Good)</Badge>
+              <Badge className={performanceIndicators.cpi >= 1.0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                {performanceIndicators.cpi} ({performanceIndicators.cpi >= 1.0 ? 'Good' : 'Over Budget'})
+              </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Schedule Performance Index (SPI)</span>
-              <Badge className="bg-blue-100 text-blue-800">1.05 (Ahead)</Badge>
+              <Badge className={performanceIndicators.spi >= 1.0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                {performanceIndicators.spi} ({performanceIndicators.spi >= 1.0 ? 'On Track' : 'Behind'})
+              </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Quality Index</span>
-              <Badge className="bg-green-100 text-green-800">95% (Excellent)</Badge>
+              <Badge className={
+                performanceIndicators.qualityIndex >= 90 ? "bg-green-100 text-green-800" :
+                performanceIndicators.qualityIndex >= 70 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"
+              }>
+                {performanceIndicators.qualityIndex}% ({
+                  performanceIndicators.qualityIndex >= 90 ? 'Excellent' :
+                  performanceIndicators.qualityIndex >= 70 ? 'Good' : 'Needs Improvement'
+                })
+              </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Risk Score</span>
-              <Badge className="bg-yellow-100 text-yellow-800">2.1 (Low)</Badge>
+              <Badge className={
+                performanceIndicators.riskScore <= 2 ? "bg-green-100 text-green-800" :
+                performanceIndicators.riskScore <= 5 ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"
+              }>
+                {performanceIndicators.riskScore} ({
+                  performanceIndicators.riskScore <= 2 ? 'Low' :
+                  performanceIndicators.riskScore <= 5 ? 'Medium' : 'High'
+                })
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -391,33 +642,15 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
             <CardTitle>Recent Insights</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex gap-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-              <div>
-                <p className="text-sm font-medium">Budget optimization opportunity</p>
-                <p className="text-xs text-muted-foreground">
-                  Design phase completed under budget by $5,000
-                </p>
+            {insights.map((insight, index) => (
+              <div key={index} className="flex gap-3">
+                <div className={`w-2 h-2 ${insight.color} rounded-full mt-2`}></div>
+                <div>
+                  <p className="text-sm font-medium">{insight.title}</p>
+                  <p className="text-xs text-muted-foreground">{insight.description}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-              <div>
-                <p className="text-sm font-medium">Schedule acceleration</p>
-                <p className="text-xs text-muted-foreground">
-                  Pre-construction phase ahead of schedule by 3 days
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-              <div>
-                <p className="text-sm font-medium">Resource allocation alert</p>
-                <p className="text-xs text-muted-foreground">
-                  Consider redistributing team members for execution phase
-                </p>
-              </div>
-            </div>
+            ))}
           </CardContent>
         </Card>
       </div>
