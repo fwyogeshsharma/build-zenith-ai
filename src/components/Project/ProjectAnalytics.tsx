@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, Clock, Users, Target, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Clock, Users, Target, AlertTriangle, Brain, Lightbulb } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { geminiService } from '@/lib/geminiService';
 
 interface ProjectAnalyticsProps {
   projectId: string;
@@ -31,6 +32,9 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
     riskScore: 2.1
   });
   const [insights, setInsights] = useState<Array<{color: string, title: string, description: string}>>([]);
+  const [aiInsights, setAiInsights] = useState<Array<{color: string, title: string, description: string}>>([]);
+  const [loadingAiInsights, setLoadingAiInsights] = useState(false);
+  const [showAiInsights, setShowAiInsights] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,6 +53,9 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
         loadRiskData(),
         loadPerformanceIndicators()
       ]);
+      
+      // Load AI insights after basic analytics are complete
+      await generateAIInsights();
     } catch (error: any) {
       toast({
         title: "Error loading analytics",
@@ -408,6 +415,186 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
     }
   };
 
+  const generateAIInsights = async () => {
+    try {
+      setLoadingAiInsights(true);
+      
+      // Prepare analytics data for AI analysis
+      const analyticsData = {
+        projectId,
+        totalBudget,
+        actualSpent,
+        budgetVariance: budgetVariance,
+        scheduleProgress,
+        projectProgress,
+        teamProductivity,
+        riskLevel,
+        activeRisks,
+        performanceIndicators,
+        taskCompletionData,
+        progressOverTime
+      };
+
+      // Generate AI insights using Gemini
+      const prompt = `As a construction project management expert, analyze the following project analytics data and provide 3 specific, actionable insights:
+
+Project Analytics:
+- Budget: $${totalBudget.toLocaleString()} allocated, $${actualSpent.toLocaleString()} spent (${budgetVariance.toFixed(1)}% variance)
+- Schedule Progress: ${scheduleProgress}% time elapsed
+- Project Progress: ${projectProgress}% complete
+- Team Productivity: ${teamProductivity}% task completion rate
+- Risk Level: ${riskLevel} (${activeRisks} active risks)
+- Performance: CPI: ${performanceIndicators.cpi}, SPI: ${performanceIndicators.spi}, Quality: ${performanceIndicators.qualityIndex}%
+
+Task Distribution: ${taskCompletionData.map(t => `${t.name}: ${t.value}`).join(', ')}
+
+Provide exactly 3 insights in this format:
+1. **Title:** Description
+2. **Title:** Description  
+3. **Title:** Description
+
+Focus on actionable recommendations for budget optimization, schedule management, risk mitigation, or performance improvement.`;
+
+      const aiResponse = await geminiService.generateResponse(prompt, [], projectId);
+      
+      // Parse AI response into insights
+      const parsedInsights = parseAIResponse(aiResponse);
+      setAiInsights(parsedInsights);
+
+    } catch (error) {
+      console.error('Error generating AI insights:', error);
+      // Fallback to basic insights if AI fails
+      const fallbackInsights = generateFallbackInsights();
+      setAiInsights(fallbackInsights);
+    } finally {
+      setLoadingAiInsights(false);
+    }
+  };
+
+  const parseAIResponse = (response: string): Array<{color: string, title: string, description: string}> => {
+    const insights = [];
+    const lines = response.split('\n').filter(line => line.trim());
+    
+    for (const line of lines) {
+      const match = line.match(/\*\*(.+?):\*\*(.+)/);
+      if (match) {
+        const title = match[1].trim();
+        const description = match[2].trim();
+        
+        // Assign colors based on insight type
+        let color = 'bg-blue-500';
+        if (title.toLowerCase().includes('budget') || title.toLowerCase().includes('cost')) {
+          color = 'bg-green-500';
+        } else if (title.toLowerCase().includes('risk') || title.toLowerCase().includes('alert')) {
+          color = 'bg-red-500';
+        } else if (title.toLowerCase().includes('schedule') || title.toLowerCase().includes('time')) {
+          color = 'bg-orange-500';
+        } else if (title.toLowerCase().includes('quality') || title.toLowerCase().includes('performance')) {
+          color = 'bg-purple-500';
+        }
+        
+        insights.push({ color, title, description });
+        
+        if (insights.length >= 3) break;
+      }
+    }
+    
+    return insights.length > 0 ? insights : generateFallbackInsights();
+  };
+
+  const generateFallbackInsights = (): Array<{color: string, title: string, description: string}> => {
+    const fallbackInsights = [];
+    
+    if (budgetVariance > 10) {
+      fallbackInsights.push({
+        color: 'bg-red-500',
+        title: 'Budget Overrun Alert',
+        description: `Project is ${budgetVariance.toFixed(1)}% over budget. Review expenses and consider cost optimization measures.`
+      });
+    } else if (budgetVariance < -5) {
+      fallbackInsights.push({
+        color: 'bg-green-500',
+        title: 'Budget Efficiency',
+        description: `Project is ${Math.abs(budgetVariance).toFixed(1)}% under budget. Consider reallocating savings to quality improvements.`
+      });
+    }
+
+    if (scheduleProgress > projectProgress + 10) {
+      fallbackInsights.push({
+        color: 'bg-orange-500',
+        title: 'Schedule Acceleration Needed',
+        description: `Schedule is ${scheduleProgress - projectProgress}% ahead of progress. Focus on task completion to catch up.`
+      });
+    }
+
+    if (teamProductivity < 70) {
+      fallbackInsights.push({
+        color: 'bg-purple-500',
+        title: 'Team Productivity Improvement',
+        description: `Team productivity at ${teamProductivity}%. Consider resource reallocation or additional support.`
+      });
+    }
+
+    // Add default insight if none match
+    if (fallbackInsights.length === 0) {
+      fallbackInsights.push({
+        color: 'bg-blue-500',
+        title: 'Project Status Review',
+        description: 'Project metrics are within normal ranges. Continue monitoring key performance indicators.'
+      });
+    }
+
+    return fallbackInsights.slice(0, 3);
+  };
+
+  const generatePerformanceAnalysis = async () => {
+    try {
+      setLoadingAiInsights(true);
+      
+      const prompt = `As a construction project management expert, analyze these performance indicators and provide a detailed assessment:
+
+Performance Metrics:
+- Cost Performance Index (CPI): ${performanceIndicators.cpi}
+- Schedule Performance Index (SPI): ${performanceIndicators.spi}  
+- Quality Index: ${performanceIndicators.qualityIndex}%
+- Risk Score: ${performanceIndicators.riskScore}
+
+Project Context:
+- Budget: $${totalBudget.toLocaleString()} allocated, $${actualSpent.toLocaleString()} spent
+- Progress: ${projectProgress}% complete, ${scheduleProgress}% time elapsed
+- Team Productivity: ${teamProductivity}%
+- Risk Level: ${riskLevel}
+
+Provide a comprehensive analysis including:
+1. Overall project health assessment
+2. Key strengths and areas of concern
+3. Specific recommendations for improvement
+4. Predicted outcomes if current trends continue
+
+Format as structured analysis with clear headers and actionable insights.`;
+
+      const aiResponse = await geminiService.generateResponse(prompt, [], projectId);
+      
+      toast({
+        title: "AI Performance Analysis Complete",
+        description: "Detailed analysis has been generated based on your project metrics.",
+      });
+
+      // You could display this in a modal or replace insights temporarily
+      console.log('AI Performance Analysis:', aiResponse);
+      
+    } catch (error) {
+      console.error('Error generating performance analysis:', error);
+      toast({
+        title: "Analysis Error",
+        description: "Unable to generate AI analysis. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAiInsights(false);
+    }
+  };
+
   const budgetVariance = totalBudget > 0 ? ((actualSpent - totalBudget) / totalBudget) * 100 : 0;
 
   if (loading) {
@@ -595,7 +782,17 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Performance Indicators</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              <span>Performance Indicators</span>
+              <button
+                onClick={generatePerformanceAnalysis}
+                disabled={loadingAiInsights}
+                className="text-xs px-3 py-1 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 disabled:opacity-50 flex items-center gap-1"
+              >
+                <Brain className="h-3 w-3" />
+                AI Analysis
+              </button>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
@@ -639,18 +836,47 @@ const ProjectAnalytics = ({ projectId }: ProjectAnalyticsProps) => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Insights</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              <span>Analytics Insights</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowAiInsights(false)}
+                  className={`text-xs px-2 py-1 rounded ${!showAiInsights ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
+                >
+                  Basic
+                </button>
+                <button
+                  onClick={() => setShowAiInsights(true)}
+                  className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${showAiInsights ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
+                >
+                  <Brain className="h-3 w-3" />
+                  AI
+                </button>
+              </div>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {insights.map((insight, index) => (
-              <div key={index} className="flex gap-3">
-                <div className={`w-2 h-2 ${insight.color} rounded-full mt-2`}></div>
-                <div>
-                  <p className="text-sm font-medium">{insight.title}</p>
-                  <p className="text-xs text-muted-foreground">{insight.description}</p>
+            {loadingAiInsights && showAiInsights ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Brain className="h-4 w-4 animate-pulse" />
+                  <span>AI analyzing project data...</span>
                 </div>
               </div>
-            ))}
+            ) : (
+              (showAiInsights ? aiInsights : insights).map((insight, index) => (
+                <div key={index} className="flex gap-3">
+                  <div className={`w-2 h-2 ${insight.color} rounded-full mt-2`}></div>
+                  <div>
+                    <p className="text-sm font-medium flex items-center gap-1">
+                      {showAiInsights && <Lightbulb className="h-3 w-3" />}
+                      {insight.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{insight.description}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

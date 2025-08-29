@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useProgressSync } from '@/lib/progressSync';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -64,6 +65,17 @@ const Dashboard = () => {
     fetchProjects();
     fetchAllProjects();
     fetchTeamMembersCount();
+  }, []);
+
+  // Set up progress sync listener
+  useEffect(() => {
+    const cleanup = useProgressSync((data) => {
+      // Refresh projects when any project progress changes
+      fetchProjects();
+      fetchAllProjects();
+    });
+
+    return cleanup;
   }, []);
 
   const fetchProjects = async () => {

@@ -28,6 +28,7 @@ import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, User, Trash2, M
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
+import { handleTaskStatusChange } from '@/lib/progressSync';
 import { TaskDetail } from '../Tasks/TaskDetail';
 import { TaskProgressDialog } from '../Progress/TaskProgressDialog';
 import { TaskResourcesDialog } from '../Tasks/TaskResourcesDialog';
@@ -186,17 +187,18 @@ const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
 
   const updateTaskStatus = async (taskId: string, status: string) => {
     try {
+      // Get the old status before updating
+      const task = tasks.find(t => t.id === taskId);
+      const oldStatus = task?.status || 'pending';
+      
       const updateData: any = { 
         status,
         completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null
       };
 
       // Auto-set start_date when task starts
-      if (status === 'in_progress') {
-        const task = tasks.find(t => t.id === taskId);
-        if (task && !task.start_date) {
-          updateData.start_date = new Date().toISOString().split('T')[0];
-        }
+      if (status === 'in_progress' && task && !task.start_date) {
+        updateData.start_date = new Date().toISOString().split('T')[0];
       }
 
       const { error } = await supabase
@@ -206,11 +208,15 @@ const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
 
       if (error) throw error;
 
+      // Update local state
       setTasks(tasks.map(task => 
         task.id === taskId 
-          ? { ...task, status, completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null }
+          ? { ...task, ...updateData }
           : task
       ));
+
+      // Trigger progress sync across all components
+      await handleTaskStatusChange(projectId, taskId, oldStatus, status);
 
       toast({
         title: "Task updated",

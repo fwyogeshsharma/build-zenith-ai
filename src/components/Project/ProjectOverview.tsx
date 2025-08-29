@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Users, FileText, Calendar, BarChart3, MapPin, DollarSign, Clock, Activity } from 'lucide-react';
+import { Users, FileText, Calendar, BarChart3, MapPin, DollarSign, Clock, Activity, Layers } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
+import { useProgressSync, getPhaseInfo } from '@/lib/progressSync';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -30,10 +31,43 @@ const ProjectOverview = ({ project }: ProjectOverviewProps) => {
     certificates: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [currentProgress, setCurrentProgress] = useState(project.progress_percentage || 0);
+  const [phaseInfo, setPhaseInfo] = useState<{
+    currentPhase: string;
+    currentPhaseProgress: number;
+    overallProgress: number;
+    phaseWeights: Record<string, number>;
+    phaseOrder: string[];
+  } | null>(null);
 
   useEffect(() => {
     fetchProjectStats();
+    fetchPhaseInfo();
   }, [project.id]);
+
+  // Set up progress sync listener
+  useEffect(() => {
+    const cleanup = useProgressSync((data) => {
+      if (data.projectId === project.id) {
+        setCurrentProgress(data.progress);
+        // Refresh stats and phase info when progress changes
+        fetchProjectStats();
+        fetchPhaseInfo();
+      }
+    });
+
+    return cleanup;
+  }, [project.id]);
+
+  const fetchPhaseInfo = async () => {
+    try {
+      const info = await getPhaseInfo(project.id);
+      setPhaseInfo(info);
+      setCurrentProgress(info.overallProgress);
+    } catch (error) {
+      console.error('Error fetching phase info:', error);
+    }
+  };
 
   const fetchProjectStats = async () => {
     try {
@@ -92,6 +126,12 @@ const ProjectOverview = ({ project }: ProjectOverviewProps) => {
 
   const formatProjectType = (type: string) => {
     return type.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
+  const formatPhase = (phase: string) => {
+    return phase.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
@@ -188,15 +228,78 @@ const ProjectOverview = ({ project }: ProjectOverviewProps) => {
         {/* Progress Overview */}
         <Card>
           <CardHeader>
-            <CardTitle>Progress Overview</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5" />
+              Progress Overview
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Overall Progress</span>
-                <span className="text-sm text-muted-foreground">{project.progress_percentage || 0}%</span>
+            <div className="space-y-6">
+              {/* Current Phase Progress */}
+              {phaseInfo && (
+                <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                        Current Phase
+                      </Badge>
+                      {formatPhase(phaseInfo.currentPhase)}
+                    </span>
+                    <span className="text-sm text-muted-foreground">{phaseInfo.currentPhaseProgress}%</span>
+                  </div>
+                  <Progress value={phaseInfo.currentPhaseProgress} className="h-3 mb-2" />
+                  <p className="text-xs text-muted-foreground">
+                    Complete all {formatPhase(phaseInfo.currentPhase).toLowerCase()} tasks to advance to the next phase
+                  </p>
+                </div>
+              )}
+              
+              {/* Overall Project Progress */}
+              <div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Overall Project Progress</span>
+                  <span className="text-sm text-muted-foreground">{currentProgress}%</span>
+                </div>
+                <Progress value={currentProgress} className="h-3" />
+                
+                {/* Phase Progress Indicators */}
+                {phaseInfo && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs text-muted-foreground mb-2">Phase Breakdown:</p>
+                    <div className="grid grid-cols-1 gap-1">
+                      {phaseInfo.phaseOrder
+                        .filter(phase => phaseInfo.phaseWeights[phase as keyof typeof phaseInfo.phaseWeights] > 0)
+                        .map((phase, index) => {
+                          const isCurrentPhase = phase === phaseInfo.currentPhase;
+                          const isCompletedPhase = phaseInfo.phaseOrder.indexOf(phase) < phaseInfo.phaseOrder.indexOf(phaseInfo.currentPhase);
+                          const phaseWeight = phaseInfo.phaseWeights[phase as keyof typeof phaseInfo.phaseWeights];
+                          
+                          return (
+                            <div key={phase} className="flex items-center gap-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                isCompletedPhase ? 'bg-green-500' : 
+                                isCurrentPhase ? 'bg-blue-500' : 'bg-gray-300'
+                              }`}></div>
+                              <span className={`text-xs ${isCurrentPhase ? 'font-medium' : ''}`}>
+                                {formatPhase(phase)} ({phaseWeight}%)
+                              </span>
+                              {isCurrentPhase && (
+                                <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800">
+                                  Active
+                                </Badge>
+                              )}
+                              {isCompletedPhase && (
+                                <Badge variant="outline" className="text-xs bg-green-100 text-green-800">
+                                  Complete
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
               </div>
-              <Progress value={project.progress_percentage || 0} className="h-3" />
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
                 <div className="text-center">
