@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { UserPlus } from 'lucide-react';
+import { InviteDialog } from '@/components/Team/InviteDialog';
 
 interface TeamMember {
   user_id: string;
@@ -19,6 +22,7 @@ interface TeamMemberSelectProps {
   onChange: (value: string) => void;
   label?: string;
   placeholder?: string;
+  showInviteButton?: boolean;
 }
 
 export const TeamMemberSelect = ({ 
@@ -26,10 +30,12 @@ export const TeamMemberSelect = ({
   value, 
   onChange, 
   label = "Assigned To",
-  placeholder = "Select team member" 
+  placeholder = "Select team member",
+  showInviteButton = true
 }: TeamMemberSelectProps) => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchTeamMembers();
@@ -71,9 +77,29 @@ export const TeamMemberSelect = ({
     }
   };
 
+  const handleInviteSuccess = () => {
+    // Refresh team members after successful invitation
+    fetchTeamMembers();
+  };
+
   return (
-    <div>
-      <Label>{label}</Label>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label>{label}</Label>
+        {showInviteButton && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsInviteDialogOpen(true)}
+            className="h-8 px-2 text-xs"
+          >
+            <UserPlus className="h-3 w-3 mr-1" />
+            Invite
+          </Button>
+        )}
+      </div>
+      
       <Select value={value} onValueChange={onChange} disabled={loading}>
         <SelectTrigger>
           <SelectValue placeholder={loading ? "Loading..." : placeholder} />
@@ -94,6 +120,14 @@ export const TeamMemberSelect = ({
           ))}
         </SelectContent>
       </Select>
+
+      {/* Invite Dialog */}
+      <InviteDialog
+        isOpen={isInviteDialogOpen}
+        onClose={() => setIsInviteDialogOpen(false)}
+        projectId={projectId}
+        onInviteSuccess={handleInviteSuccess}
+      />
     </div>
   );
 };

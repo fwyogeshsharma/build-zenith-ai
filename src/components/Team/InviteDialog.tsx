@@ -31,7 +31,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, UserPlus } from 'lucide-react';
+import { Loader2, UserPlus, Copy, CheckCircle } from 'lucide-react';
 
 const inviteSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -61,6 +61,8 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [invitationLink, setInvitationLink] = useState<string | null>(null);
+  const [showInviteLink, setShowInviteLink] = useState(false);
 
   const form = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
@@ -148,7 +150,11 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
 
       if (error) throw error;
 
-      // TODO: Send invitation email via edge function
+      // Create invitation link
+      const acceptUrl = `${window.location.origin}/accept-invitation?token=${token}`;
+      setInvitationLink(acceptUrl);
+      
+      // Send invitation email via edge function
       try {
         // Fetch project name for email
         const { data: project } = await supabase
@@ -164,36 +170,42 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
             inviterName: user.email,
             role: data.role,
             token,
-            acceptUrl: `${window.location.origin}/accept-invitation?token=${token}`
+            acceptUrl,
+            declineUrl: `${acceptUrl}&action=decline`
           }
         });
 
         if (emailError) {
           console.error('Email sending failed:', emailError);
+          setShowInviteLink(true);
           toast({
-            title: "Invitation created but email failed",
-            description: "The invitation was saved but the email could not be sent.",
+            title: "Email delivery failed",
+            description: `Failed to send email to ${data.email}. Use the link below to invite them manually.`,
             variant: "destructive",
           });
         } else {
           const actionText = existingInvitation ? "resent" : "sent";
           toast({
             title: `Invitation ${actionText} successfully`,
-            description: `Invitation email ${actionText} to ${data.email}`,
+            description: `Invitation email ${actionText} to ${data.email}. They should receive it within a few minutes.`,
           });
+          setShowInviteLink(false);
         }
       } catch (emailError) {
         console.error('Email error:', emailError);
+        setShowInviteLink(true);
         toast({
-          title: "Invitation created but email failed",
-          description: "The invitation was saved but the email could not be sent.",
+          title: "Email service unavailable",
+          description: `The invitation was saved but email couldn't be sent to ${data.email}. Use the link below to invite them manually.`,
           variant: "destructive",
         });
       }
       
-      onInviteSuccess();
-      onClose();
-      form.reset();
+      if (!showInviteLink) {
+        onInviteSuccess();
+        onClose();
+        form.reset();
+      }
       
     } catch (error) {
       console.error('Invitation error:', error);
@@ -209,7 +221,21 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
 
   const handleClose = () => {
     form.reset();
+    setShowInviteLink(false);
+    setInvitationLink(null);
     onClose();
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Link copied!",
+        description: "Invitation link has been copied to clipboard.",
+      });
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   return (
@@ -278,6 +304,46 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
               )}
             />
 
+            {/* Show invitation link if email failed */}
+            {showInviteLink && invitationLink && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-yellow-800">Manual Invitation Link</h4>
+                    <p className="text-sm text-yellow-700 mb-3">
+                      Share this link with the team member to accept the invitation:
+                    </p>
+                    <div className="bg-white border rounded-md p-2 mb-3">
+                      <code className="text-xs text-gray-800 break-all">
+                        {invitationLink}
+                      </code>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyToClipboard(invitationLink)}
+                        className="text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        Copy Link
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleClose}
+                        className="bg-yellow-600 hover:bg-yellow-700"
+                      >
+                        Done
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <DialogFooter>
               <Button
                 type="button"
@@ -288,7 +354,7 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || showInviteLink}
                 className="bg-primary hover:bg-primary/90"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

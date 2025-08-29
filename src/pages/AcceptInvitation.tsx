@@ -15,8 +15,10 @@ const AcceptInvitation = () => {
   const [loading, setLoading] = useState(true);
   const [invitation, setInvitation] = useState<any>(null);
   const [accepting, setAccepting] = useState(false);
+  const [declining, setDeclining] = useState(false);
 
   const token = searchParams.get('token');
+  const action = searchParams.get('action');
 
   useEffect(() => {
     if (token) {
@@ -51,6 +53,11 @@ const AcceptInvitation = () => {
       }
 
       setInvitation(data);
+      
+      // Auto-decline if action is decline
+      if (action === 'decline') {
+        handleRejectInvitation();
+      }
     } catch (error) {
       console.error('Error fetching invitation:', error);
       toast({
@@ -126,6 +133,7 @@ const AcceptInvitation = () => {
   const handleRejectInvitation = async () => {
     if (!invitation) return;
 
+    setDeclining(true);
     try {
       const { error } = await supabase
         .from('invitations')
@@ -147,6 +155,8 @@ const AcceptInvitation = () => {
         description: "Failed to decline invitation.",
         variant: "destructive",
       });
+    } finally {
+      setDeclining(false);
     }
   };
 
@@ -246,12 +256,21 @@ const AcceptInvitation = () => {
                 <Button
                   onClick={handleRejectInvitation}
                   variant="outline"
-                  disabled={accepting}
+                  disabled={accepting || declining}
                   className="flex-1"
                   size="lg"
                 >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Decline
+                  {declining ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Declining...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Decline
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
