@@ -30,6 +30,8 @@ import { Award, Plus, Calendar, FileText, CheckCircle, Clock, AlertCircle, Setti
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import CertificateRequirements from './CertificateRequirements';
+import LEEDCategoryBreakdown from './LEEDCategoryBreakdown';
+import { getLEEDv41BDCTasks, getAllCategories, getTotalPossiblePoints, getPrerequisitesCount, type LEEDTask } from '@/lib/leedSubcategories';
 
 interface CertificationManagementProps {
   projectId: string;
@@ -223,57 +225,111 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
       const { data: { user } } = await supabase.auth.getUser();
       const userId = user?.id;
 
-      // Create requirements from template
-      if (template.default_requirements && template.default_requirements.length > 0) {
-        const requirementsData = template.default_requirements.map((req: any) => ({
+      // Check if this is a LEED v4.1 template - use actual subcategories data
+      const isLEEDv41Template = template.name === 'LEED v4.1 Template' || 
+                               (formData.type === 'leed' && formData.version === 'v4.1');
+
+      if (isLEEDv41Template) {
+        // Use actual LEED v4.1 BD+C subcategories
+        const leedTasks = getLEEDv41BDCTasks();
+        const categories = getAllCategories();
+        
+        // Create detailed requirements from LEED subcategories (using existing schema)
+        const leedRequirementsData = leedTasks.map((task: LEEDTask) => ({
           certificate_id: certificationId,
-          requirement_text: req.text,
-          requirement_category: req.category || 'General',
-          is_mandatory: req.mandatory !== false
+          requirement_text: `${task.title} (${task.maxScore} point${task.maxScore !== 1 ? 's' : ''})`,
+          requirement_category: task.category,
+          is_mandatory: task.isPrerequisite
         }));
 
         const { error: reqError } = await supabase
           .from('certificate_requirements')
-          .insert(requirementsData);
+          .insert(leedRequirementsData);
 
         if (reqError) throw reqError;
-      }
 
-      // Create tasks from template with phase validation
-      if (template.default_tasks && template.default_tasks.length > 0) {
+        // Create tasks from LEED subcategories
         const validPhases = ['concept', 'design', 'pre_construction', 'execution', 'handover', 'operations_maintenance', 'renovation_demolition'];
         
-        const tasksData = template.default_tasks.map((task: any) => {
-          // Map invalid phases to valid ones
-          let validPhase = task.phase;
-          if (task.phase === 'construction') validPhase = 'execution';
-          if (task.phase === 'commissioning_handover') validPhase = 'handover';
-          if (task.phase === 'operation_maintenance') validPhase = 'operations_maintenance';
-          if (task.phase === 'planning_design') validPhase = 'design';
-          
-          // Ensure phase is valid
-          if (!validPhases.includes(validPhase)) {
-            validPhase = 'execution'; // Default fallback
-          }
-
-          return {
-            project_id: projectId,
-            certificate_id: certificationId,
-            title: task.title,
-            description: `Template task for ${template.name} certification`,
-            phase: validPhase,
-            priority: task.priority || 'medium',
-            status: 'pending',
-            created_by: userId,
-            ai_generated: true
-          };
-        });
+        const leedTasksData = leedTasks.map((task: LEEDTask) => ({
+          project_id: projectId,
+          certificate_id: certificationId,
+          title: task.title,
+          description: task.description,
+          phase: task.phase,
+          priority: task.priority,
+          status: 'pending',
+          created_by: userId,
+          ai_generated: true
+        }));
 
         const { error: taskError } = await supabase
           .from('tasks')
-          .insert(tasksData);
+          .insert(leedTasksData);
 
         if (taskError) throw taskError;
+
+        // Show success message with LEED-specific details
+        toast({
+          title: "LEED v4.1 BD+C Template Applied",
+          description: `Created ${leedTasks.length} tasks across ${categories.length} categories. Total possible points: ${getTotalPossiblePoints()}. Prerequisites: ${getPrerequisitesCount()}`,
+        });
+
+      } else {
+        // Use original template-based approach for non-LEED templates
+        
+        // Create requirements from template
+        if (template.default_requirements && template.default_requirements.length > 0) {
+          const requirementsData = template.default_requirements.map((req: any) => ({
+            certificate_id: certificationId,
+            requirement_text: req.text,
+            requirement_category: req.category || 'General',
+            is_mandatory: req.mandatory !== false
+          }));
+
+          const { error: reqError } = await supabase
+            .from('certificate_requirements')
+            .insert(requirementsData);
+
+          if (reqError) throw reqError;
+        }
+
+        // Create tasks from template with phase validation
+        if (template.default_tasks && template.default_tasks.length > 0) {
+          const validPhases = ['concept', 'design', 'pre_construction', 'execution', 'handover', 'operations_maintenance', 'renovation_demolition'];
+          
+          const tasksData = template.default_tasks.map((task: any) => {
+            // Map invalid phases to valid ones
+            let validPhase = task.phase;
+            if (task.phase === 'construction') validPhase = 'execution';
+            if (task.phase === 'commissioning_handover') validPhase = 'handover';
+            if (task.phase === 'operation_maintenance') validPhase = 'operations_maintenance';
+            if (task.phase === 'planning_design') validPhase = 'design';
+            
+            // Ensure phase is valid
+            if (!validPhases.includes(validPhase)) {
+              validPhase = 'execution'; // Default fallback
+            }
+
+            return {
+              project_id: projectId,
+              certificate_id: certificationId,
+              title: task.title,
+              description: `Template task for ${template.name} certification`,
+              phase: validPhase,
+              priority: task.priority || 'medium',
+              status: 'pending',
+              created_by: userId,
+              ai_generated: true
+            };
+          });
+
+          const { error: taskError } = await supabase
+            .from('tasks')
+            .insert(tasksData);
+
+          if (taskError) throw taskError;
+        }
       }
     } catch (error: any) {
       console.error('Error applying template:', error);
@@ -395,6 +451,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                       // Auto-set version for LEED v4.1 template
                       if (selectedTemplate && selectedTemplate.name === 'LEED v4.1 Template') {
                         newFormData.version = 'v4.1';
+                        newFormData.type = 'leed';
                       }
                       
                       setFormData(newFormData);
@@ -407,10 +464,31 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                       {templates.map((template) => (
                         <SelectItem key={template.id} value={template.id}>
                           {template.name}
+                          {template.name === 'LEED v4.1 Template' && (
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              {getLEEDv41BDCTasks().length} tasks
+                            </Badge>
+                          )}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  
+                  {/* Show LEED v4.1 preview information */}
+                  {formData.template_id && templates.find(t => t.id === formData.template_id)?.name === 'LEED v4.1 Template' && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Award className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">LEED v4.1 BD+C Template Preview</span>
+                      </div>
+                      <div className="text-xs text-green-700 space-y-1">
+                        <div>• {getLEEDv41BDCTasks().length} comprehensive subcategory tasks</div>
+                        <div>• {getAllCategories().length} LEED categories covered</div>
+                        <div>• {getTotalPossiblePoints()} total possible points</div>
+                        <div>• {getPrerequisitesCount()} prerequisite requirements</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -675,11 +753,18 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
 
           <TabsContent value="requirements" className="space-y-6">
             {selectedCertificate ? (
-              <CertificateRequirements
-                certificateId={selectedCertificate}
-                certificationType={certifications.find(c => c.id === selectedCertificate)?.type || ''}
-                onRequirementUpdate={fetchCertifications}
-              />
+              <>
+                <CertificateRequirements
+                  certificateId={selectedCertificate}
+                  certificationType={certifications.find(c => c.id === selectedCertificate)?.type || ''}
+                  onRequirementUpdate={fetchCertifications}
+                />
+                {/* Show LEED category breakdown for LEED v4.1 certifications */}
+                <LEEDCategoryBreakdown
+                  certificationType={certifications.find(c => c.id === selectedCertificate)?.type || ''}
+                  version={certifications.find(c => c.id === selectedCertificate)?.version || ''}
+                />
+              </>
             ) : (
               <Card>
                 <CardContent className="text-center py-8">

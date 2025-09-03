@@ -1,0 +1,749 @@
+certification,category id,category,subcategory id,subcategory,max score,version
+Cities and Communities: Existing Communities,IP,Integrative Process,IPc1,Integrative Planning and Leadership,1,v4.1
+Cities and Communities: Existing Communities,IP,Integrative Process,IPc2,Green Building Policy and Incentives,4,v4.1
+Cities and Communities: Existing Communities,NSE,Natural Systems & Ecology,NSEp1,Ecosystem Assessment (Prerequisite),0,v4.1
+Cities and Communities: Existing Communities,NSE,Natural Systems & Ecology,NSEc1,Green Spaces,2,v4.1
+Cities and Communities: Existing Communities,NSE,Natural Systems & Ecology,NSEc2,Natural Resources Conservation and Restoration,2,v4.1
+Cities and Communities: Existing Communities,NSE,Natural Systems & Ecology,NSEc3,Light Pollution Reduction,1,v4.1
+Cities and Communities: Existing Communities,NSE,Natural Systems & Ecology,NSEc4,Resilience Planning,4,v4.1
+Cities and Communities: Existing Communities,TL,Transportation & Land Use,TLp1,Transportation Performance (Prerequisite),6,v4.1
+Cities and Communities: Existing Communities,TL,Transportation & Land Use,TLc1,"Compact, Mixed Use and Transit Oriented Development",2,v4.1
+Cities and Communities: Existing Communities,TL,Transportation & Land Use,TLc2,Access to Quality Transit,1,v4.1
+Cities and Communities: Existing Communities,TL,Transportation & Land Use,TLc3,Alternative Fuel Vehicles,2,v4.1
+Cities and Communities: Existing Communities,TL,Transportation & Land Use,TLc4,Smart Mobility and Transportation Policy,2,v4.1
+Cities and Communities: Existing Communities,TL,Transportation & Land Use,TLc5,High-Priority Site,2,v4.1
+Cities and Communities: Existing Communities,WE,Water Efficiency,WEp1,Water Access and Quality (Prerequisite),0,v4.1
+Cities and Communities: Existing Communities,WE,Water Efficiency,WEp2,Water Performance,6,v4.1
+Cities and Communities: Existing Communities,WE,Water Efficiency,WEc1,Integrated Water Management,1,v4.1
+Cities and Communities: Existing Communities,WE,Water Efficiency,WEc2,Stormwater Management,2,v4.1
+Cities and Communities: Existing Communities,WE,Water Efficiency,WEc3,Smart Water Systems,2,v4.1
+Cities and Communities: Existing Communities,EGGE,Energy and Greenhouse Gas Emissions,EGGEp1,"Power Access, Reliability and Resiliency (Prerequisite)",0,v4.1
+Cities and Communities: Existing Communities,EGGE,Energy and Greenhouse Gas Emissions,EGGEp2,Energy and Greenhouse Gas Emissions Performance,18,v4.1
+Cities and Communities: Existing Communities,EGGE,Energy and Greenhouse Gas Emissions,EGGEc1,Energy Efficiency,4,v4.1
+Cities and Communities: Existing Communities,EGGE,Energy and Greenhouse Gas Emissions,EGGEc2,Renewable Energy,6,v4.1
+Cities and Communities: Existing Communities,EGGE,Energy and Greenhouse Gas Emissions,EGGEc3,Grid Harmonization,2,v4.1
+Cities and Communities: Existing Communities,MR,Materials and Resources,MRp1,Solid Waste Management (Prerequisite),0,v4.1
+Cities and Communities: Existing Communities,MR,Materials and Resources,MRp2,Waste Performance,5,v4.1
+Cities and Communities: Existing Communities,MR,Materials and Resources,MRc1,Special Waste Streams Management,1,v4.1
+Cities and Communities: Existing Communities,MR,Materials and Resources,MRc2,Responsible Sourcing for Infrastructure,2,v4.1
+Cities and Communities: Existing Communities,MR,Materials and Resources,MRc3,Smart Waste Management Systems,2,v4.1
+Cities and Communities: Existing Communities,QL,Quality of Life,QLp1,Demographic Assessment (Prerequisite),0,v4.1
+Cities and Communities: Existing Communities,QL,Quality of Life,QLp2,Quality of Life Performance,6,v4.1
+Cities and Communities: Existing Communities,QL,Quality of Life,QLc1,Trend Improvements,4,v4.1
+Cities and Communities: Existing Communities,QL,Quality of Life,QLc2,Distributional Equity,4,v4.1
+Cities and Communities: Existing Communities,QL,Quality of Life,QLc3,Environmental Justice,1,v4.1
+Cities and Communities: Existing Communities,QL,Quality of Life,QLc4,Housing and Transportation Affordability,2,v4.1
+Cities and Communities: Existing Communities,QL,Quality of Life,QLc5,Civic and Community Engagement,2,v4.1
+Cities and Communities: Existing Communities,QL,Quality of Life,QLc6,Civil and Human Rights,1,v4.1
+Cities and Communities: Existing Communities,I,Innovation,Ic1,Innovation,6,v4.1
+Cities and Communities: Existing Communities,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Residential: Multifamily,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Residential: Multifamily,LT,Location and Transportation,LTc1,LEED for Neighborhood Development Location,15,v4.1
+Residential: Multifamily,LT,Location and Transportation,LTc2,Sensitive Land Protection,2,v4.1
+Residential: Multifamily,LT,Location and Transportation,LTc3,High-Priority Site,1,v4.1
+Residential: Multifamily,LT,Location and Transportation,LTc4,Surrounding Density and Diverse Uses,5,v4.1
+Residential: Multifamily,LT,Location and Transportation,LTc5,Access to Quality Transit,3,v4.1
+Residential: Multifamily,LT,Location and Transportation,LTc6,Bicycle Facilities,1,v4.1
+Residential: Multifamily,LT,Location and Transportation,LTc7,Reduced Parking Footprint,1,v4.1
+Residential: Multifamily,LT,Location and Transportation,LTc8,Electric Vehicles,2,v4.1
+Residential: Multifamily,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Residential: Multifamily,SS,Sustainable Sites,SSc1,Site Assessment,1,v4.1
+Residential: Multifamily,SS,Sustainable Sites,SSc2,Protect or Restore Habitat,1,v4.1
+Residential: Multifamily,SS,Sustainable Sites,SSc3,Open Space,1,v4.1
+Residential: Multifamily,SS,Sustainable Sites,SSc4,Rainwater Management,3,v4.1
+Residential: Multifamily,SS,Sustainable Sites,SSc5,Heat Island Reduction,2,v4.1
+Residential: Multifamily,SS,Sustainable Sites,SSc6,Light Pollution Reduction,1,v4.1
+Residential: Multifamily,WE,Water Efficiency,WEp1,Water Use Reduction (Prerequisite),0,v4.1
+Residential: Multifamily,WE,Water Efficiency,WEp1,Building-Level Water Metering (Prerequisite),0,v4.1
+Residential: Multifamily,WE,Water Efficiency,WEc1,Water Use Reduction,10,v4.1
+Residential: Multifamily,WE,Water Efficiency,WEc2,Water Metering,2,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAp1,Fundamental Systems Testing and Verification (Prerequisite),0,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAp3,Energy Metering (Prerequisite),0,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAp4,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,6,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,18,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAc3,Whole Building Energy Monitoring and Reporting,1,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAc4,Grid Harmonization,2,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAc5,Renewable Energy,5,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAc6,Enhanced Refrigerant Management,1,v4.1
+Residential: Multifamily,EA,Energy and Atmosphere,EAc7,Efficient Hot Water Distribution Systems,1,v4.1
+Residential: Multifamily,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Residential: Multifamily,MR,Materials and Resources,MRp2,Construction and Demolition Waste Management Planning (Prerequisite),0,v4.1
+Residential: Multifamily,MR,Materials and Resources,MRc1,Building Life-Cycle Impact Reduction,5,v4.1
+Residential: Multifamily,MR,Materials and Resources,MRc2,Environmentally Preferable Products,6,v4.1
+Residential: Multifamily,MR,Materials and Resources,MRc3,Construction and Demolition Waste Management,2,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQp2,Combustion Venting (Prerequisite),0,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQp3,Garage Pollutant Protection (Prerequisite),0,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQp4,Radon-Resistant Construction (Prerequisite),0,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQp5,Interior Moisture Management (Prerequisite),0,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQp6,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQp7,Compartmentalization (Prerequisite),0,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Compartmentalization,1,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQc2,No Environmental Tobacco Smoke,1,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQc3,Enhanced Indoor Air Quality Strategies,4,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQc4,Low-Emitting Materials,4,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQc5,Indoor Air Quality Assessment,2,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQc6,Thermal Comfort,1,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQc7,Daylight and Quality Views,1,v4.1
+Residential: Multifamily,IEQ,Indoor Environmental Quality,IEQc8,Acoustic Performance,2,v4.1
+Residential: Multifamily,I,Innovation,Ic1,Innovation,5,v4.1
+Residential: Multifamily,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Residential: Multifamily,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Building Design and Construction: New Construction,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Building Design and Construction: New Construction,LT,Location and Transportation,LTc1,Sensitive Land Protection,1,v4.1
+Building Design and Construction: New Construction,LT,Location and Transportation,LTc2,High-Priority Site and Equitable Development,2,v4.1
+Building Design and Construction: New Construction,LT,Location and Transportation,LTc3,Surrounding Density and Diverse Uses,5,v4.1
+Building Design and Construction: New Construction,LT,Location and Transportation,LTc4,Access to Quality Transit,5,v4.1
+Building Design and Construction: New Construction,LT,Location and Transportation,LTc5,Bicycle Facilities,1,v4.1
+Building Design and Construction: New Construction,LT,Location and Transportation,LTc6,Reduced Parking Footprint,1,v4.1
+Building Design and Construction: New Construction,LT,Location and Transportation,LTc7,Electric Vehicles,1,v4.1
+Building Design and Construction: New Construction,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,SS,Sustainable Sites,SSc1,Site Assessment,1,v4.1
+Building Design and Construction: New Construction,SS,Sustainable Sites,SSc2,Protect or Restore Habitat,2,v4.1
+Building Design and Construction: New Construction,SS,Sustainable Sites,SSc3,Open Space,1,v4.1
+Building Design and Construction: New Construction,SS,Sustainable Sites,SSc4,Rainwater Management,3,v4.1
+Building Design and Construction: New Construction,SS,Sustainable Sites,SSc5,Heat Island Reduction,2,v4.1
+Building Design and Construction: New Construction,SS,Sustainable Sites,SSc6,Light Pollution Reduction,1,v4.1
+Building Design and Construction: New Construction,WE,Water Efficiency,WEp1,Outdoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,WE,Water Efficiency,WEp2,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,WE,Water Efficiency,WEp3,Building-Level Water Metering (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,WE,Water Efficiency,WEc1,Outdoor Water Use Reduction,2,v4.1
+Building Design and Construction: New Construction,WE,Water Efficiency,WEc3,Indoor Water Use Reduction,6,v4.1
+Building Design and Construction: New Construction,WE,Water Efficiency,WEc4,Optimize Process Water Use,2,v4.1
+Building Design and Construction: New Construction,WE,Water Efficiency,WEc5,Water Metering,1,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAp3,Building-Level Energy Metering (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAp4,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,6,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,18,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,1,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAc4,Grid Harmonization,2,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAc5,Renewable Energy,5,v4.1
+Building Design and Construction: New Construction,EA,Energy and Atmosphere,EAc6,Enhanced Refrigerant Management,1,v4.1
+Building Design and Construction: New Construction,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,MR,Materials and Resources,MRc1,Building Life-Cycle Impact Reduction,5,v4.1
+Building Design and Construction: New Construction,MR,Materials and Resources,MRc2,Environmental Product Declarations,2,v4.1
+Building Design and Construction: New Construction,MR,Materials and Resources,MRc3,Sourcing of Raw Materials,2,v4.1
+Building Design and Construction: New Construction,MR,Materials and Resources,MRc4,Material Ingredients,2,v4.1
+Building Design and Construction: New Construction,MR,Materials and Resources,MRc5,Construction and Demolition Waste Management,2,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,2,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc4,Indoor Air Quality Assessment,2,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc5,Thermal Comfort,1,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc6,Interior Lighting,2,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc7,Daylight,3,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc8,Quality Views,1,v4.1
+Building Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc9,Acoustic Performance,1,v4.1
+Building Design and Construction: New Construction,I,Innovation,Ic1,Innovation,5,v4.1
+Building Design and Construction: New Construction,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Building Design and Construction: New Construction,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Building Design and Construction: Core and Shell,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Building Design and Construction: Core and Shell,LT,Location and Transportation,LTc1,Sensitive Land Protection,2,v4.1
+Building Design and Construction: Core and Shell,LT,Location and Transportation,LTc2,High-Priority Site and Equitable Development,3,v4.1
+Building Design and Construction: Core and Shell,LT,Location and Transportation,LTc3,Surrounding Density and Diverse Uses,6,v4.1
+Building Design and Construction: Core and Shell,LT,Location and Transportation,LTc4,Access to Quality Transit,6,v4.1
+Building Design and Construction: Core and Shell,LT,Location and Transportation,LTc5,Bicycle Facilities,1,v4.1
+Building Design and Construction: Core and Shell,LT,Location and Transportation,LTc6,Reduced Parking Footprint,1,v4.1
+Building Design and Construction: Core and Shell,LT,Location and Transportation,LTc7,Electric Vehicles,1,v4.1
+Building Design and Construction: Core and Shell,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,SS,Sustainable Sites,SSc1,Site Assessment,1,v4.1
+Building Design and Construction: Core and Shell,SS,Sustainable Sites,SSc2,Protect or Restore Habitat,2,v4.1
+Building Design and Construction: Core and Shell,SS,Sustainable Sites,SSc3,Open Space,1,v4.1
+Building Design and Construction: Core and Shell,SS,Sustainable Sites,SSc4,Rainwater Management,3,v4.1
+Building Design and Construction: Core and Shell,SS,Sustainable Sites,SSc5,Heat Island Reduction,2,v4.1
+Building Design and Construction: Core and Shell,SS,Sustainable Sites,SSc6,Light Pollution Reduction,1,v4.1
+Building Design and Construction: Core and Shell,SS,Sustainable Sites,SSc7,Tenant Design and Construction Guidelines,1,v4.1
+Building Design and Construction: Core and Shell,WE,Water Efficiency,WEp1,Outdoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,WE,Water Efficiency,WEp2,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,WE,Water Efficiency,WEp3,Building-Level Water Metering (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,WE,Water Efficiency,WEc1,Outdoor Water Use Reduction,3,v4.1
+Building Design and Construction: Core and Shell,WE,Water Efficiency,WEc3,Indoor Water Use Reduction,4,v4.1
+Building Design and Construction: Core and Shell,WE,Water Efficiency,WEc4,Optimize Process Water Use,3,v4.1
+Building Design and Construction: Core and Shell,WE,Water Efficiency,WEc5,Water Metering,1,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAp3,Building-Level Energy Metering (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAp4,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,6,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,18,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,1,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAc4,Grid Harmonization,2,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAc5,Renewable Energy,5,v4.1
+Building Design and Construction: Core and Shell,EA,Energy and Atmosphere,EAc6,Enhanced Refrigerant Management,1,v4.1
+Building Design and Construction: Core and Shell,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,MR,Materials and Resources,MRc1,Building Life-Cycle Impact Reduction,5,v4.1
+Building Design and Construction: Core and Shell,MR,Materials and Resources,MRc2,Environmental Product Declarations,2,v4.1
+Building Design and Construction: Core and Shell,MR,Materials and Resources,MRc3,Sourcing of Raw Materials,2,v4.1
+Building Design and Construction: Core and Shell,MR,Materials and Resources,MRc4,Material Ingredients,2,v4.1
+Building Design and Construction: Core and Shell,MR,Materials and Resources,MRc5,Construction and Demolition Waste Management,2,v4.1
+Building Design and Construction: Core and Shell,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Building Design and Construction: Core and Shell,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,2,v4.1
+Building Design and Construction: Core and Shell,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Building Design and Construction: Core and Shell,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Building Design and Construction: Core and Shell,IEQ,Indoor Environmental Quality,IEQc4,Daylight,3,v4.1
+Building Design and Construction: Core and Shell,IEQ,Indoor Environmental Quality,IEQc5,Quality Views,1,v4.1
+Building Design and Construction: Core and Shell,I,Innovation,Ic1,Innovation,5,v4.1
+Building Design and Construction: Core and Shell,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Building Design and Construction: Core and Shell,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Building Design and Construction: Schools,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Building Design and Construction: Schools,LT,Location and Transportation,LTc1,Sensitive Land Protection,1,v4.1
+Building Design and Construction: Schools,LT,Location and Transportation,LTc2,High-Priority Site and Equitable Development,2,v4.1
+Building Design and Construction: Schools,LT,Location and Transportation,LTc3,Surrounding Density and Diverse Uses,5,v4.1
+Building Design and Construction: Schools,LT,Location and Transportation,LTc4,Access to Quality Transit,4,v4.1
+Building Design and Construction: Schools,LT,Location and Transportation,LTc5,Bicycle Facilities,1,v4.1
+Building Design and Construction: Schools,LT,Location and Transportation,LTc6,Reduced Parking Footprint,1,v4.1
+Building Design and Construction: Schools,LT,Location and Transportation,LTc7,Electric Vehicles,1,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSp2,Environmental Site Assessment (Prerequisite),0,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSc1,Site Assessment,1,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSc2,Protect or Restore Habitat,2,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSc3,Open Space,1,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSc4,Rainwater Management,3,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSc5,Heat Island Reduction,2,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSc6,Light Pollution Reduction,1,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSc7,Site Master Plan,1,v4.1
+Building Design and Construction: Schools,SS,Sustainable Sites,SSc8,Joint Use of Facilities,1,v4.1
+Building Design and Construction: Schools,WE,Water Efficiency,WEp1,Outdoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Schools,WE,Water Efficiency,WEp2,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Schools,WE,Water Efficiency,WEp3,Building-Level Water Metering (Prerequisite),0,v4.1
+Building Design and Construction: Schools,WE,Water Efficiency,WEc1,Outdoor Water Use Reduction,2,v4.1
+Building Design and Construction: Schools,WE,Water Efficiency,WEc3,Indoor Water Use Reduction,7,v4.1
+Building Design and Construction: Schools,WE,Water Efficiency,WEc4,Optimize Process Water Use,2,v4.1
+Building Design and Construction: Schools,WE,Water Efficiency,WEc5,Water Metering,1,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAp3,Building-Level Energy Metering (Prerequisite),0,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAp4,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,6,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,16,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,1,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAc4,Grid Harmonization,2,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAc5,Renewable Energy,5,v4.1
+Building Design and Construction: Schools,EA,Energy and Atmosphere,EAc6,Enhanced Refrigerant Management,1,v4.1
+Building Design and Construction: Schools,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Building Design and Construction: Schools,MR,Materials and Resources,MRc1,Building Life-Cycle Impact Reduction,5,v4.1
+Building Design and Construction: Schools,MR,Materials and Resources,MRc2,Environmental Product Declarations,2,v4.1
+Building Design and Construction: Schools,MR,Materials and Resources,MRc3,Sourcing of Raw Materials,2,v4.1
+Building Design and Construction: Schools,MR,Materials and Resources,MRc4,Material Ingredients,2,v4.1
+Building Design and Construction: Schools,MR,Materials and Resources,MRc5,Construction and Demolition Waste Management,2,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQp3,Minimum Acoustic Performance (Prerequisite),0,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,2,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQc4,Indoor Air Quality Assessment,2,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQc5,Thermal Comfort,1,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQc6,Interior Lighting,2,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQc7,Daylight,3,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQc8,Quality Views,1,v4.1
+Building Design and Construction: Schools,IEQ,Indoor Environmental Quality,IEQc9,Acoustic Performance,1,v4.1
+Building Design and Construction: Schools,I,Innovation,Ic1,Innovation,5,v4.1
+Building Design and Construction: Schools,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Building Design and Construction: Schools,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Building Design and Construction: Retail,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Building Design and Construction: Retail,LT,Location and Transportation,LTc1,Sensitive Land Protection,1,v4.1
+Building Design and Construction: Retail,LT,Location and Transportation,LTc2,High-Priority Site and Equitable Development,2,v4.1
+Building Design and Construction: Retail,LT,Location and Transportation,LTc3,Surrounding Density and Diverse Uses,5,v4.1
+Building Design and Construction: Retail,LT,Location and Transportation,LTc4,Access to Quality Transit,5,v4.1
+Building Design and Construction: Retail,LT,Location and Transportation,LTc5,Bicycle Facilities,1,v4.1
+Building Design and Construction: Retail,LT,Location and Transportation,LTc6,Reduced Parking Footprint,1,v4.1
+Building Design and Construction: Retail,LT,Location and Transportation,LTc7,Electric Vehicles,1,v4.1
+Building Design and Construction: Retail,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Building Design and Construction: Retail,SS,Sustainable Sites,SSc1,Site Assessment,1,v4.1
+Building Design and Construction: Retail,SS,Sustainable Sites,SSc2,Protect or Restore Habitat,2,v4.1
+Building Design and Construction: Retail,SS,Sustainable Sites,SSc3,Open Space,1,v4.1
+Building Design and Construction: Retail,SS,Sustainable Sites,SSc4,Rainwater Management,3,v4.1
+Building Design and Construction: Retail,SS,Sustainable Sites,SSc5,Heat Island Reduction,2,v4.1
+Building Design and Construction: Retail,SS,Sustainable Sites,SSc6,Light Pollution Reduction,1,v4.1
+Building Design and Construction: Retail,WE,Water Efficiency,WEp1,Outdoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Retail,WE,Water Efficiency,WEp2,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Retail,WE,Water Efficiency,WEp3,Building-Level Water Metering (Prerequisite),0,v4.1
+Building Design and Construction: Retail,WE,Water Efficiency,WEc1,Outdoor Water Use Reduction,2,v4.1
+Building Design and Construction: Retail,WE,Water Efficiency,WEc3,Indoor Water Use Reduction,7,v4.1
+Building Design and Construction: Retail,WE,Water Efficiency,WEc4,Optimize Process Water Use,2,v4.1
+Building Design and Construction: Retail,WE,Water Efficiency,WEc5,Water Metering,1,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAp3,Building-Level Energy Metering (Prerequisite),0,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAp4,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,6,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,18,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,1,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAc4,Grid Harmonization,2,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAc5,Renewable Energy,5,v4.1
+Building Design and Construction: Retail,EA,Energy and Atmosphere,EAc6,Enhanced Refrigerant Management,1,v4.1
+Building Design and Construction: Retail,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Building Design and Construction: Retail,MR,Materials and Resources,MRc1,Building Life-Cycle Impact Reduction,5,v4.1
+Building Design and Construction: Retail,MR,Materials and Resources,MRc2,Environmental Product Declarations,2,v4.1
+Building Design and Construction: Retail,MR,Materials and Resources,MRc3,Sourcing of Raw Materials,2,v4.1
+Building Design and Construction: Retail,MR,Materials and Resources,MRc4,Material Ingredients,2,v4.1
+Building Design and Construction: Retail,MR,Materials and Resources,MRc5,Construction and Demolition Waste Management,2,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,2,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc4,Indoor Air Quality Assessment,2,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc5,Thermal Comfort,1,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc6,Interior Lighting,2,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc7,Daylight,3,v4.1
+Building Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc8,Quality Views,1,v4.1
+Building Design and Construction: Retail,I,Innovation,Ic1,Innovation,5,v4.1
+Building Design and Construction: Retail,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Building Design and Construction: Retail,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Building Design and Construction: Data Centers,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Building Design and Construction: Data Centers,LT,Location and Transportation,LTc1,Sensitive Land Protection,1,v4.1
+Building Design and Construction: Data Centers,LT,Location and Transportation,LTc2,High-Priority Site and Equitable Development,2,v4.1
+Building Design and Construction: Data Centers,LT,Location and Transportation,LTc3,Surrounding Density and Diverse Uses,5,v4.1
+Building Design and Construction: Data Centers,LT,Location and Transportation,LTc4,Access to Quality Transit,5,v4.1
+Building Design and Construction: Data Centers,LT,Location and Transportation,LTc5,Bicycle Facilities,1,v4.1
+Building Design and Construction: Data Centers,LT,Location and Transportation,LTc6,Reduced Parking Footprint,1,v4.1
+Building Design and Construction: Data Centers,LT,Location and Transportation,LTc7,Electric Vehicles,1,v4.1
+Building Design and Construction: Data Centers,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,SS,Sustainable Sites,SSc1,Site Assessment,1,v4.1
+Building Design and Construction: Data Centers,SS,Sustainable Sites,SSc2,Protect or Restore Habitat,2,v4.1
+Building Design and Construction: Data Centers,SS,Sustainable Sites,SSc3,Open Space,1,v4.1
+Building Design and Construction: Data Centers,SS,Sustainable Sites,SSc4,Rainwater Management,3,v4.1
+Building Design and Construction: Data Centers,SS,Sustainable Sites,SSc5,Heat Island Reduction,2,v4.1
+Building Design and Construction: Data Centers,SS,Sustainable Sites,SSc6,Light Pollution Reduction,1,v4.1
+Building Design and Construction: Data Centers,WE,Water Efficiency,WEp1,Outdoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,WE,Water Efficiency,WEp2,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,WE,Water Efficiency,WEp3,Building-Level Water Metering (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,WE,Water Efficiency,WEc1,Outdoor Water Use Reduction,2,v4.1
+Building Design and Construction: Data Centers,WE,Water Efficiency,WEc3,Indoor Water Use Reduction,6,v4.1
+Building Design and Construction: Data Centers,WE,Water Efficiency,WEc4,Optimize Process Water Use,2,v4.1
+Building Design and Construction: Data Centers,WE,Water Efficiency,WEc5,Water Metering,1,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAp3,Building-Level Energy Metering (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAp4,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,6,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,18,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,1,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAc4,Grid Harmonization,2,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAc5,Renewable Energy,5,v4.1
+Building Design and Construction: Data Centers,EA,Energy and Atmosphere,EAc6,Enhanced Refrigerant Management,1,v4.1
+Building Design and Construction: Data Centers,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,MR,Materials and Resources,MRc1,Building Life-Cycle Impact Reduction,5,v4.1
+Building Design and Construction: Data Centers,MR,Materials and Resources,MRc2,Environmental Product Declarations,2,v4.1
+Building Design and Construction: Data Centers,MR,Materials and Resources,MRc3,Sourcing of Raw Materials,2,v4.1
+Building Design and Construction: Data Centers,MR,Materials and Resources,MRc4,Material Ingredients,2,v4.1
+Building Design and Construction: Data Centers,MR,Materials and Resources,MRc5,Construction and Demolition Waste Management,2,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,2,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQc4,Indoor Air Quality Assessment,2,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQc5,Thermal Comfort,1,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQc6,Interior Lighting,2,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQc7,Daylight,3,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQc8,Quality Views,1,v4.1
+Building Design and Construction: Data Centers,IEQ,Indoor Environmental Quality,IEQc9,Acoustic Performance,1,v4.1
+Building Design and Construction: Data Centers,I,Innovation,Ic1,Innovation,5,v4.1
+Building Design and Construction: Data Centers,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Building Design and Construction: Data Centers,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,LT,Location and Transportation,LTc1,Sensitive Land Protection,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,LT,Location and Transportation,LTc2,High-Priority Site and Equitable Development,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,LT,Location and Transportation,LTc3,Surrounding Density and Diverse Uses,5,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,LT,Location and Transportation,LTc4,Access to Quality Transit,5,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,LT,Location and Transportation,LTc5,Bicycle Facilities,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,LT,Location and Transportation,LTc6,Reduced Parking Footprint,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,LT,Location and Transportation,LTc7,Electric Vehicles,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,SS,Sustainable Sites,SSc1,Site Assessment,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,SS,Sustainable Sites,SSc2,Protect or Restore Habitat,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,SS,Sustainable Sites,SSc3,Open Space,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,SS,Sustainable Sites,SSc4,Rainwater Management,3,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,SS,Sustainable Sites,SSc5,Heat Island Reduction,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,SS,Sustainable Sites,SSc6,Light Pollution Reduction,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,WE,Water Efficiency,WEp1,Outdoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,WE,Water Efficiency,WEp2,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,WE,Water Efficiency,WEp3,Building-Level Water Metering (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,WE,Water Efficiency,WEc1,Outdoor Water Use Reduction,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,WE,Water Efficiency,WEc3,Indoor Water Use Reduction,6,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,WE,Water Efficiency,WEc4,Optimize Process Water Use,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,WE,Water Efficiency,WEc5,Water Metering,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAp3,Building-Level Energy Metering (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAp4,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,6,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,18,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAc4,Grid Harmonization,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAc5,Renewable Energy,5,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,EA,Energy and Atmosphere,EAc6,Enhanced Refrigerant Management,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,MR,Materials and Resources,MRc1,Building Life-Cycle Impact Reduction,5,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,MR,Materials and Resources,MRc2,Environmental Product Declarations,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,MR,Materials and Resources,MRc3,Sourcing of Raw Materials,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,MR,Materials and Resources,MRc4,Material Ingredients,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,MR,Materials and Resources,MRc5,Construction and Demolition Waste Management,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQc4,Indoor Air Quality Assessment,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQc5,Thermal Comfort,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQc6,Interior Lighting,2,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQc7,Daylight,3,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQc8,Quality Views,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,IEQ,Indoor Environmental Quality,IEQc9,Acoustic Performance,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,I,Innovation,Ic1,Innovation,5,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Building Design and Construction: Warehouses and Distribution Centers,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Building Design and Construction: Hospitality,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Building Design and Construction: Hospitality,LT,Location and Transportation,LTc1,Sensitive Land Protection,1,v4.1
+Building Design and Construction: Hospitality,LT,Location and Transportation,LTc2,High-Priority Site and Equitable Development,2,v4.1
+Building Design and Construction: Hospitality,LT,Location and Transportation,LTc3,Surrounding Density and Diverse Uses,5,v4.1
+Building Design and Construction: Hospitality,LT,Location and Transportation,LTc4,Access to Quality Transit,5,v4.1
+Building Design and Construction: Hospitality,LT,Location and Transportation,LTc5,Bicycle Facilities,1,v4.1
+Building Design and Construction: Hospitality,LT,Location and Transportation,LTc6,Reduced Parking Footprint,1,v4.1
+Building Design and Construction: Hospitality,LT,Location and Transportation,LTc7,Electric Vehicles,1,v4.1
+Building Design and Construction: Hospitality,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,SS,Sustainable Sites,SSc1,Site Assessment,1,v4.1
+Building Design and Construction: Hospitality,SS,Sustainable Sites,SSc2,Protect or Restore Habitat,2,v4.1
+Building Design and Construction: Hospitality,SS,Sustainable Sites,SSc3,Open Space,1,v4.1
+Building Design and Construction: Hospitality,SS,Sustainable Sites,SSc4,Rainwater Management,3,v4.1
+Building Design and Construction: Hospitality,SS,Sustainable Sites,SSc5,Heat Island Reduction,2,v4.1
+Building Design and Construction: Hospitality,SS,Sustainable Sites,SSc6,Light Pollution Reduction,1,v4.1
+Building Design and Construction: Hospitality,WE,Water Efficiency,WEp1,Outdoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,WE,Water Efficiency,WEp2,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,WE,Water Efficiency,WEp3,Building-Level Water Metering (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,WE,Water Efficiency,WEc1,Outdoor Water Use Reduction,2,v4.1
+Building Design and Construction: Hospitality,WE,Water Efficiency,WEc3,Indoor Water Use Reduction,6,v4.1
+Building Design and Construction: Hospitality,WE,Water Efficiency,WEc4,Optimize Process Water Use,2,v4.1
+Building Design and Construction: Hospitality,WE,Water Efficiency,WEc5,Water Metering,1,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAp3,Building-Level Energy Metering (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAp4,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,6,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,18,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,1,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAc4,Grid Harmonization,2,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAc5,Renewable Energy,5,v4.1
+Building Design and Construction: Hospitality,EA,Energy and Atmosphere,EAc6,Enhanced Refrigerant Management,1,v4.1
+Building Design and Construction: Hospitality,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,MR,Materials and Resources,MRc1,Building Life-Cycle Impact Reduction,5,v4.1
+Building Design and Construction: Hospitality,MR,Materials and Resources,MRc2,Environmental Product Declarations,2,v4.1
+Building Design and Construction: Hospitality,MR,Materials and Resources,MRc3,Sourcing of Raw Materials,2,v4.1
+Building Design and Construction: Hospitality,MR,Materials and Resources,MRc4,Material Ingredients,2,v4.1
+Building Design and Construction: Hospitality,MR,Materials and Resources,MRc5,Construction and Demolition Waste Management,2,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,2,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQc4,Indoor Air Quality Assessment,2,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQc5,Thermal Comfort,1,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQc6,Interior Lighting,2,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQc7,Daylight,3,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQc8,Quality Views,1,v4.1
+Building Design and Construction: Hospitality,IEQ,Indoor Environmental Quality,IEQc9,Acoustic Performance,1,v4.1
+Building Design and Construction: Hospitality,I,Innovation,Ic1,Innovation,5,v4.1
+Building Design and Construction: Hospitality,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Building Design and Construction: Hospitality,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Building Design and Construction: Healthcare,IP,Integrative Process,IPp1,Integrative Project Planning and Design (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Building Design and Construction: Healthcare,LT,Location and Transportation,LTc1,Sensitive Land Protection,1,v4.1
+Building Design and Construction: Healthcare,LT,Location and Transportation,LTc2,High-Priority Site and Equitable Development,2,v4.1
+Building Design and Construction: Healthcare,LT,Location and Transportation,LTc3,Surrounding Density and Diverse Uses,1,v4.1
+Building Design and Construction: Healthcare,LT,Location and Transportation,LTc4,Access to Quality Transit,2,v4.1
+Building Design and Construction: Healthcare,LT,Location and Transportation,LTc5,Bicycle Facilities,1,v4.1
+Building Design and Construction: Healthcare,LT,Location and Transportation,LTc6,Reduced Parking Footprint,1,v4.1
+Building Design and Construction: Healthcare,LT,Location and Transportation,LTc7,Electric Vehicles,1,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSp2,Environmental Site Assessment (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSc1,Site Assessment,1,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSc2,Protect or Restore Habitat,1,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSc3,Open Space,1,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSc4,Rainwater Management,2,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSc5,Heat Island Reduction,1,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSc6,Light Pollution Reduction,1,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSc7,Places of Respite,1,v4.1
+Building Design and Construction: Healthcare,SS,Sustainable Sites,SSc8,Direct Exterior Access,1,v4.1
+Building Design and Construction: Healthcare,WE,Water Efficiency,WEp1,Outdoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,WE,Water Efficiency,WEp2,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,WE,Water Efficiency,WEp3,Building-Level Water Metering (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,WE,Water Efficiency,WEc1,Outdoor Water Use Reduction,1,v4.1
+Building Design and Construction: Healthcare,WE,Water Efficiency,WEc3,Indoor Water Use Reduction,7,v4.1
+Building Design and Construction: Healthcare,WE,Water Efficiency,WEc4,Optimize Process Water Use,2,v4.1
+Building Design and Construction: Healthcare,WE,Water Efficiency,WEc5,Water Metering,1,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAp3,Building-Level Energy Metering (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAp4,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,6,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,20,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,1,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAc4,Grid Harmonization,2,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAc5,Renewable Energy,5,v4.1
+Building Design and Construction: Healthcare,EA,Energy and Atmosphere,EAc6,Enhanced Refrigerant Management,1,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRp2,PBT Source Reduction – Mercury (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRc1,Building Life-Cycle Impact Reduction,5,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRc2,Environmental Product Declarations,2,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRc3,Sourcing of Raw Materials,2,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRc4,Material Ingredients,2,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRc5,PBT Source Reduction – Mercury,1,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRc6,"PBT Source Reduction – Lead, Cadmium,  and Copper",2,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRc7,Furniture and Medical Furnishings,2,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRc8,Design for Flexibility,1,v4.1
+Building Design and Construction: Healthcare,MR,Materials and Resources,MRc9,Construction and Demolition Waste Management,2,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,2,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQc4,Indoor Air Quality Assessment,2,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQc5,Thermal Comfort,1,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQc6,Interior Lighting,1,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQc7,Daylight,2,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQc8,Quality Views,2,v4.1
+Building Design and Construction: Healthcare,IEQ,Indoor Environmental Quality,IEQc9,Acoustic Performance,2,v4.1
+Building Design and Construction: Healthcare,I,Innovation,Ic1,Innovation,5,v4.1
+Building Design and Construction: Healthcare,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Building Design and Construction: Healthcare,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Interior Design and Construction: New Construction,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Interior Design and Construction: New Construction,LT,Location and Transportation,LTc1,Surrounding Density and Diverse Uses,8,v4.1
+Interior Design and Construction: New Construction,LT,Location and Transportation,LTc2,Access to Quality Transit,7,v4.1
+Interior Design and Construction: New Construction,LT,Location and Transportation,LTc3,Bicycle Facilities,1,v4.1
+Interior Design and Construction: New Construction,LT,Location and Transportation,LTc4,Reduced Parking Footprint,2,v4.1
+Interior Design and Construction: New Construction,WE,Water Efficiency,WEp1,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Interior Design and Construction: New Construction,WE,Water Efficiency,WEc1,Indoor Water Use Reduction,12,v4.1
+Interior Design and Construction: New Construction,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Interior Design and Construction: New Construction,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Interior Design and Construction: New Construction,EA,Energy and Atmosphere,EAp3,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Interior Design and Construction: New Construction,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,5,v4.1
+Interior Design and Construction: New Construction,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,24,v4.1
+Interior Design and Construction: New Construction,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,2,v4.1
+Interior Design and Construction: New Construction,EA,Energy and Atmosphere,EAc4,Renewable Energy,6,v4.1
+Interior Design and Construction: New Construction,EA,Energy and Atmosphere,EAc5,Enhanced Refrigerant Management,1,v4.1
+Interior Design and Construction: New Construction,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Interior Design and Construction: New Construction,MR,Materials and Resources,MRc1,Long-Term Commitment,1,v4.1
+Interior Design and Construction: New Construction,MR,Materials and Resources,MRc2,Interiors Life-Cycle Impact Reduction,4,v4.1
+Interior Design and Construction: New Construction,MR,Materials and Resources,MRc3,Environmental Product Declarations,2,v4.1
+Interior Design and Construction: New Construction,MR,Materials and Resources,MRc4,Sourcing of Raw Materials,2,v4.1
+Interior Design and Construction: New Construction,MR,Materials and Resources,MRc5,Material Ingredients,2,v4.1
+Interior Design and Construction: New Construction,MR,Materials and Resources,MRc6,Construction and Demolition Waste Management,2,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,2,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc4,Indoor Air Quality Assessment,2,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc5,Thermal Comfort,1,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc6,Interior Lighting,2,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc7,Daylight,3,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc8,Quality Views,1,v4.1
+Interior Design and Construction: New Construction,IEQ,Indoor Environmental Quality,IEQc9,Acoustic Performance,2,v4.1
+Interior Design and Construction: New Construction,I,Innovation,Ic1,Innovation,5,v4.1
+Interior Design and Construction: New Construction,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Interior Design and Construction: New Construction,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Interior Design and Construction: Retail,IP,Integrative Process,IPc1,Integrative Process,1,v4.1
+Interior Design and Construction: Retail,LT,Location and Transportation,LTc1,Surrounding Density and Diverse Uses,8,v4.1
+Interior Design and Construction: Retail,LT,Location and Transportation,LTc2,Access to Quality Transit,7,v4.1
+Interior Design and Construction: Retail,LT,Location and Transportation,LTc3,Bicycle Facilities,1,v4.1
+Interior Design and Construction: Retail,LT,Location and Transportation,LTc4,Reduced Parking Footprint,2,v4.1
+Interior Design and Construction: Retail,WE,Water Efficiency,WEp1,Indoor Water Use Reduction (Prerequisite),0,v4.1
+Interior Design and Construction: Retail,WE,Water Efficiency,WEc1,Indoor Water Use Reduction,12,v4.1
+Interior Design and Construction: Retail,EA,Energy and Atmosphere,EAp1,Fundamental Commissioning and Verification (Prerequisite),0,v4.1
+Interior Design and Construction: Retail,EA,Energy and Atmosphere,EAp2,Minimum Energy Performance (Prerequisite),0,v4.1
+Interior Design and Construction: Retail,EA,Energy and Atmosphere,EAp3,Fundamental Refrigerant Management (Prerequisite),0,v4.1
+Interior Design and Construction: Retail,EA,Energy and Atmosphere,EAc1,Enhanced Commissioning,5,v4.1
+Interior Design and Construction: Retail,EA,Energy and Atmosphere,EAc2,Optimize Energy Performance,24,v4.1
+Interior Design and Construction: Retail,EA,Energy and Atmosphere,EAc3,Advanced Energy Metering,2,v4.1
+Interior Design and Construction: Retail,EA,Energy and Atmosphere,EAc4,Renewable Energy,6,v4.1
+Interior Design and Construction: Retail,EA,Energy and Atmosphere,EAc5,Enhanced Refrigerant Management,1,v4.1
+Interior Design and Construction: Retail,MR,Materials and Resources,MRp1,Storage and Collection of Recyclables (Prerequisite),0,v4.1
+Interior Design and Construction: Retail,MR,Materials and Resources,MRc1,Long-Term Commitment,1,v4.1
+Interior Design and Construction: Retail,MR,Materials and Resources,MRc2,Interiors Life-Cycle Impact Reduction,5,v4.1
+Interior Design and Construction: Retail,MR,Materials and Resources,MRc3,Environmental Product Declarations,2,v4.1
+Interior Design and Construction: Retail,MR,Materials and Resources,MRc4,Sourcing of Raw Materials,2,v4.1
+Interior Design and Construction: Retail,MR,Materials and Resources,MRc5,Material Ingredients,2,v4.1
+Interior Design and Construction: Retail,MR,Materials and Resources,MRc6,Construction and Demolition Waste Management,2,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQp1,Minimum Indoor Air Quality Performance (Prerequisite),0,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQp2,Environmental Tobacco Smoke Control (Prerequisite),0,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Indoor Air Quality Strategies,3,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc2,Low-Emitting Materials,3,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc3,Construction Indoor Air Quality Management Plan,1,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc4,Indoor Air Quality Assessment,2,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc5,Thermal Comfort,1,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc6,Interior Lighting,2,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc7,Daylight,3,v4.1
+Interior Design and Construction: Retail,IEQ,Indoor Environmental Quality,IEQc8,Quality Views,1,v4.1
+Interior Design and Construction: Retail,I,Innovation,Ic1,Innovation,5,v4.1
+Interior Design and Construction: Retail,I,Innovation,Ic2,LEED Accredited Professional,1,v4.1
+Interior Design and Construction: Retail,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Residential: Single Family,IP,Integrative Process,IPc1,Integrative Process,2,v4.1
+Residential: Single Family,LT,Location and Transportation,LTp1,Floodplain Avoidance (Prerequisite),0,v4.1
+Residential: Single Family,LT,Location and Transportation,LTc1,LEED for Neighborhood Development Location,10,v4.1
+Residential: Single Family,LT,Location and Transportation,LTc2,Site Selection,6,v4.1
+Residential: Single Family,LT,Location and Transportation,LTc3,Compact Development,1,v4.1
+Residential: Single Family,LT,Location and Transportation,LTc4,Community Resources,1,v4.1
+Residential: Single Family,LT,Location and Transportation,LTc5,Access to Transit,2,v4.1
+Residential: Single Family,SS,Sustainable Sites,SSp1,Construction Activity Pollution Prevention (Prerequisite),0,v4.1
+Residential: Single Family,SS,Sustainable Sites,SSc1,Heat Island Reduction,1,v4.1
+Residential: Single Family,SS,Sustainable Sites,SSc2,Rainwater Management,2,v4.1
+Residential: Single Family,SS,Sustainable Sites,SSc3,Non-Toxic Pest Control,2,v4.1
+Residential: Single Family,WE,Water Efficiency,WEp1,Water Use (Prerequisite),0,v4.1
+Residential: Single Family,WE,Water Efficiency,WEp2,Water Metering (Prerequisite),0,v4.1
+Residential: Single Family,WE,Water Efficiency,WEc1,Total Water Use,15,v4.1
+Residential: Single Family,WE,Water Efficiency,WEc2,Indoor Water Use,11,v4.1
+Residential: Single Family,WE,Water Efficiency,WEc3,Outdoor Water Use,14,v4.1
+Residential: Single Family,EA,Energy and Atmosphere,EAp1,Minimum Energy Performance (Prerequisite),0,v4.1
+Residential: Single Family,EA,Energy and Atmosphere,EAp2,Energy Metering (Prerequisite),0,v4.1
+Residential: Single Family,EA,Energy and Atmosphere,EAp3,"Education of the Homeowner,  Tenant, or Building Manager (Prerequisite)",0,v4.1
+Residential: Single Family,EA,Energy and Atmosphere,EAc1,Annual Energy Use,36,v4.1
+Residential: Single Family,EA,Energy and Atmosphere,EAc2,Efficient Hot Water Distribution System,2,v4.1
+Residential: Single Family,EA,Energy and Atmosphere,EAc3,HVAC Start-Up Credentialing,1,v4.1
+Residential: Single Family,EA,Energy and Atmosphere,EAc4,Refrigerant Management,1,v4.1
+Residential: Single Family,MR,Materials and Resources,MRp1,Certified Tropical Wood (Prerequisite),0,v4.1
+Residential: Single Family,MR,Materials and Resources,MRp2,Durability Management (Prerequisite),0,v4.1
+Residential: Single Family,MR,Materials and Resources,MRc1,Durability Management Verification,3,v4.1
+Residential: Single Family,MR,Materials and Resources,MRc2,Environmentally Preferable Products,5,v4.1
+Residential: Single Family,MR,Materials and Resources,MRc3,Construction Waste Management,2,v4.1
+Residential: Single Family,MR,Materials and Resources,MRc4,Material Efficient Framing,2,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQp1,Ventilation (Prerequisite),0,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQp2,Combustion Venting (Prerequisite),0,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQp3,Garage Pollutant Protection (Prerequisite),0,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQp4,Radon-Resistant Construction (Prerequisite),0,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQp5,Air Filtering (Prerequisite),0,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQp6,Compartmentalization (Prerequisite),0,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQc1,Enhanced Ventilation,3,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQc2,Contaminant Control,3,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQc3,Balancing of Heating and Cooling Distribution Systems,6,v4.1
+Residential: Single Family,IEQ,Indoor Environmental Quality,IEQc4,Low Emitting Products,4,v4.1
+Residential: Single Family,I,Innovation,Ip1,Preliminary Rating,0,v4.1
+Residential: Single Family,I,Innovation,Ic1,Innovation,5,v4.1
+Residential: Single Family,I,Innovation,Ic2,LEED AP Homes,1,v4.1
+Residential: Single Family,RP,Regional Priority,RPc1,Regional Priority,4,v4.1
+Cities and Communities: Plan and Design Communities,IP,INTEGRATIVE PROCESS,IPp1,Integrative Planning and Design Process,0,v4.1
+Cities and Communities: Plan and Design Communities,IP,INTEGRATIVE PROCESS,IPc1,Green Building Policy and Incentives,5,v4.1
+Cities and Communities: Plan and Design Communities,NSE,NATURAL SYSTEMS & ECOLOGY,NSEp1,Ecosystem Assessment,0,v4.1
+Cities and Communities: Plan and Design Communities,NSE,NATURAL SYSTEMS & ECOLOGY,NSEp2,Construction Activity Pollution Prevention,0,v4.1
+Cities and Communities: Plan and Design Communities,NSE,NATURAL SYSTEMS & ECOLOGY,NSEp3,Green Spaces,0,v4.1
+Cities and Communities: Plan and Design Communities,NSE,NATURAL SYSTEMS & ECOLOGY,NSEc1,Natural Resources Conservation and Restoration,5,v4.1
+Cities and Communities: Plan and Design Communities,NSE,NATURAL SYSTEMS & ECOLOGY,NSEc2,Light Pollution Reduction,2,v4.1
+Cities and Communities: Plan and Design Communities,NSE,NATURAL SYSTEMS & ECOLOGY,NSEc3,Resilience Planning,6,v4.1
+Cities and Communities: Plan and Design Communities,TL,TRANSPORTATION & LAND USE,TLc1,"Compact, Mixed Use and Transit Oriented Development",6,v4.1
+Cities and Communities: Plan and Design Communities,TL,TRANSPORTATION & LAND USE,TLc2,Walkability and Bikeability,4,v4.1
+Cities and Communities: Plan and Design Communities,TL,TRANSPORTATION & LAND USE,TLc3,Access to Quality Transit,2,v4.1
+Cities and Communities: Plan and Design Communities,TL,TRANSPORTATION & LAND USE,TLc4,Clean Transportation,2,v4.1
+Cities and Communities: Plan and Design Communities,TL,TRANSPORTATION & LAND USE,TLc5,Mobility Management,2,v4.1
+Cities and Communities: Plan and Design Communities,TL,TRANSPORTATION & LAND USE,TLc6,Priority Sites,2,v4.1
+Cities and Communities: Plan and Design Communities,WE,WATER EFFICIENCY,WEp1,Integrated Water Management,0,v4.1
+Cities and Communities: Plan and Design Communities,WE,WATER EFFICIENCY,WEp2,Water Access and Quality,0,v4.1
+Cities and Communities: Plan and Design Communities,WE,WATER EFFICIENCY,WEc1,Stormwater Management,5,v4.1
+Cities and Communities: Plan and Design Communities,WE,WATER EFFICIENCY,WEc2,Wastewater Management,5,v4.1
+Cities and Communities: Plan and Design Communities,WE,WATER EFFICIENCY,WEc3,Smart Water Systems,2,v4.1
+Cities and Communities: Plan and Design Communities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEp1,"Power Access, Reliability and Resiliency",0,v4.1
+Cities and Communities: Plan and Design Communities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEp2,Energy and Greenhouse Gas Emissions Management,19,v4.1
+Cities and Communities: Plan and Design Communities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc1,Energy Efficiency,4,v4.1
+Cities and Communities: Plan and Design Communities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc2,Renewable Energy,6,v4.1
+Cities and Communities: Plan and Design Communities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc3,Grid Harmonization,2,v4.1
+Cities and Communities: Plan and Design Communities,MR,MATERIALS AND RESOURCES,MRp1,Construction and Demolition Waste Management,0,v4.1
+Cities and Communities: Plan and Design Communities,MR,MATERIALS AND RESOURCES,MRp2,Solid Waste Management,0,v4.1
+Cities and Communities: Plan and Design Communities,MR,MATERIALS AND RESOURCES,MRc1,Organic Waste Treatment,2,v4.1
+Cities and Communities: Plan and Design Communities,MR,MATERIALS AND RESOURCES,MRc2,Recycling Infrastructure,5,v4.1
+Cities and Communities: Plan and Design Communities,MR,MATERIALS AND RESOURCES,MRc3,Responsible Sourcing,2,v4.1
+Cities and Communities: Plan and Design Communities,MR,MATERIALS AND RESOURCES,MRc4,Smart Waste Management Systems,2,v4.1
+Cities and Communities: Plan and Design Communities,QL,QUALITY OF LIFE,QLp1,Demographic Assessment,0,v4.1
+Cities and Communities: Plan and Design Communities,QL,QUALITY OF LIFE,QLp2,Social Infrastructure,0,v4.1
+Cities and Communities: Plan and Design Communities,QL,QUALITY OF LIFE,QLc1,Affordable Housing,2,v4.1
+Cities and Communities: Plan and Design Communities,QL,QUALITY OF LIFE,QLc2,Public Health and Wellbeing,6,v4.1
+Cities and Communities: Plan and Design Communities,QL,QUALITY OF LIFE,QLc3,Emergency Management and Response,2,v4.1
+Cities and Communities: Plan and Design Communities,I,INNOVATION,Ic1,Innovation,6,v4.1
+Cities and Communities: Plan and Design Communities,RP,REGIONAL PRIORITY,RPc1,Regional Priority,4,v4.1
+Cities and Communities: Existing Cities,IP,INTEGRATIVE PROCESS,IPc1,Integrative Planning and Leadership,1,v4.1
+Cities and Communities: Existing Cities,IP,INTEGRATIVE PROCESS,IPc2,Green Building Policy and Incentives,4,v4.1
+Cities and Communities: Existing Cities,NSE,NATURAL SYSTEMS AND ECOLOGY,NSEp1,Ecosystem Assessment,0,v4.1
+Cities and Communities: Existing Cities,NSE,NATURAL SYSTEMS AND ECOLOGY,NSEc1,Green Spaces,2,v4.1
+Cities and Communities: Existing Cities,NSE,NATURAL SYSTEMS AND ECOLOGY,NSEc2,Natural Resources Conservation and Restoration,2,v4.1
+Cities and Communities: Existing Cities,NSE,NATURAL SYSTEMS AND ECOLOGY,NSEc3,Light Pollution Reduction,1,v4.1
+Cities and Communities: Existing Cities,NSE,NATURAL SYSTEMS AND ECOLOGY,NSEc4,Resilience Planning,4,v4.1
+Cities and Communities: Existing Cities,TL,TRANSPORTATION AND LAND USE,TLp1,Transportation Performance,6,v4.1
+Cities and Communities: Existing Cities,TL,TRANSPORTATION AND LAND USE,TLc1,"Compact, Mixed Use and Transit Oriented Development",3,v4.1
+Cities and Communities: Existing Cities,TL,TRANSPORTATION AND LAND USE,TLc2,"Safe, Multimodal Accessibility",2,v4.1
+Cities and Communities: Existing Cities,TL,TRANSPORTATION AND LAND USE,TLc3,Clean Transportation,1,v4.1
+Cities and Communities: Existing Cities,TL,TRANSPORTATION AND LAND USE,TLc4,Mobility Management,2,v4.1
+Cities and Communities: Existing Cities,TL,TRANSPORTATION AND LAND USE,TLc5,Priority Sites,1,v4.1
+Cities and Communities: Existing Cities,WE,WATER EFFICIENCY,WEp1,Water Access and Quality,0,v4.1
+Cities and Communities: Existing Cities,WE,WATER EFFICIENCY,WEp2,Water Performance,6,v4.1
+Cities and Communities: Existing Cities,WE,WATER EFFICIENCY,WEc1,Integrated Water Management,1,v4.1
+Cities and Communities: Existing Cities,WE,WATER EFFICIENCY,WEc2,Stormwater Management,2,v4.1
+Cities and Communities: Existing Cities,WE,WATER EFFICIENCY,WEc3,Smart Water Systems,2,v4.1
+Cities and Communities: Existing Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEp1,"Power Access, Reliability and Resiliency",0,v4.1
+Cities and Communities: Existing Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEp2,Energy and Greenhouse Gas Emissions Performance,14,v4.1
+Cities and Communities: Existing Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc1,Energy Efficiency,4,v4.1
+Cities and Communities: Existing Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc2,Renewable Energy,6,v4.1
+Cities and Communities: Existing Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc3,Net-Zero Carbon and Climate Action,4,v4.1
+Cities and Communities: Existing Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc4,Grid Harmonization,2,v4.1
+Cities and Communities: Existing Cities,MR,MATERIALS AND RESOURCES,MRp1,Solid Waste Management,0,v4.1
+Cities and Communities: Existing Cities,MR,MATERIALS AND RESOURCES,MRp2,Prerequisite Waste Performance,4,v4.1
+Cities and Communities: Existing Cities,MR,MATERIALS AND RESOURCES,MRc1,Special Waste Streams Management,1,v4.1
+Cities and Communities: Existing Cities,MR,MATERIALS AND RESOURCES,MRc2,Responsible Procurement,1,v4.1
+Cities and Communities: Existing Cities,MR,MATERIALS AND RESOURCES,MRc3,Material Recovery,3,v4.1
+Cities and Communities: Existing Cities,MR,MATERIALS AND RESOURCES,MRc4,Smart Waste Management Systems,1,v4.1
+Cities and Communities: Existing Cities,QL,QUALITY OF LIFE,QLp1,Demographic and Social Equity Assessment,0,v4.1
+Cities and Communities: Existing Cities,QL,QUALITY OF LIFE,QLp2,Prerequisite Quality of Life Performance,6,v4.1
+Cities and Communities: Existing Cities,QL,QUALITY OF LIFE,QLc1,Social Services & Infrastructure,3,v4.1
+Cities and Communities: Existing Cities,QL,QUALITY OF LIFE,QLc2,Economic Growth & Opportunity,3,v4.1
+Cities and Communities: Existing Cities,QL,QUALITY OF LIFE,QLc3,Environmental Justice,1,v4.1
+Cities and Communities: Existing Cities,QL,QUALITY OF LIFE,QLc4,Housing and Transportation Affordability,2,v4.1
+Cities and Communities: Existing Cities,QL,QUALITY OF LIFE,QLc5,Public Health,3,v4.1
+Cities and Communities: Existing Cities,QL,QUALITY OF LIFE,QLc6,Educational Opportunity & Attainment,1,v4.1
+Cities and Communities: Existing Cities,QL,QUALITY OF LIFE,QLc7,Civil and Human Rights,1,v4.1
+Cities and Communities: Existing Cities,I,INNOVATION,Ic1,Innovation,6,v4.1
+Cities and Communities: Existing Cities,RP,REGIONAL PRIORITY,RPc1,Regional Priority,4,v4.1
+Cities and Communities: Plan and Design Cities,IP,INTEGRATIVE PROCESS,IPp1,Integrative Planning and Design Process,0,v4.1
+Cities and Communities: Plan and Design Cities,IP,INTEGRATIVE PROCESS,IPc1,Green Building Policy and Incentives,5,v4.1
+Cities and Communities: Plan and Design Cities,NE,NATURAL SYSTEMS & ECOLOGY,NEp1,Ecosystem Assessment,0,v4.1
+Cities and Communities: Plan and Design Cities,NE,NATURAL SYSTEMS & ECOLOGY,NEp2,Construction Activity Pollution Prevention,0,v4.1
+Cities and Communities: Plan and Design Cities,NE,NATURAL SYSTEMS & ECOLOGY,NEp3,Green Spaces,0,v4.1
+Cities and Communities: Plan and Design Cities,NE,NATURAL SYSTEMS & ECOLOGY,NEc1,Natural Resources Conservation and Restoration,5,v4.1
+Cities and Communities: Plan and Design Cities,NE,NATURAL SYSTEMS & ECOLOGY,NEc2,Light Pollution Reduction,2,v4.1
+Cities and Communities: Plan and Design Cities,NE,NATURAL SYSTEMS & ECOLOGY,NEc3,Resilience Planning,6,v4.1
+Cities and Communities: Plan and Design Cities,TL,TRANSPORTATION & LAND USE,TLc1,"Compact, Mixed Use and Transit Oriented Development",6,v4.1
+Cities and Communities: Plan and Design Cities,TL,TRANSPORTATION & LAND USE,TLc2,Walkability and Bikeability,4,v4.1
+Cities and Communities: Plan and Design Cities,TL,TRANSPORTATION & LAND USE,TLc3,Access to Quality Transit,2,v4.1
+Cities and Communities: Plan and Design Cities,TL,TRANSPORTATION & LAND USE,TLc4,Alternative Fuel Vehicles,2,v4.1
+Cities and Communities: Plan and Design Cities,TL,TRANSPORTATION & LAND USE,TLc5,Smart Mobility and Transportation Policy,2,v4.1
+Cities and Communities: Plan and Design Cities,TL,TRANSPORTATION & LAND USE,TLc6,High Priority Site,2,v4.1
+Cities and Communities: Plan and Design Cities,WE,WATER EFFICIENCY,WEp1,Integrated Water Management,0,v4.1
+Cities and Communities: Plan and Design Cities,WE,WATER EFFICIENCY,WEp2,Water Access and Quality,0,v4.1
+Cities and Communities: Plan and Design Cities,WE,WATER EFFICIENCY,WEc1,Stormwater Management,5,v4.1
+Cities and Communities: Plan and Design Cities,WE,WATER EFFICIENCY,WEc2,Wastewater Management,5,v4.1
+Cities and Communities: Plan and Design Cities,WE,WATER EFFICIENCY,WEc3,Smart Water Systems,2,v4.1
+Cities and Communities: Plan and Design Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEp1,"Power Access, Reliability and Resiliency",0,v4.1
+Cities and Communities: Plan and Design Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEp2,Energy and Greenhouse Gas Emissions Management,15,v4.1
+Cities and Communities: Plan and Design Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc1,Energy Efficiency,4,v4.1
+Cities and Communities: Plan and Design Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc2,Renewable Energy,6,v4.1
+Cities and Communities: Plan and Design Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc3,Low Carbon Economy,4,v4.1
+Cities and Communities: Plan and Design Cities,EGGE,ENERGY AND GREENHOUSE GAS EMISSIONS,EGGEc4,Grid Harmonization,2,v4.1
+Cities and Communities: Plan and Design Cities,MR,MATERIALS AND RESOURCES,MRp1,Construction and Demolition Waste Management,0,v4.1
+Cities and Communities: Plan and Design Cities,MR,MATERIALS AND RESOURCES,MRp2,Solid Waste Management,0,v4.1
+Cities and Communities: Plan and Design Cities,MR,MATERIALS AND RESOURCES,MRc1,Organic Waste Treatment,2,v4.1
+Cities and Communities: Plan and Design Cities,MR,MATERIALS AND RESOURCES,MRc2,Recycling Infrastructure,5,v4.1
+Cities and Communities: Plan and Design Cities,MR,MATERIALS AND RESOURCES,MRc3,Responsible Sourcing for Infrastructure,2,v4.1
+Cities and Communities: Plan and Design Cities,MR,MATERIALS AND RESOURCES,MRc4,Smart Waste Management Systems,2,v4.1
+Cities and Communities: Plan and Design Cities,QL,QUALITY OF LIFE,QLp1,Demographic Assessment,0,v4.1
+Cities and Communities: Plan and Design Cities,QL,QUALITY OF LIFE,QLp2,Social Infrastructure,0,v4.1
+Cities and Communities: Plan and Design Cities,QL,QUALITY OF LIFE,QLp3,Economic Growth,0,v4.1
+Cities and Communities: Plan and Design Cities,QL,QUALITY OF LIFE,QLc1,Affordable Housing,2,v4.1
+Cities and Communities: Plan and Design Cities,QL,QUALITY OF LIFE,QLc2,Public Health,6,v4.1
+Cities and Communities: Plan and Design Cities,QL,QUALITY OF LIFE,QLc3,Emergency Management and Response,2,v4.1
+Cities and Communities: Plan and Design Cities,I,INNOVATION,Ic1,Innovation,6,v4.1
+Cities and Communities: Plan and Design Cities,RP,REGIONAL PRIORITY,RPc1,Regional Priority,4,v4.1
