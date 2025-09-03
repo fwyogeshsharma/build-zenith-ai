@@ -110,6 +110,7 @@ export type Database = {
       }
       certificate_templates: {
         Row: {
+          certification_type: string | null
           created_at: string
           default_requirements: Json | null
           default_tasks: Json | null
@@ -122,6 +123,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          certification_type?: string | null
           created_at?: string
           default_requirements?: Json | null
           default_tasks?: Json | null
@@ -134,6 +136,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          certification_type?: string | null
           created_at?: string
           default_requirements?: Json | null
           default_tasks?: Json | null
@@ -178,6 +181,7 @@ export type Database = {
         Row: {
           achieved_date: string | null
           certification_body: string | null
+          certification_type: string | null
           created_at: string
           current_status:
             | Database["public"]["Enums"]["certification_status"]
@@ -196,6 +200,7 @@ export type Database = {
         Insert: {
           achieved_date?: string | null
           certification_body?: string | null
+          certification_type?: string | null
           created_at?: string
           current_status?:
             | Database["public"]["Enums"]["certification_status"]
@@ -214,6 +219,7 @@ export type Database = {
         Update: {
           achieved_date?: string | null
           certification_body?: string | null
+          certification_type?: string | null
           created_at?: string
           current_status?:
             | Database["public"]["Enums"]["certification_status"]

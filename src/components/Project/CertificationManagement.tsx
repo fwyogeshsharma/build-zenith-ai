@@ -199,6 +199,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
         certification_body: '',
         target_level: '',
         version: '',
+        certification_type: '',
         expected_date: '',
         current_status: 'planning',
         template_id: ''

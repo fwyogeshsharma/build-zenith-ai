@@ -2390,14 +2390,14 @@ Return detailed JSON analysis with specific recommendations and quantified benef
                     
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">
-                        {metrics.humanExperience?.responseRate || 75}%
+                        {((metrics.humanExperience?.surveyResponses || 0) / 60 * 100) || 75}%
                       </div>
                       <p className="text-sm text-blue-700">Survey Response Rate</p>
                     </div>
                     
                     <div className="text-center p-4 bg-amber-50 rounded-lg">
                       <div className="text-2xl font-bold text-amber-600">
-                        {((metrics.humanExperience?.vocLevel || 0.3) * 1000).toFixed(0)} μg/m³
+                        {((metrics.humanExperience?.vocLevels || 0.3) * 1000).toFixed(0)} μg/m³
                       </div>
                       <p className="text-sm text-amber-700">Avg VOC Level</p>
                     </div>
