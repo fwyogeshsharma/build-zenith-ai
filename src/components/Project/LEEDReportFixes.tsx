@@ -3,7 +3,7 @@
 // The main issue is that the metrics object structure doesn't match what the code expects
 // We need to fix all the property access errors
 
-import { LEEDReport } from './LEEDReport';
+import LEEDReport from './LEEDReport';
 
 // This will be used to replace the problematic sections
 export const fixedMetricsAccess = {

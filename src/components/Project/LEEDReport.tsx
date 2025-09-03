@@ -53,7 +53,9 @@ interface ProjectMetrics {
   ghgEmissions?: {
     scope1: number;
     scope2: number;
+    scope3: number;
     intensity: number;
+    reductionTarget: number;
     trend: Array<{ month: string; scope1: number; scope2: number }>;
   };
 }
@@ -392,7 +394,9 @@ const LEEDReport = ({ projectId }: LEEDReportProps) => {
     return {
       scope1: scope1Emissions,
       scope2: scope2Emissions,
+      scope3: 95, // Default scope 3 emissions estimate
       intensity,
+      reductionTarget: 25, // Default 25% reduction target
       trend: generateGHGTrend(totalEmissions)
     };
   };
