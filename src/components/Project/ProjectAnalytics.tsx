@@ -455,7 +455,15 @@ Provide exactly 3 insights in this format:
 
 Focus on actionable recommendations for budget optimization, schedule management, risk mitigation, or performance improvement.`;
 
-      const aiResponse = await geminiService.generateResponse(prompt, [], projectId);
+      const aiResponse = await geminiService.generateResponse(prompt, {
+        id: projectId,
+        name: 'Current Project',
+        type: 'construction',
+        phase: 'execution',
+        progress: projectProgress,
+        budget: totalBudget,
+        status: 'active'
+      });
       
       // Parse AI response into insights
       const parsedInsights = parseAIResponse(aiResponse);
@@ -573,7 +581,15 @@ Provide a comprehensive analysis including:
 
 Format as structured analysis with clear headers and actionable insights.`;
 
-      const aiResponse = await geminiService.generateResponse(prompt, [], projectId);
+      const aiResponse = await geminiService.generateResponse(prompt, {
+        id: projectId,
+        name: 'Current Project', 
+        type: 'construction',
+        phase: 'execution',
+        progress: projectProgress,
+        budget: totalBudget,
+        status: 'active'
+      });
       
       toast({
         title: "AI Performance Analysis Complete",

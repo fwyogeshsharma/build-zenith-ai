@@ -383,7 +383,7 @@ const ProjectSpecificAIInsights = ({ recentProjects, selectedProjectId }: Projec
           budget: selectedProject.budget,
           expectedCompletion: selectedProject.expected_completion_date,
           location: selectedProject.location,
-          description: selectedProject.description,
+          // description: selectedProject.description, // Commented out as it doesn't exist on ProjectData
           status: selectedProject.status,
           certifications: projectDetails?.certifications || [],
           tasks: projectDetails?.tasks || [],

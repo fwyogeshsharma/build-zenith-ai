@@ -41,7 +41,7 @@ export async function calculatePhaseProgress(projectId: string, phase: string): 
       .from('tasks')
       .select('status, priority')
       .eq('project_id', projectId)
-      .eq('phase', phase);
+      .eq('phase', phase as any);
 
     if (error) throw error;
 
@@ -132,11 +132,15 @@ export async function updateProjectProgress(projectId: string, progressPercentag
     if (error) throw error;
 
     // Add progress entry for tracking
+    const { data: { user } } = await supabase.auth.getUser();
     await supabase
       .from('progress_entries')
       .insert({
         project_id: projectId,
         progress_percentage: newProgress,
+        phase: 'overall',
+        entry_type: 'auto_sync',
+        created_by: user?.id || '',
         created_at: new Date().toISOString()
       });
 
@@ -183,17 +187,20 @@ export async function checkAndAdvancePhase(projectId: string): Promise<{ advance
           // Update project phase
           const { error: updateError } = await supabase
             .from('projects')
-            .update({ current_phase: nextPhase })
+            .update({ current_phase: nextPhase as any })
             .eq('id', projectId);
 
           if (updateError) throw updateError;
 
           // Log phase advancement
+          const { data: { user } } = await supabase.auth.getUser();
           await supabase
             .from('activities')
             .insert({
               project_id: projectId,
-              type: 'phase_advancement',
+              user_id: user?.id || '',
+              activity_type: 'phase_advancement',
+              title: 'Phase Advanced',
               description: `Project advanced from ${currentPhase} to ${nextPhase} phase`,
               metadata: {
                 fromPhase: currentPhase,
@@ -234,11 +241,14 @@ export async function handleTaskStatusChange(
     await updateProjectProgress(projectId, newProgress);
     
     // Log activity
+    const { data: { user } } = await supabase.auth.getUser();
     await supabase
       .from('activities')
       .insert({
         project_id: projectId,
-        type: 'task_status_change',
+        user_id: user?.id || '',
+        activity_type: 'task_status_change',
+        title: 'Task Status Updated',
         description: `Task status changed from ${oldStatus} to ${newStatus}${phaseAdvancement.advanced ? ` - Advanced to ${phaseAdvancement.newPhase} phase` : ''}`,
         metadata: {
           taskId,
