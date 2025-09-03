@@ -31,7 +31,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, UserPlus, Copy, CheckCircle } from 'lucide-react';
+import { Loader2, UserPlus, Copy, CheckCircle, Mail, MessageSquare, Share2 } from 'lucide-react';
 
 const inviteSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -63,6 +63,7 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
   const [isLoading, setIsLoading] = useState(false);
   const [invitationLink, setInvitationLink] = useState<string | null>(null);
   const [showInviteLink, setShowInviteLink] = useState(false);
+  const [projectName, setProjectName] = useState<string>('Project');
 
   const form = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
@@ -162,11 +163,14 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
           .select('name')
           .eq('id', projectId)
           .single();
+        
+        const currentProjectName = project?.name || 'Project';
+        setProjectName(currentProjectName);
 
         const { error: emailError } = await supabase.functions.invoke('send-invitation', {
           body: {
             email: data.email,
-            projectName: project?.name || 'Project',
+            projectName: currentProjectName,
             inviterName: user.email,
             role: data.role,
             token,
@@ -177,19 +181,17 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
 
         if (emailError) {
           console.error('Email sending failed:', emailError);
-          setShowInviteLink(true);
           toast({
-            title: "Email delivery failed",
-            description: `Failed to send email to ${data.email}. Use the link below to invite them manually.`,
+            title: "Email delivery may have failed",
+            description: `Email might not reach ${data.email}. Please share the invitation link below manually to ensure delivery.`,
             variant: "destructive",
           });
         } else {
           const actionText = existingInvitation ? "resent" : "sent";
           toast({
             title: `Invitation ${actionText} successfully`,
-            description: `Invitation email ${actionText} to ${data.email}. They should receive it within a few minutes.`,
+            description: `Email ${actionText} to ${data.email}. You can also share the link below as backup.`,
           });
-          setShowInviteLink(false);
         }
       } catch (emailError) {
         console.error('Email error:', emailError);
@@ -201,11 +203,9 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
         });
       }
       
-      if (!showInviteLink) {
-        onInviteSuccess();
-        onClose();
-        form.reset();
-      }
+      // Always show the invitation link after creation, regardless of email success
+      setShowInviteLink(true);
+      onInviteSuccess();
       
     } catch (error) {
       console.error('Invitation error:', error);
@@ -235,6 +235,45 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
       });
     } catch (err) {
       console.error('Failed to copy text: ', err);
+    }
+  };
+
+  const shareViaEmail = (email: string, link: string, projectName: string) => {
+    const subject = encodeURIComponent(`You're invited to join ${projectName} on FutureBuild`);
+    const body = encodeURIComponent(`Hi,
+
+You've been invited to join the "${projectName}" project on FutureBuild.
+
+Click the link below to accept the invitation:
+${link}
+
+This invitation will expire in 7 days.
+
+Best regards,
+FutureBuild Team`);
+    
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_self');
+  };
+
+  const shareViaSMS = (link: string, projectName: string) => {
+    const message = encodeURIComponent(`You're invited to join "${projectName}" on FutureBuild. Click: ${link}`);
+    window.open(`sms:?body=${message}`, '_self');
+  };
+
+  const shareViaWebShare = async (link: string, projectName: string) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Join ${projectName} on FutureBuild`,
+          text: `You're invited to join the "${projectName}" project`,
+          url: link,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      // Fallback to copy
+      copyToClipboard(link);
     }
   };
 
@@ -304,28 +343,33 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
               )}
             />
 
-            {/* Show invitation link if email failed */}
+            {/* Show invitation link with sharing options */}
             {showInviteLink && invitationLink && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <Share2 className="h-5 w-5 text-blue-600 mt-0.5" />
                   <div className="flex-1">
-                    <h4 className="font-semibold text-yellow-800">Manual Invitation Link</h4>
-                    <p className="text-sm text-yellow-700 mb-3">
-                      Share this link with the team member to accept the invitation:
+                    <h4 className="font-semibold text-blue-800">Invitation Link Ready</h4>
+                    <p className="text-sm text-blue-700 mb-3">
+                      Share this invitation link with <strong>{form.getValues('email')}</strong>:
                     </p>
-                    <div className="bg-white border rounded-md p-2 mb-3">
-                      <code className="text-xs text-gray-800 break-all">
+                    <div className="bg-white border rounded-md p-3 mb-4">
+                      <code className="text-xs text-gray-800 break-all select-all">
                         {invitationLink}
                       </code>
                     </div>
-                    <div className="flex gap-2">
+                    
+                    <p className="text-xs text-blue-600 mb-3 font-medium">
+                      Choose how to share the invitation:
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-2 mb-3">
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
                         onClick={() => copyToClipboard(invitationLink)}
-                        className="text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                        className="text-blue-700 border-blue-300 hover:bg-blue-100"
                       >
                         <Copy className="h-3 w-3 mr-1" />
                         Copy Link
@@ -333,9 +377,49 @@ export const InviteDialog = ({ isOpen, onClose, projectId, onInviteSuccess }: In
                       <Button
                         type="button"
                         size="sm"
-                        onClick={handleClose}
-                        className="bg-yellow-600 hover:bg-yellow-700"
+                        variant="outline"
+                        onClick={() => {
+                          shareViaEmail(form.getValues('email'), invitationLink, projectName);
+                        }}
+                        className="text-blue-700 border-blue-300 hover:bg-blue-100"
                       >
+                        <Mail className="h-3 w-3 mr-1" />
+                        Email
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          shareViaSMS(invitationLink, projectName);
+                        }}
+                        className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                      >
+                        <MessageSquare className="h-3 w-3 mr-1" />
+                        SMS
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          shareViaWebShare(invitationLink, projectName);
+                        }}
+                        className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                      >
+                        <Share2 className="h-3 w-3 mr-1" />
+                        Share
+                      </Button>
+                    </div>
+                    
+                    <div className="pt-2 border-t border-blue-200">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleClose}
+                        className="bg-blue-600 hover:bg-blue-700 w-full"
+                      >
+                        <CheckCircle className="h-3 w-3 mr-1" />
                         Done
                       </Button>
                     </div>

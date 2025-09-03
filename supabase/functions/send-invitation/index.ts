@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,6 +34,11 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Project:", projectName);
     console.log("Inviter:", inviterName);
     console.log("Accept URL:", acceptUrl);
+
+    // Check if email service is available
+    if (!resend) {
+      throw new Error("Email service is not configured. Missing RESEND_API_KEY.");
+    }
 
     // Use a more reliable from address
     const fromAddress = Deno.env.get("FROM_EMAIL") || "FutureBuild <onboarding@resend.dev>";
