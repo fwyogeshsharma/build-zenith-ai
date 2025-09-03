@@ -31,7 +31,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import CertificateRequirements from './CertificateRequirements';
 import LEEDCategoryBreakdown from './LEEDCategoryBreakdown';
-import { getLEEDv41BDCTasks, getAllCategories, getTotalPossiblePoints, getPrerequisitesCount, type LEEDTask } from '@/lib/leedSubcategories';
+import { getTasksByCertificationType, getAvailableLEEDCertificationTypes, getAllCategories, getTotalPossiblePoints, getPrerequisitesCount, getLEEDv41BDCTasksSync, getAllCategoriesSync, getTotalPossiblePointsSync, getPrerequisitesCountSync, type LEEDTask } from '@/lib/leedSubcategories';
 
 interface CertificationManagementProps {
   projectId: string;
@@ -59,10 +59,12 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
   const [certifications, setCertifications] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [certificateVersions, setCertificateVersions] = useState<any[]>([]);
+  const [availableLEEDTypes, setAvailableLEEDTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<string | null>(null);
   const [useTemplate, setUseTemplate] = useState(false);
+  const [selectedLEEDType, setSelectedLEEDType] = useState<string>('Building Design and Construction: New Construction');
   const [formData, setFormData] = useState({
     type: '',
     certification_body: '',
@@ -79,7 +81,17 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
     fetchCertifications();
     fetchTemplates();
     fetchCertificateVersions();
+    loadAvailableLEEDTypes();
   }, [projectId]);
+
+  const loadAvailableLEEDTypes = async () => {
+    try {
+      const types = await getAvailableLEEDCertificationTypes();
+      setAvailableLEEDTypes(types);
+    } catch (error) {
+      console.error('Error loading LEED types:', error);
+    }
+  };
 
   const fetchCertificateVersions = async () => {
     try {
@@ -227,55 +239,102 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
       const { data: { user } } = await supabase.auth.getUser();
       const userId = user?.id;
 
-      // Check if this is a LEED v4.1 template - use actual subcategories data
+      // Check if this is a LEED v4.1 template - use actual subcategories data from CSV
       const isLEEDv41Template = template.name === 'LEED v4.1 Template' || 
                                (formData.type === 'leed' && formData.version === 'v4.1');
 
       if (isLEEDv41Template) {
-        // Use actual LEED v4.1 BD+C subcategories
-        const leedTasks = getLEEDv41BDCTasks();
-        const categories = getAllCategories();
-        
-        // Create detailed requirements from LEED subcategories (using existing schema)
-        const leedRequirementsData = leedTasks.map((task: LEEDTask) => ({
-          certificate_id: certificationId,
-          requirement_text: `${task.title} (${task.maxScore} point${task.maxScore !== 1 ? 's' : ''})`,
-          requirement_category: task.category,
-          is_mandatory: task.isPrerequisite
-        }));
+        try {
+          // Use dynamic LEED data from CSV based on selected certification type
+          const certificationType = selectedLEEDType || 'Building Design and Construction: New Construction';
+          const leedTasks = await getTasksByCertificationType(certificationType);
+          const categories = await getAllCategories(certificationType);
+          
+          // Create detailed requirements from LEED subcategories (using existing schema)
+          const leedRequirementsData = leedTasks.map((task: LEEDTask) => ({
+            certificate_id: certificationId,
+            requirement_text: `${task.title} (${task.maxScore} point${task.maxScore !== 1 ? 's' : ''})`,
+            requirement_category: task.category,
+            is_mandatory: task.isPrerequisite
+          }));
 
-        const { error: reqError } = await supabase
-          .from('certificate_requirements')
-          .insert(leedRequirementsData);
+          const { error: reqError } = await supabase
+            .from('certificate_requirements')
+            .insert(leedRequirementsData);
 
-        if (reqError) throw reqError;
+          if (reqError) throw reqError;
 
-        // Create tasks from LEED subcategories
-        const validPhases = ['concept', 'design', 'pre_construction', 'execution', 'handover', 'operations_maintenance', 'renovation_demolition'];
-        
-        const leedTasksData = leedTasks.map((task: LEEDTask) => ({
-          project_id: projectId,
-          certificate_id: certificationId,
-          title: task.title,
-          description: task.description,
-          phase: task.phase,
-          priority: task.priority,
-          status: 'pending',
-          created_by: userId,
-          ai_generated: true
-        }));
+          // Create tasks from LEED subcategories
+          const validPhases = ['concept', 'design', 'pre_construction', 'execution', 'handover', 'operations_maintenance', 'renovation_demolition'];
+          
+          const leedTasksData = leedTasks.map((task: LEEDTask) => ({
+            project_id: projectId,
+            certificate_id: certificationId,
+            title: task.title,
+            description: task.description,
+            phase: task.phase,
+            priority: task.priority,
+            status: 'pending',
+            created_by: userId,
+            ai_generated: true
+          }));
 
-        const { error: taskError } = await supabase
-          .from('tasks')
-          .insert(leedTasksData);
+          const { error: taskError } = await supabase
+            .from('tasks')
+            .insert(leedTasksData);
 
-        if (taskError) throw taskError;
+          if (taskError) throw taskError;
 
-        // Show success message with LEED-specific details
-        toast({
-          title: "LEED v4.1 BD+C Template Applied",
-          description: `Created ${leedTasks.length} tasks across ${categories.length} categories. Total possible points: ${getTotalPossiblePoints()}. Prerequisites: ${getPrerequisitesCount()}`,
-        });
+          const totalPoints = await getTotalPossiblePoints(certificationType);
+          const prerequisitesCount = await getPrerequisitesCount(certificationType);
+
+          // Show success message with LEED-specific details
+          toast({
+            title: `LEED v4.1 Template Applied`,
+            description: `Applied ${certificationType} with ${leedTasks.length} tasks across ${categories.length} categories. Total possible points: ${totalPoints}. Prerequisites: ${prerequisitesCount}`,
+          });
+        } catch (error) {
+          console.error('Error loading CSV data, falling back to hardcoded data:', error);
+          // Fallback to hardcoded BD+C New Construction data
+          const leedTasks = getLEEDv41BDCTasksSync();
+          const categories = getAllCategoriesSync();
+          
+          const leedRequirementsData = leedTasks.map((task: LEEDTask) => ({
+            certificate_id: certificationId,
+            requirement_text: `${task.title} (${task.maxScore} point${task.maxScore !== 1 ? 's' : ''})`,
+            requirement_category: task.category,
+            is_mandatory: task.isPrerequisite
+          }));
+
+          const { error: reqError } = await supabase
+            .from('certificate_requirements')
+            .insert(leedRequirementsData);
+
+          if (reqError) throw reqError;
+
+          const leedTasksData = leedTasks.map((task: LEEDTask) => ({
+            project_id: projectId,
+            certificate_id: certificationId,
+            title: task.title,
+            description: task.description,
+            phase: task.phase,
+            priority: task.priority,
+            status: 'pending',
+            created_by: userId,
+            ai_generated: true
+          }));
+
+          const { error: taskError } = await supabase
+            .from('tasks')
+            .insert(leedTasksData);
+
+          if (taskError) throw taskError;
+
+          toast({
+            title: "LEED v4.1 BD+C Template Applied (Fallback)",
+            description: `Created ${leedTasks.length} tasks across ${categories.length} categories. Total possible points: ${getTotalPossiblePointsSync()}. Prerequisites: ${getPrerequisitesCountSync()}`,
+          });
+        }
 
       } else {
         // Use original template-based approach for non-LEED templates
@@ -468,7 +527,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                           {template.name}
                           {template.name === 'LEED v4.1 Template' && (
                             <Badge variant="outline" className="ml-2 text-xs">
-                              {getLEEDv41BDCTasks().length} tasks
+                              Dynamic CSV tasks
                             </Badge>
                           )}
                         </SelectItem>
@@ -481,13 +540,34 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                     <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <Award className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-800">LEED v4.1 BD+C Template Preview</span>
+                        <span className="text-sm font-medium text-green-800">LEED v4.1 Template Preview</span>
                       </div>
+                      
+                      {/* LEED Certification Type Selector */}
+                      <div className="mb-3">
+                        <Label htmlFor="leed-type" className="text-xs text-green-700">Select LEED Certification Type:</Label>
+                        <Select 
+                          value={selectedLEEDType} 
+                          onValueChange={setSelectedLEEDType}
+                        >
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableLEEDTypes.map((type) => (
+                              <SelectItem key={type} value={type} className="text-xs">
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
                       <div className="text-xs text-green-700 space-y-1">
-                        <div>• {getLEEDv41BDCTasks().length} comprehensive subcategory tasks</div>
-                        <div>• {getAllCategories().length} LEED categories covered</div>
-                        <div>• {getTotalPossiblePoints()} total possible points</div>
-                        <div>• {getPrerequisitesCount()} prerequisite requirements</div>
+                        <div>• Selected: {selectedLEEDType}</div>
+                        <div>• Dynamic tasks loaded from comprehensive CSV database</div>
+                        <div>• All subcategories and prerequisites included</div>
+                        <div>• Certification type: {formData.type?.toUpperCase()} v{formData.version}</div>
                       </div>
                     </div>
                   )}

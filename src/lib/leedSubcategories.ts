@@ -1,4 +1,6 @@
 // LEED v4.1 Subcategories Parser
+import { loadCSVData, getSubcategoriesByCertificationType, convertSubcategoriesToTasks, getAvailableCertificationTypes } from './csvParser';
+
 export interface LEEDSubcategory {
   certification: string;
   categoryId: string;
@@ -21,7 +23,18 @@ export interface LEEDTask {
   isPrerequisite: boolean;
 }
 
-// LEED v4.1 BD+C New Construction subcategories based on CSV data
+// Cache for CSV data
+let csvSubcategories: LEEDSubcategory[] | null = null;
+
+// Function to ensure CSV data is loaded
+const ensureCSVDataLoaded = async (): Promise<LEEDSubcategory[]> => {
+  if (!csvSubcategories) {
+    csvSubcategories = await loadCSVData();
+  }
+  return csvSubcategories;
+};
+
+// Legacy hardcoded data - now replaced by CSV data
 export const LEED_V4_1_BD_C_SUBCATEGORIES: LEEDSubcategory[] = [
   // Integrative Process (IP)
   {
@@ -562,8 +575,31 @@ export const LEED_V4_1_BD_C_SUBCATEGORIES: LEEDSubcategory[] = [
   }
 ];
 
-// Function to convert subcategories to tasks
-export const convertSubcategoriesToTasks = (subcategories: LEEDSubcategory[]): LEEDTask[] => {
+// Get tasks by certification type (dynamic from CSV)
+export const getTasksByCertificationType = async (certificationType: string): Promise<LEEDTask[]> => {
+  const allSubcategories = await ensureCSVDataLoaded();
+  const filteredSubcategories = getSubcategoriesByCertificationType(allSubcategories, certificationType);
+  return convertSubcategoriesToTasks(filteredSubcategories);
+};
+
+// Get available LEED certification types
+export const getAvailableLEEDCertificationTypes = async (): Promise<string[]> => {
+  const allSubcategories = await ensureCSVDataLoaded();
+  return getAvailableCertificationTypes(allSubcategories);
+};
+
+// Get LEED v4.1 BD+C tasks (backward compatibility - now uses CSV data)
+export const getLEEDv41BDCTasks = async (): Promise<LEEDTask[]> => {
+  return await getTasksByCertificationType('Building Design and Construction: New Construction');
+};
+
+// Synchronous version for backward compatibility (falls back to hardcoded data)
+export const getLEEDv41BDCTasksSync = (): LEEDTask[] => {
+  return convertSubcategoriesToTasksLegacy(LEED_V4_1_BD_C_SUBCATEGORIES);
+};
+
+// Legacy function for backward compatibility
+const convertSubcategoriesToTasksLegacy = (subcategories: LEEDSubcategory[]): LEEDTask[] => {
   return subcategories.map(sub => {
     // Determine project phase based on category
     let phase: LEEDTask['phase'] = 'execution';
@@ -612,22 +648,54 @@ export const convertSubcategoriesToTasks = (subcategories: LEEDSubcategory[]): L
   });
 };
 
-// Get LEED v4.1 BD+C tasks
-export const getLEEDv41BDCTasks = (): LEEDTask[] => {
-  return convertSubcategoriesToTasks(LEED_V4_1_BD_C_SUBCATEGORIES);
-};
-
-// Get tasks by category
-export const getTasksByCategory = (categoryId: string): LEEDTask[] => {
-  return getLEEDv41BDCTasks().filter(task => 
-    LEED_V4_1_BD_C_SUBCATEGORIES.find(sub => 
-      sub.subcategoryId === task.subcategoryId
+// Get tasks by category (dynamic from CSV)
+export const getTasksByCategory = async (categoryId: string, certificationType: string = 'Building Design and Construction: New Construction'): Promise<LEEDTask[]> => {
+  const tasks = await getTasksByCertificationType(certificationType);
+  const allSubcategories = await ensureCSVDataLoaded();
+  return tasks.filter(task => 
+    allSubcategories.find(sub => 
+      sub.subcategoryId === task.subcategoryId && 
+      sub.certification.includes(certificationType)
     )?.categoryId === categoryId
   );
 };
 
-// Get all categories
-export const getAllCategories = (): { id: string; name: string; taskCount: number }[] => {
+// Get all categories for a certification type (dynamic from CSV)
+export const getAllCategories = async (certificationType: string = 'Building Design and Construction: New Construction'): Promise<{ id: string; name: string; taskCount: number }[]> => {
+  const allSubcategories = await ensureCSVDataLoaded();
+  const filteredSubcategories = getSubcategoriesByCertificationType(allSubcategories, certificationType);
+  const categoryCounts: { [key: string]: { name: string; count: number } } = {};
+  
+  filteredSubcategories.forEach(sub => {
+    if (!categoryCounts[sub.categoryId]) {
+      categoryCounts[sub.categoryId] = { name: sub.category, count: 0 };
+    }
+    categoryCounts[sub.categoryId].count++;
+  });
+
+  return Object.keys(categoryCounts).map(id => ({
+    id,
+    name: categoryCounts[id].name,
+    taskCount: categoryCounts[id].count
+  }));
+};
+
+// Get total possible points for a certification type (dynamic from CSV)
+export const getTotalPossiblePoints = async (certificationType: string = 'Building Design and Construction: New Construction'): Promise<number> => {
+  const allSubcategories = await ensureCSVDataLoaded();
+  const filteredSubcategories = getSubcategoriesByCertificationType(allSubcategories, certificationType);
+  return filteredSubcategories.reduce((total, sub) => total + sub.maxScore, 0);
+};
+
+// Get prerequisites count for a certification type (dynamic from CSV)
+export const getPrerequisitesCount = async (certificationType: string = 'Building Design and Construction: New Construction'): Promise<number> => {
+  const allSubcategories = await ensureCSVDataLoaded();
+  const filteredSubcategories = getSubcategoriesByCertificationType(allSubcategories, certificationType);
+  return filteredSubcategories.filter(sub => sub.isPrerequisite).length;
+};
+
+// Backward compatibility - synchronous versions using hardcoded data
+export const getAllCategoriesSync = (): { id: string; name: string; taskCount: number }[] => {
   const categoryCounts: { [key: string]: { name: string; count: number } } = {};
   
   LEED_V4_1_BD_C_SUBCATEGORIES.forEach(sub => {
@@ -644,12 +712,10 @@ export const getAllCategories = (): { id: string; name: string; taskCount: numbe
   }));
 };
 
-// Get total possible points
-export const getTotalPossiblePoints = (): number => {
+export const getTotalPossiblePointsSync = (): number => {
   return LEED_V4_1_BD_C_SUBCATEGORIES.reduce((total, sub) => total + sub.maxScore, 0);
 };
 
-// Get prerequisites count
-export const getPrerequisitesCount = (): number => {
+export const getPrerequisitesCountSync = (): number => {
   return LEED_V4_1_BD_C_SUBCATEGORIES.filter(sub => sub.isPrerequisite).length;
 };
