@@ -837,6 +837,11 @@ export type Database = {
           estimated_hours: number | null
           id: string
           last_progress_update: string | null
+          leed_documentation: Json | null
+          leed_evidence: string | null
+          leed_points_achieved: number | null
+          leed_points_possible: number | null
+          leed_subcategory_id: string | null
           phase: Database["public"]["Enums"]["project_phase"]
           priority: string
           progress_notes: string | null
@@ -865,6 +870,11 @@ export type Database = {
           estimated_hours?: number | null
           id?: string
           last_progress_update?: string | null
+          leed_documentation?: Json | null
+          leed_evidence?: string | null
+          leed_points_achieved?: number | null
+          leed_points_possible?: number | null
+          leed_subcategory_id?: string | null
           phase: Database["public"]["Enums"]["project_phase"]
           priority?: string
           progress_notes?: string | null
@@ -893,6 +903,11 @@ export type Database = {
           estimated_hours?: number | null
           id?: string
           last_progress_update?: string | null
+          leed_documentation?: Json | null
+          leed_evidence?: string | null
+          leed_points_achieved?: number | null
+          leed_points_possible?: number | null
+          leed_subcategory_id?: string | null
           phase?: Database["public"]["Enums"]["project_phase"]
           priority?: string
           progress_notes?: string | null
