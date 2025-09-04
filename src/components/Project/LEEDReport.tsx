@@ -18,6 +18,9 @@ import jsPDF from 'jspdf';
 
 interface LEEDReportProps {
   projectId: string;
+  certificateId?: string;
+  certificationType?: string;
+  version?: string;
 }
 
 interface ProjectMetrics {
@@ -61,7 +64,7 @@ interface ProjectMetrics {
   };
 }
 
-const LEEDReport = ({ projectId }: LEEDReportProps) => {
+const LEEDReport = ({ projectId, certificateId, certificationType, version }: LEEDReportProps) => {
   const { toast } = useToast();
   const reportRef = useRef<HTMLDivElement>(null);
   
@@ -122,11 +125,19 @@ const LEEDReport = ({ projectId }: LEEDReportProps) => {
       }
       
       // Fetch LEED tasks for this project
-      const { data: projectLeedTasks, error: leedTasksError } = await supabase
+      let leedTasksQuery = supabase
         .from('tasks')
         .select(`*`)
-        .eq('project_id', projectId)
-        .not('leed_subcategory_id', 'is', null);
+        .eq('project_id', projectId);
+
+      // Filter by certificate if certificateId is provided
+      if (certificateId) {
+        leedTasksQuery = leedTasksQuery.eq('certificate_id', certificateId);
+      } else {
+        leedTasksQuery = leedTasksQuery.not('leed_subcategory_id', 'is', null);
+      }
+
+      const { data: projectLeedTasks, error: leedTasksError } = await leedTasksQuery;
       
       if (leedTasksError) throw leedTasksError;
       
@@ -1140,10 +1151,13 @@ Return detailed JSON analysis with specific recommendations and quantified benef
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Award className="h-5 w-5 text-amber-600" />
-              LEED v4.1 BD+C Comprehensive Score Analysis
+              {certificateId ? 'Certificate-Specific LEED Report' : 'LEED v4.1 BD+C Comprehensive Score Analysis'}
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Detailed point allocation across all LEED categories with credit-by-credit breakdown and certification pathway
+              {certificateId 
+                ? `Detailed analysis for ${certificationType} ${version} certification based on associated tasks`
+                : 'Detailed point allocation across all LEED categories with credit-by-credit breakdown and certification pathway'
+              }
             </p>
           </CardHeader>
           <CardContent>

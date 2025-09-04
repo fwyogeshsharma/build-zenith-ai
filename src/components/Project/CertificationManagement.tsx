@@ -26,12 +26,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Award, Plus, Calendar, FileText, CheckCircle, Clock, AlertCircle, Settings, Target, Trash2, MoreVertical, Bot } from 'lucide-react';
+import { Award, Plus, Calendar, FileText, CheckCircle, Clock, AlertCircle, Settings, Target, Trash2, MoreVertical, Bot, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import CertificateRequirements from './CertificateRequirements';
 import LEEDCategoryBreakdown from './LEEDCategoryBreakdown';
 import { getTasksByCertificationType, getAvailableLEEDCertificationTypes, getAllCategories, getTotalPossiblePoints, getPrerequisitesCount, getLEEDv41BDCTasksSync, getAllCategoriesSync, getTotalPossiblePointsSync, getPrerequisitesCountSync, type LEEDTask } from '@/lib/leedSubcategories';
+import { useNavigate } from 'react-router-dom';
 
 interface CertificationManagementProps {
   projectId: string;
@@ -76,6 +77,7 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
     template_id: ''
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCertifications();
@@ -718,6 +720,18 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/projects/${projectId}/certificates/${cert.id}/report`);
+                          }}
+                          className="flex items-center gap-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          View Report
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"

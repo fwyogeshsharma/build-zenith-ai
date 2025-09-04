@@ -14,6 +14,7 @@ import NewProject from "./pages/NewProject";
 import ProjectDetail from "./pages/ProjectDetail";
 import Settings from "./pages/Settings";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import CertificateReport from "./pages/CertificateReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,11 @@ const App = () => (
               <Route path="/projects/:id" element={
                 <ProtectedRoute>
                   <ProjectDetail />
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:id/certificates/:certId/report" element={
+                <ProtectedRoute>
+                  <CertificateReport />
                 </ProtectedRoute>
               } />
               <Route path="/settings" element={
