@@ -725,18 +725,6 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                           variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/projects/${projectId}/certificates/${cert.id}/report`);
-                          }}
-                          className="flex items-center gap-1"
-                        >
-                          <Eye className="h-3 w-3" />
-                          View Report
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
                             toast({
                               title: "AI Certification Insight",
                               description: `Analyzing ${formatCertificationType(cert.type)} certification. AI recommendations will be generated based on requirements progress, timeline, and compliance status.`,
@@ -838,8 +826,23 @@ const CertificationManagement = ({ projectId }: CertificationManagementProps) =>
                       </div>
                     )}
 
-                    <div className="text-xs text-muted-foreground text-center">
+                    <div className="text-xs text-muted-foreground text-center mb-4">
                       Click to view requirements
+                    </div>
+                    
+                    <div className="flex justify-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/projects/${projectId}/certificates/${cert.id}/report`);
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <Eye className="h-4 w-4" />
+                        View Report
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
