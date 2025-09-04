@@ -288,7 +288,7 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
       };
     });
 
-    // Enhanced Gantt data with time tracking
+    // Enhanced Gantt data with time tracking and corrected progress
     const enhancedGanttData: GanttTask[] = ganttData.map(task => {
       const duration = calculateTaskDuration(task);
       const taskStart = task.start_date ? new Date(task.start_date) : new Date(task.created_at);
@@ -296,8 +296,12 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
         ? (task.completed_date ? new Date(task.completed_date) : new Date(task.updated_at))
         : (task.due_date ? new Date(task.due_date) : new Date(taskStart.getTime() + (duration.planned * 60 * 60 * 1000)));
       
+      // Ensure completed tasks show 100% progress
+      const correctedProgress = task.status === 'completed' ? 100 : (task.progress_percentage || 0);
+      
       return {
         ...task,
+        progress_percentage: correctedProgress,
         actualStartTime: taskStart,
         actualEndTime: taskEnd,
         plannedDuration: duration.planned,
@@ -675,7 +679,15 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
                         {task.actualDuration.toFixed(1)}h
                       </Badge>
                     )}
-                    {task.timeEfficiency && task.status === 'completed' && (
+                    {/* Show completion badge for completed tasks */}
+                    {task.status === 'completed' ? (
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs bg-green-50 text-green-700 border-green-200"
+                      >
+                        ✓ 100% Complete
+                      </Badge>
+                    ) : task.timeEfficiency && task.status === 'in_progress' && (
                       <Badge 
                         variant="outline" 
                         className={`text-xs ${
@@ -710,9 +722,9 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
                   }}
                 >
                   {/* Progress overlay for incomplete tasks */}
-                  {task.status !== 'completed' && (task.progress_percentage || 0) > 0 && (
+                  {task.status !== 'completed' && (task.progress_percentage || 0) > 0 && (task.progress_percentage || 0) < 100 && (
                     <div 
-                      className="absolute inset-0 bg-white bg-opacity-30 rounded"
+                      className="absolute inset-0 bg-white bg-opacity-40 rounded"
                       style={{ 
                         left: `${task.progress_percentage || 0}%`,
                         width: `${100 - (task.progress_percentage || 0)}%`
@@ -720,10 +732,19 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
                     />
                   )}
                   
+                  {/* Completion checkmark for completed tasks */}
+                  {task.status === 'completed' && (
+                    <div className="absolute right-1 top-1/2 transform -translate-y-1/2 text-white">
+                      <div className="text-xs font-bold bg-black bg-opacity-20 rounded px-1">
+                        ✓
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-center h-full relative z-10">
                     <div className="text-center">
                       <div className="text-xs text-white font-medium drop-shadow-sm">
-                        {task.progress_percentage || 0}%
+                        {task.status === 'completed' ? '100' : (task.progress_percentage || 0)}%
                       </div>
                       {task.actualDuration > 0 && (
                         <div className="text-xs text-white/80 drop-shadow-sm">
@@ -812,8 +833,9 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
                     }
                     
                     // Status and progress info
+                    const displayProgress = task.status === 'completed' ? 100 : (task.progress_percentage || 0);
                     statusInfo = `\nStatus: ${task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ')}`;
-                    statusInfo += `\nProgress: ${task.progress_percentage || 0}%`;
+                    statusInfo += `\nProgress: ${displayProgress}%${task.status === 'completed' ? ' ✓ COMPLETE' : ''}`;
                     statusInfo += `\nPhase: ${task.phase.charAt(0).toUpperCase() + task.phase.slice(1).replace('_', ' ')}`;
                     statusInfo += `\nPriority: ${task.priority.toUpperCase()}`;
                     

@@ -18,7 +18,13 @@
       "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Project/**)",
       "Read(/D:\\Projects\\build-zenith-ai\\src\\pages/**)",
       "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Project/**)",
-      "Read(/D:\\Projects\\build-zenith-ai\\src\\integrations\\supabase/**)"
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\integrations\\supabase/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\pages/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Project/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Tasks/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Tasks/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Tasks/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Tasks/**)"
     ],
     "deny": [],
     "ask": []

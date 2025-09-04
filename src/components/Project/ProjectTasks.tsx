@@ -193,7 +193,8 @@ const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
       
       const updateData: any = { 
         status,
-        completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null
+        completed_date: status === 'completed' ? new Date().toISOString().split('T')[0] : null,
+        progress_percentage: status === 'completed' ? 100 : (task?.progress_percentage || 0)
       };
 
       // Auto-set start_date when task starts

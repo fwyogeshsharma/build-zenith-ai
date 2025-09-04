@@ -85,11 +85,19 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
 
   const updateTaskStatus = async (taskId: string, newStatus: string) => {
     try {
-      const updateData: any = { status: newStatus };
+      const updateData: any = { 
+        status: newStatus,
+        progress_percentage: newStatus === 'completed' ? 100 : (newStatus === 'in_progress' ? 50 : 0)
+      };
       
       // Set start_date when task is started
       if (newStatus === 'in_progress') {
         updateData.start_date = new Date().toISOString().split('T')[0];
+      }
+      
+      // Set completion date when task is completed
+      if (newStatus === 'completed') {
+        updateData.completed_date = new Date().toISOString().split('T')[0];
       }
       
       const { error } = await supabase
