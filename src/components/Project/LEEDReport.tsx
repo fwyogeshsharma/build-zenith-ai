@@ -68,6 +68,7 @@ const LEEDReport = ({ projectId }: LEEDReportProps) => {
   const [project, setProject] = useState<any>(null);
   const [metrics, setMetrics] = useState<ProjectMetrics>({});
   const [loading, setLoading] = useState(true);
+  const [leedTasks, setLeedTasks] = useState<any[]>([]);
   
   // State for missing data inputs
   const [missingDataInputs, setMissingDataInputs] = useState<Record<string, any>>({});
@@ -118,6 +119,21 @@ const LEEDReport = ({ projectId }: LEEDReportProps) => {
       if (!projectContext) {
         throw new Error('Failed to fetch project context');
       }
+      
+      // Fetch LEED tasks for this project
+      const { data: projectLeedTasks, error: leedTasksError } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          projects:project_id(name, project_type, current_phase),
+          profiles:assigned_to(first_name, last_name)
+        `)
+        .eq('project_id', projectId)
+        .not('leed_subcategory_id', 'is', null);
+      
+      if (leedTasksError) throw leedTasksError;
+      
+      setLeedTasks(projectLeedTasks || []);
       
       // Fetch task resources and materials for waste/emission calculations
       const { data: taskResources, error: resourcesError } = await supabase
@@ -225,6 +241,52 @@ const LEEDReport = ({ projectId }: LEEDReportProps) => {
     }));
     
     setCertificationLevel(calculateCertificationLevel());
+  };
+
+  // Helper function to group LEED tasks by category
+  const groupLEEDTasksByCategory = (tasks: any[]) => {
+    const categoryGroups: Record<string, any[]> = {};
+    
+    tasks.forEach(task => {
+      const categoryId = task.leed_subcategory_id?.substring(0, 2) || 'SS'; // Extract category from subcategory ID
+      if (!categoryGroups[categoryId]) {
+        categoryGroups[categoryId] = [];
+      }
+      categoryGroups[categoryId].push(task);
+    });
+    
+    return categoryGroups;
+  };
+
+  // Helper function to calculate category scores
+  const calculateCategoryScore = (categoryTasks: any[]) => {
+    const totalPoints = categoryTasks.reduce((sum, task) => sum + (task.leed_points_possible || 0), 0);
+    const earnedPoints = categoryTasks.reduce((sum, task) => {
+      return sum + (task.status === 'completed' ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0);
+    }, 0);
+    
+    return { earnedPoints, totalPoints };
+  };
+
+  // Helper function to get category metadata
+  const getCategoryMetadata = (categoryId: string) => {
+    const categories = {
+      'SS': { name: 'Sustainable Sites', icon: 'MapPin', color: 'green', description: 'Site development, transportation, and stormwater management' },
+      'WE': { name: 'Water Efficiency', icon: 'Droplet', color: 'blue', description: 'Water use reduction, efficient fixtures, and water monitoring' },
+      'EA': { name: 'Energy & Atmosphere', icon: 'Zap', color: 'yellow', description: 'Energy performance, renewable energy, and commissioning' },
+      'MR': { name: 'Materials & Resources', icon: 'Package', color: 'purple', description: 'Material selection, waste management, and lifecycle assessment' },
+      'IEQ': { name: 'Indoor Environmental Quality', icon: 'Home', color: 'teal', description: 'Air quality, lighting, thermal comfort, and acoustics' },
+      'I': { name: 'Innovation', icon: 'Lightbulb', color: 'pink', description: 'Innovation strategies and LEED expertise' },
+      'RP': { name: 'Regional Priority', icon: 'MapPin', color: 'indigo', description: 'Regional environmental priorities' },
+      'IP': { name: 'Integrative Process', icon: 'RefreshCw', color: 'orange', description: 'Cross-disciplinary planning and collaboration' }
+    };
+    
+    return categories[categoryId as keyof typeof categories] || { 
+      name: 'Other', 
+      icon: 'FileText', 
+      color: 'gray', 
+      description: 'General certification requirements' 
+    };
   };
 
   const calculateSustainabilityMetrics = async (
@@ -1088,623 +1150,161 @@ Return detailed JSON analysis with specific recommendations and quantified benef
             </p>
           </CardHeader>
           <CardContent>
-            {/* Certification Level and Total Score */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-              <div className="text-center p-6 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-200">
-                <div className="text-4xl font-bold text-amber-600 mb-2">
-                  {Math.round((leedScores.energy + leedScores.water + leedScores.waste + leedScores.transportation + leedScores.humanExperience) * 1.1)}
-                </div>
-                <p className="text-sm text-amber-700 font-medium">Total LEED Points</p>
-                <p className="text-xs text-amber-600 mt-1">Out of 110 possible</p>
-              </div>
-              
-              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
-                <div className="text-2xl font-bold text-green-600 mb-2">
-                  {certificationLevel}
-                </div>
-                <p className="text-sm text-green-700 font-medium">Certification Level</p>
-                <p className="text-xs text-green-600 mt-1">
-                  {Math.round((leedScores.energy + leedScores.water + leedScores.waste + leedScores.transportation + leedScores.humanExperience) * 1.1) >= 80 ? 'Platinum' : 
-                   Math.round((leedScores.energy + leedScores.water + leedScores.waste + leedScores.transportation + leedScores.humanExperience) * 1.1) >= 60 ? 'Gold' : 
-                   Math.round((leedScores.energy + leedScores.water + leedScores.waste + leedScores.transportation + leedScores.humanExperience) * 1.1) >= 50 ? 'Silver' : 'Certified'} 
-                  ({Math.round((leedScores.energy + leedScores.water + leedScores.waste + leedScores.transportation + leedScores.humanExperience) * 1.1) >= 80 ? '80+' : 
-                    Math.round((leedScores.energy + leedScores.water + leedScores.waste + leedScores.transportation + leedScores.humanExperience) * 1.1) >= 60 ? '60-79' : 
-                    Math.round((leedScores.energy + leedScores.water + leedScores.waste + leedScores.transportation + leedScores.humanExperience) * 1.1) >= 50 ? '50-59' : '40-49'} points)
-                </p>
-              </div>
-              
-              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
-                <div className="text-2xl font-bold text-blue-600 mb-2">
-                  {Math.round(((leedScores.energy + leedScores.water + leedScores.waste + leedScores.transportation + leedScores.humanExperience) * 1.1 / 110) * 100)}%
-                </div>
-                <p className="text-sm text-blue-700 font-medium">Progress to Platinum</p>
-                <p className="text-xs text-blue-600 mt-1">
-                  {80 - Math.round((leedScores.energy + leedScores.water + leedScores.waste + leedScores.transportation + leedScores.humanExperience) * 1.1)} points needed
-                </p>
-              </div>
-              
-              <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-200">
-                <div className="text-2xl font-bold text-purple-600 mb-2">
-                  {new Date().getFullYear() + 3}
-                </div>
-                <p className="text-sm text-purple-700 font-medium">Certification Valid Until</p>
-                <p className="text-xs text-purple-600 mt-1">3-year certification period</p>
-              </div>
-            </div>
-
-            {/* Detailed LEED Category Breakdown */}
-            <div className="space-y-8">
-              {/* Sustainable Sites */}
-              <div className="border rounded-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-6 w-6 text-green-600" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-green-700">Sustainable Sites</h3>
-                      <p className="text-sm text-muted-foreground">Site development, transportation, and stormwater management</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">14/16</div>
-                    <p className="text-xs text-muted-foreground">points earned</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {[
-                    { credit: 'SSc1 Site Assessment', earned: 1, possible: 1, status: 'Achieved' },
-                    { credit: 'SSc2 Site Development', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'SSc3 Open Space', earned: 1, possible: 1, status: 'Achieved' },
-                    { credit: 'SSc4 Rainwater Management', earned: 3, possible: 3, status: 'Achieved' },
-                    { credit: 'SSc5 Heat Island Reduction', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'SSc6 Light Pollution Reduction', earned: 1, possible: 1, status: 'Achieved' },
-                    { credit: 'SSc7 Tenant Design', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'SSc8 Place of Work', earned: 0, possible: 2, status: 'Not Pursued' },
-                    { credit: 'SSc9 Access to Quality Transit', earned: 2, possible: 2, status: 'Achieved' }
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
-                        <span className="text-sm font-medium">{item.credit}</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                            <div 
-                              className={`h-1.5 rounded-full ${item.earned === item.possible ? 'bg-green-500' : item.earned > 0 ? 'bg-amber-500' : 'bg-gray-300'}`}
-                              style={{ width: `${(item.earned / item.possible) * 100}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground">{item.earned}/{item.possible}</span>
-                        </div>
-                      </div>
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          item.status === 'Achieved' ? 'text-green-600 border-green-600' : 
-                          item.status === 'Partial' ? 'text-amber-600 border-amber-600' : 
-                          'text-gray-600 border-gray-600'
-                        }`}
-                      >
-                        {item.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Water Efficiency */}
-              <div className="border rounded-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <Droplet className="h-6 w-6 text-blue-600" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-blue-700">Water Efficiency</h3>
-                      <p className="text-sm text-muted-foreground">Water use reduction, efficient fixtures, and water monitoring</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-blue-600">10/12</div>
-                    <p className="text-xs text-muted-foreground">points earned</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {[
-                    { credit: 'WEp1 Outdoor Water Use Reduction', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'WEp2 Indoor Water Use Reduction', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'WEp3 Building-Level Water Metering', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'WEc1 Outdoor Water Use Reduction', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'WEc2 Indoor Water Use Reduction', earned: 6, possible: 6, status: 'Achieved' },
-                    { credit: 'WEc3 Cooling Tower Water Use', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'WEc4 Water Metering', earned: 0, possible: 2, status: 'Not Pursued' }
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
-                        <span className="text-sm font-medium">{item.credit}</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          {item.possible > 0 ? (
-                            <>
-                              <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                                <div 
-                                  className={`h-1.5 rounded-full ${item.earned === item.possible ? 'bg-blue-500' : item.earned > 0 ? 'bg-amber-500' : 'bg-gray-300'}`}
-                                  style={{ width: `${(item.earned / item.possible) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-muted-foreground">{item.earned}/{item.possible}</span>
-                            </>
-                          ) : (
-                            <span className="text-xs text-blue-600 font-medium">Required</span>
-                          )}
-                        </div>
-                      </div>
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          item.status === 'Achieved' ? 'text-blue-600 border-blue-600' : 
-                          item.status === 'Prerequisite' ? 'text-blue-600 border-blue-600' : 
-                          'text-gray-600 border-gray-600'
-                        }`}
-                      >
-                        {item.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Energy and Atmosphere */}
-              <div className="border rounded-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <Zap className="h-6 w-6 text-yellow-600" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-yellow-700">Energy & Atmosphere</h3>
-                      <p className="text-sm text-muted-foreground">Energy performance, renewable energy, and commissioning</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-yellow-600">28/33</div>
-                    <p className="text-xs text-muted-foreground">points earned</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {[
-                    { credit: 'EAp1 Fundamental Commissioning', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'EAp2 Minimum Energy Performance', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'EAp3 Building-Level Energy Metering', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'EAp4 Fundamental Refrigerant Management', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'EAc1 Enhanced Commissioning', earned: 6, possible: 6, status: 'Achieved' },
-                    { credit: 'EAc2 Optimize Energy Performance', earned: 18, possible: 18, status: 'Achieved' },
-                    { credit: 'EAc3 Advanced Energy Metering', earned: 1, possible: 1, status: 'Achieved' },
-                    { credit: 'EAc4 Demand Response', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'EAc5 Renewable Energy Production', earned: 0, possible: 3, status: 'Not Pursued' },
-                    { credit: 'EAc6 Enhanced Refrigerant Management', earned: 1, possible: 1, status: 'Achieved' },
-                    { credit: 'EAc7 Green Power and Carbon Offsets', earned: 0, possible: 2, status: 'Not Pursued' }
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
-                        <span className="text-sm font-medium">{item.credit}</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          {item.possible > 0 ? (
-                            <>
-                              <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                                <div 
-                                  className={`h-1.5 rounded-full ${item.earned === item.possible ? 'bg-yellow-500' : item.earned > 0 ? 'bg-amber-500' : 'bg-gray-300'}`}
-                                  style={{ width: `${(item.earned / item.possible) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-muted-foreground">{item.earned}/{item.possible}</span>
-                            </>
-                          ) : (
-                            <span className="text-xs text-yellow-600 font-medium">Required</span>
-                          )}
-                        </div>
-                      </div>
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          item.status === 'Achieved' ? 'text-yellow-600 border-yellow-600' : 
-                          item.status === 'Prerequisite' ? 'text-yellow-600 border-yellow-600' : 
-                          'text-gray-600 border-gray-600'
-                        }`}
-                      >
-                        {item.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Materials and Resources */}
-              <div className="border rounded-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <Package className="h-6 w-6 text-purple-600" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-purple-700">Materials & Resources</h3>
-                      <p className="text-sm text-muted-foreground">Material selection, waste management, and lifecycle assessment</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-purple-600">11/13</div>
-                    <p className="text-xs text-muted-foreground">points earned</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {[
-                    { credit: 'MRp1 Storage & Collection of Recyclables', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'MRp2 Construction & Demolition Waste', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'MRc1 Building Life-Cycle Impact Reduction', earned: 5, possible: 5, status: 'Achieved' },
-                    { credit: 'MRc2 Building Product Disclosure', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'MRc3 Environmental Product Declaration', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'MRc4 Sourcing of Raw Materials', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'MRc5 Material Ingredients', earned: 0, possible: 2, status: 'Not Pursued' }
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
-                        <span className="text-sm font-medium">{item.credit}</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          {item.possible > 0 ? (
-                            <>
-                              <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                                <div 
-                                  className={`h-1.5 rounded-full ${item.earned === item.possible ? 'bg-purple-500' : item.earned > 0 ? 'bg-amber-500' : 'bg-gray-300'}`}
-                                  style={{ width: `${(item.earned / item.possible) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-muted-foreground">{item.earned}/{item.possible}</span>
-                            </>
-                          ) : (
-                            <span className="text-xs text-purple-600 font-medium">Required</span>
-                          )}
-                        </div>
-                      </div>
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          item.status === 'Achieved' ? 'text-purple-600 border-purple-600' : 
-                          item.status === 'Prerequisite' ? 'text-purple-600 border-purple-600' : 
-                          'text-gray-600 border-gray-600'
-                        }`}
-                      >
-                        {item.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Indoor Environmental Quality */}
-              <div className="border rounded-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <Users className="h-6 w-6 text-teal-600" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-teal-700">Indoor Environmental Quality</h3>
-                      <p className="text-sm text-muted-foreground">Air quality, lighting, acoustics, and thermal comfort</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-teal-600">15/17</div>
-                    <p className="text-xs text-muted-foreground">points earned</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {[
-                    { credit: 'EQp1 Minimum IAQ Performance', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'EQp2 Environmental Tobacco Smoke', earned: 0, possible: 0, status: 'Prerequisite' },
-                    { credit: 'EQc1 Enhanced IAQ Strategies', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'EQc2 Low-Emitting Materials', earned: 3, possible: 3, status: 'Achieved' },
-                    { credit: 'EQc3 Construction IAQ Management', earned: 1, possible: 1, status: 'Achieved' },
-                    { credit: 'EQc4 Indoor Air Quality Assessment', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'EQc5 Thermal Comfort', earned: 1, possible: 1, status: 'Achieved' },
-                    { credit: 'EQc6 Interior Lighting', earned: 2, possible: 2, status: 'Achieved' },
-                    { credit: 'EQc7 Daylight', earned: 3, possible: 3, status: 'Achieved' },
-                    { credit: 'EQc8 Quality Views', earned: 1, possible: 1, status: 'Achieved' },
-                    { credit: 'EQc9 Acoustic Performance', earned: 0, possible: 2, status: 'Not Pursued' }
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
-                        <span className="text-sm font-medium">{item.credit}</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          {item.possible > 0 ? (
-                            <>
-                              <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                                <div 
-                                  className={`h-1.5 rounded-full ${item.earned === item.possible ? 'bg-teal-500' : item.earned > 0 ? 'bg-amber-500' : 'bg-gray-300'}`}
-                                  style={{ width: `${(item.earned / item.possible) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-muted-foreground">{item.earned}/{item.possible}</span>
-                            </>
-                          ) : (
-                            <span className="text-xs text-teal-600 font-medium">Required</span>
-                          )}
-                        </div>
-                      </div>
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          item.status === 'Achieved' ? 'text-teal-600 border-teal-600' : 
-                          item.status === 'Prerequisite' ? 'text-teal-600 border-teal-600' : 
-                          'text-gray-600 border-gray-600'
-                        }`}
-                      >
-                        {item.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Innovation and Location & Transportation */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="border rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <Lightbulb className="h-6 w-6 text-orange-600" />
-                      <div>
-                        <h3 className="text-lg font-semibold text-orange-700">Innovation</h3>
-                        <p className="text-sm text-muted-foreground">Innovation credits and LEED AP bonus</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-orange-600">5/6</div>
-                      <p className="text-xs text-muted-foreground">points earned</p>
-                    </div>
-                  </div>
+            {leedTasks.length > 0 ? (
+              <>
+                {/* Certification Level and Total Score */}
+                {(() => {
+                  const totalEarnedPoints = leedTasks.reduce((sum, task) => 
+                    sum + (task.status === 'completed' ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0), 0
+                  );
+                  const totalPossiblePoints = leedTasks.reduce((sum, task) => sum + (task.leed_points_possible || 0), 0);
                   
-                  <div className="space-y-3">
-                    {[
-                      { credit: 'INc1 Innovation', earned: 4, possible: 5, status: 'Partial' },
-                      { credit: 'INc2 LEED Accredited Professional', earned: 1, possible: 1, status: 'Achieved' }
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-1">
-                          <span className="text-sm font-medium">{item.credit}</span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                              <div 
-                                className={`h-1.5 rounded-full ${item.earned === item.possible ? 'bg-orange-500' : item.earned > 0 ? 'bg-amber-500' : 'bg-gray-300'}`}
-                                style={{ width: `${(item.earned / item.possible) * 100}%` }}
-                              />
-                            </div>
-                            <span className="text-xs text-muted-foreground">{item.earned}/{item.possible}</span>
-                          </div>
-                        </div>
-                        <Badge 
-                          variant="outline" 
-                          className={`text-xs ${
-                            item.status === 'Achieved' ? 'text-orange-600 border-orange-600' : 
-                            item.status === 'Partial' ? 'text-amber-600 border-amber-600' : 
-                            'text-gray-600 border-gray-600'
-                          }`}
-                        >
-                          {item.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <Car className="h-6 w-6 text-indigo-600" />
-                      <div>
-                        <h3 className="text-lg font-semibold text-indigo-700">Location & Transportation</h3>
-                        <p className="text-sm text-muted-foreground">Site location and transportation access</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-indigo-600">12/15</div>
-                      <p className="text-xs text-muted-foreground">points earned</p>
-                    </div>
-                  </div>
+                  const getCertificationLevel = (points: number) => {
+                    if (points >= 80) return 'Platinum';
+                    if (points >= 60) return 'Gold';
+                    if (points >= 50) return 'Silver';
+                    if (points >= 40) return 'Certified';
+                    return 'Not Certified';
+                  };
                   
-                  <div className="space-y-3">
-                    {[
-                      { credit: 'LTc1 LEED for Neighborhood Development', earned: 0, possible: 15, status: 'Not Applicable' },
-                      { credit: 'LTc2 Sensitive Land Protection', earned: 1, possible: 1, status: 'Achieved' },
-                      { credit: 'LTc3 High Priority Site', earned: 2, possible: 2, status: 'Achieved' },
-                      { credit: 'LTc4 Surrounding Density', earned: 4, possible: 5, status: 'Partial' },
-                      { credit: 'LTc5 Access to Quality Transit', earned: 3, possible: 5, status: 'Partial' },
-                      { credit: 'LTc6 Bicycle Facilities', earned: 1, possible: 1, status: 'Achieved' },
-                      { credit: 'LTc7 Reduced Parking Footprint', earned: 1, possible: 1, status: 'Achieved' },
-                      { credit: 'LTc8 Green Vehicles', earned: 0, possible: 1, status: 'Not Pursued' }
-                    ].slice(1).map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-1">
-                          <span className="text-sm font-medium">{item.credit}</span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                              <div 
-                                className={`h-1.5 rounded-full ${item.earned === item.possible ? 'bg-indigo-500' : item.earned > 0 ? 'bg-amber-500' : 'bg-gray-300'}`}
-                                style={{ width: `${(item.earned / item.possible) * 100}%` }}
-                              />
-                            </div>
-                            <span className="text-xs text-muted-foreground">{item.earned}/{item.possible}</span>
-                          </div>
+                  const certLevel = getCertificationLevel(totalEarnedPoints);
+                  
+                  return (
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                      <div className="text-center p-6 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-200">
+                        <div className="text-4xl font-bold text-amber-600 mb-2">
+                          {totalEarnedPoints}
                         </div>
-                        <Badge 
-                          variant="outline" 
-                          className={`text-xs ${
-                            item.status === 'Achieved' ? 'text-indigo-600 border-indigo-600' : 
-                            item.status === 'Partial' ? 'text-amber-600 border-amber-600' : 
-                            'text-gray-600 border-gray-600'
-                          }`}
-                        >
-                          {item.status}
-                        </Badge>
+                        <p className="text-sm text-amber-700 font-medium">Total LEED Points</p>
+                        <p className="text-xs text-amber-600 mt-1">Out of {totalPossiblePoints} possible</p>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                      
+                      <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
+                        <div className="text-2xl font-bold text-green-600 mb-2">
+                          {certLevel}
+                        </div>
+                        <p className="text-sm text-green-700 font-medium">Certification Level</p>
+                        <p className="text-xs text-green-600 mt-1">
+                          {certLevel === 'Platinum' ? '80+' : 
+                           certLevel === 'Gold' ? '60-79' : 
+                           certLevel === 'Silver' ? '50-59' : 
+                           certLevel === 'Certified' ? '40-49' : '0-39'} points
+                        </p>
+                      </div>
+                      
+                      <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
+                        <div className="text-2xl font-bold text-blue-600 mb-2">
+                          {Math.round((totalEarnedPoints / Math.max(totalPossiblePoints, 1)) * 100)}%
+                        </div>
+                        <p className="text-sm text-blue-700 font-medium">Progress to Platinum</p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          {Math.max(80 - totalEarnedPoints, 0)} points needed
+                        </p>
+                      </div>
+                      
+                      <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-200">
+                        <div className="text-2xl font-bold text-purple-600 mb-2">
+                          {leedTasks.filter(t => t.status === 'completed').length}
+                        </div>
+                        <p className="text-sm text-purple-700 font-medium">Completed Tasks</p>
+                        <p className="text-xs text-purple-600 mt-1">Out of {leedTasks.length} total</p>
+                      </div>
+                    </div>
+                  );
+                })()}
 
-        {/* Energy Performance - Detailed Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-500" />
-              Energy Performance
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Arc's energy performance score is based on carbon emissions. It reflects a building's carbon efficiency 
-              as a score between 0 and 100. Higher scores indicate lower carbon emissions.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-lg font-semibold mb-4">Arc ENERGY SCORE</h4>
-                  <div className="text-center space-y-4">
-                    <div className="text-5xl font-bold text-yellow-600">{leedScores.energy}/100</div>
-                    <p className="text-sm text-muted-foreground">Current Energy Score</p>
+                {/* Detailed LEED Category Breakdown */}
+                <div className="space-y-8">
+                  {Object.entries(groupLEEDTasksByCategory(leedTasks)).map(([categoryId, categoryTasks]) => {
+                    const { earnedPoints, totalPoints } = calculateCategoryScore(categoryTasks);
+                    const categoryMeta = getCategoryMetadata(categoryId);
+                    const IconComponent = require('lucide-react')[categoryMeta.icon] || require('lucide-react').FileText;
                     
-                    <div className="space-y-2">
-                      <div className="text-sm">
-                        <span className="font-medium">Breakdown</span>
+                    return (
+                      <div key={categoryId} className="border rounded-lg p-6">
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <IconComponent className={`h-6 w-6 text-${categoryMeta.color}-600`} />
+                            <div>
+                              <h3 className={`text-lg font-semibold text-${categoryMeta.color}-700`}>
+                                {categoryMeta.name}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">{categoryMeta.description}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={`text-2xl font-bold text-${categoryMeta.color}-600`}>
+                              {earnedPoints}/{totalPoints}
+                            </div>
+                            <p className="text-xs text-muted-foreground">points earned</p>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {categoryTasks.map((task, index) => {
+                            const isCompleted = task.status === 'completed';
+                            const earnedTaskPoints = isCompleted ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0;
+                            const possibleTaskPoints = task.leed_points_possible || 0;
+                            
+                            return (
+                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div className="flex-1">
+                                  <span className="text-sm font-medium">{task.title}</span>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    {possibleTaskPoints > 0 ? (
+                                      <>
+                                        <div className="w-20 bg-gray-200 rounded-full h-1.5">
+                                          <div 
+                                            className={`h-1.5 rounded-full ${
+                                              isCompleted ? `bg-${categoryMeta.color}-500` : 'bg-gray-300'
+                                            }`}
+                                            style={{ width: `${isCompleted ? 100 : 0}%` }}
+                                          />
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">
+                                          {earnedTaskPoints}/{possibleTaskPoints}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className={`text-xs text-${categoryMeta.color}-600 font-medium`}>
+                                        Prerequisite
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    isCompleted 
+                                      ? `text-${categoryMeta.color}-600 border-${categoryMeta.color}-600` 
+                                      : task.status === 'in_progress' 
+                                        ? 'text-amber-600 border-amber-600'
+                                        : 'text-gray-600 border-gray-600'
+                                  }`}
+                                >
+                                  {isCompleted ? 'Completed' : task.status === 'in_progress' ? 'In Progress' : 'Pending'}
+                                </Badge>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground space-y-1">
-                        <div>Energy Intensity: {(82.76).toFixed(2)}</div>
-                        <div>Carbon Intensity: {(80.53).toFixed(2)}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="relative">
-                      <div className="w-40 h-6 bg-gray-200 rounded mx-auto">
-                        <div 
-                          className="h-full bg-yellow-500 rounded"
-                          style={{ width: `${leedScores.energy}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>67 Local Avg</span>
-                        <span>75 Global Avg</span>
-                      </div>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
-
-                <div>
-                  <h4 className="text-sm font-medium mb-3">Monthly average Arc Energy Score</h4>
-                  <p className="text-xs text-muted-foreground mb-2">Last 12 months average</p>
-                  <div className="text-2xl font-bold mb-4">{leedScores.energy}/100</div>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-medium mb-4">Energy Score calculated for the first day of each month</h4>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={metrics.energy?.trend || generateMockTrend(12, 'energy')}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#eab308" 
-                      strokeWidth={3} 
-                      dot={{ fill: '#eab308', strokeWidth: 2, r: 5 }} 
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Energy Performance KPIs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">KEY PERFORMANCE INDICATORS</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-8">
-              <div>
-                <h4 className="text-base font-semibold mb-4">Electricity</h4>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <Award className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-600 mb-2">No LEED Tasks Found</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Cumulative electricity use from {new Date(Date.now() - 365*24*60*60*1000).toLocaleDateString()} to {new Date().toLocaleDateString()}
+                  This project doesn't have any LEED certification tasks yet.
                 </p>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Last 12 months</p>
-                    <div className="text-2xl font-bold">{((metrics.energy?.usage || 25880) / 1000).toFixed(2)}K kBTU</div>
-                  </div>
-                  
-                  <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={metrics.energy?.trend || generateMockTrend(12, 'energy')}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#eab308" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-base font-semibold mb-4">Natural Gas</h4>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Cumulative liquid fuel use from {new Date(Date.now() - 365*24*60*60*1000).toLocaleDateString()} to {new Date().toLocaleDateString()}
+                <p className="text-xs text-muted-foreground">
+                  Add a LEED certification to the project to see detailed scoring breakdown.
                 </p>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Last 12 months</p>
-                    <div className="text-2xl font-bold">0 kBTU</div>
-                  </div>
-                  
-                  <ResponsiveContainer width="100%" height={150}>
-                    <BarChart data={Array.from({length: 12}, (_, i) => ({
-                      month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-                      value: 0
-                    }))}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#10b981" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
               </div>
-
-              <div>
-                <h4 className="text-base font-semibold mb-4">Total Site Energy</h4>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Cumulative site energy consumption from {new Date(Date.now() - 365*24*60*60*1000).toLocaleDateString()} to {new Date().toLocaleDateString()}
-                </p>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Last 12 months</p>
-                    <div className="text-2xl font-bold">{((metrics.energy?.usage || 136430) / 1000).toFixed(2)}K kBTU</div>
-                  </div>
-                  
-                  <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={generateMockTrend(12, 'siteEnergy')}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#06b6d4" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                  
-                  <p className="text-xs text-muted-foreground">
-                    <strong>Site Energy</strong> is the amount of energy consumed by a building as measured by utility meters. 
-                    It is typically the basis for energy bills.
-                  </p>
-                </div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 

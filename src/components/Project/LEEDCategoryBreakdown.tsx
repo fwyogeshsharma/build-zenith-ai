@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { getAllCategories, getTasksByCategory, getTotalPossiblePoints, getPrerequisitesCount } from '@/lib/leedSubcategories';
+import { getAllCategories, getTasksByCategory, getTotalPossiblePoints, getPrerequisitesCount, type LEEDTask } from '@/lib/leedSubcategories';
 import { Award, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface LEEDCategoryBreakdownProps {
   certificationType: string;
@@ -10,14 +11,63 @@ interface LEEDCategoryBreakdownProps {
 }
 
 const LEEDCategoryBreakdown = ({ certificationType, version }: LEEDCategoryBreakdownProps) => {
+  const [categories, setCategories] = useState<{ id: string; name: string; taskCount: number; }[]>([]);
+  const [totalPoints, setTotalPoints] = useState<number>(0);
+  const [prerequisiteCount, setPrerequisiteCount] = useState<number>(0);
+  const [categoryTasksMap, setCategoryTasksMap] = useState<Record<string, LEEDTask[]>>({});
+  const [loading, setLoading] = useState(true);
+
   // Only show for LEED v4.1 certifications
   if (certificationType !== 'leed' || version !== 'v4.1') {
     return null;
   }
 
-  const categories = getAllCategories();
-  const totalPoints = getTotalPossiblePoints();
-  const prerequisiteCount = getPrerequisitesCount();
+  useEffect(() => {
+    const loadLEEDData = async () => {
+      try {
+        setLoading(true);
+        const [categoriesData, totalPointsData, prerequisiteCountData] = await Promise.all([
+          getAllCategories(),
+          getTotalPossiblePoints(),
+          getPrerequisitesCount()
+        ]);
+        
+        setCategories(categoriesData);
+        setTotalPoints(totalPointsData);
+        setPrerequisiteCount(prerequisiteCountData);
+        
+        // Load tasks for each category
+        const tasksMap: Record<string, LEEDTask[]> = {};
+        for (const category of categoriesData) {
+          const tasks = await getTasksByCategory(category.id);
+          tasksMap[category.id] = tasks;
+        }
+        setCategoryTasksMap(tasksMap);
+      } catch (error) {
+        console.error('Error loading LEED data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLEEDData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-green-600" />
+            LEED v4.1 BD+C Category Breakdown
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">Loading LEED categories...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const getCategoryIcon = (categoryId: string) => {
     switch (categoryId) {
@@ -80,7 +130,7 @@ const LEEDCategoryBreakdown = ({ certificationType, version }: LEEDCategoryBreak
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {categories.map((category) => {
-            const categoryTasks = getTasksByCategory(category.id);
+            const categoryTasks = categoryTasksMap[category.id] || [];
             const totalCategoryPoints = categoryTasks.reduce((sum, task) => sum + task.maxScore, 0);
             const prerequisiteTasks = categoryTasks.filter(task => task.isPrerequisite);
             
