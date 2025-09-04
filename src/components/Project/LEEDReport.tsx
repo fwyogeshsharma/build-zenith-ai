@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart, ComposedChart } from 'recharts';
-import { FileDown, Award, TrendingUp, Leaf, Zap, Droplet, Trash, Car, Users, Building, CheckCircle, AlertTriangle, Star, Target, Activity, TrendingDown, Brain, Lightbulb, MapPin, Package } from 'lucide-react';
+import { FileDown, Award, TrendingUp, Leaf, Zap, Droplet, Trash, Car, Users, Building, CheckCircle, AlertTriangle, Star, Target, Activity, TrendingDown, Brain, Lightbulb, MapPin, Package, Home, RefreshCw, FileText } from 'lucide-react';
+import { LEED_V4_1_BD_C_SUBCATEGORIES } from '@/lib/leedSubcategories';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { geminiService } from '@/lib/geminiService';
@@ -123,11 +124,7 @@ const LEEDReport = ({ projectId }: LEEDReportProps) => {
       // Fetch LEED tasks for this project
       const { data: projectLeedTasks, error: leedTasksError } = await supabase
         .from('tasks')
-        .select(`
-          *,
-          projects:project_id(name, project_type, current_phase),
-          profiles:assigned_to(first_name, last_name)
-        `)
+        .select(`*`)
         .eq('project_id', projectId)
         .not('leed_subcategory_id', 'is', null);
       
@@ -1151,8 +1148,7 @@ Return detailed JSON analysis with specific recommendations and quantified benef
           </CardHeader>
           <CardContent>
             {(() => {
-              // Import LEED static data
-              const { LEED_V4_1_BD_C_SUBCATEGORIES } = require('@/lib/leedSubcategories');
+              // Use imported LEED static data
               
               // Group static LEED subcategories by category
               const leedCategoryGroups: Record<string, any[]> = {};
@@ -1254,7 +1250,23 @@ Return detailed JSON analysis with specific recommendations and quantified benef
                   <div className="space-y-8">
                     {Object.entries(leedCategoryGroups).map(([categoryId, categorySubcategories]) => {
                       const categoryMeta = getCategoryMetadata(categoryId);
-                      const IconComponent = require('lucide-react')[categoryMeta.icon] || require('lucide-react').FileText;
+                      
+                      // Get the icon component dynamically
+                      const getIconComponent = (iconName: string) => {
+                        const iconMap: Record<string, any> = {
+                          'MapPin': MapPin,
+                          'Droplet': Droplet,
+                          'Zap': Zap,
+                          'Package': Package,
+                          'Home': Home,
+                          'Lightbulb': Lightbulb,
+                          'RefreshCw': RefreshCw,
+                          'FileText': FileText
+                        };
+                        return iconMap[iconName] || FileText;
+                      };
+                      
+                      const IconComponent = getIconComponent(categoryMeta.icon);
                       
                       // Calculate category points
                       let categoryEarned = 0;
