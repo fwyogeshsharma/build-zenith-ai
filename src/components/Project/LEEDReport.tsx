@@ -1147,44 +1147,39 @@ Return detailed JSON analysis with specific recommendations and quantified benef
             </p>
           </CardHeader>
           <CardContent>
-            {(() => {
+            {leedTasks.length > 0 ? (() => {
               // Use imported LEED static data
               
-              // Group static LEED subcategories by category
-              const leedCategoryGroups: Record<string, any[]> = {};
-              LEED_V4_1_BD_C_SUBCATEGORIES.forEach((subcategory: any) => {
-                if (!leedCategoryGroups[subcategory.categoryId]) {
-                  leedCategoryGroups[subcategory.categoryId] = [];
+              // Group LEED tasks by category and get unique subcategories
+              const taskSubcategories = new Set();
+              const leedTasksByCategory: Record<string, any[]> = {};
+              
+              leedTasks.forEach((task) => {
+                const categoryId = task.leed_subcategory_id?.substring(0, 2) || 'SS';
+                if (!leedTasksByCategory[categoryId]) {
+                  leedTasksByCategory[categoryId] = [];
                 }
-                leedCategoryGroups[subcategory.categoryId].push(subcategory);
+                leedTasksByCategory[categoryId].push(task);
+                taskSubcategories.add(task.leed_subcategory_id);
               });
 
-              // Calculate total points across all LEED categories
+              // Filter LEED subcategories to only include those with tasks
+              const availableSubcategories = LEED_V4_1_BD_C_SUBCATEGORIES.filter(
+                subcategory => taskSubcategories.has(subcategory.subcategoryId)
+              );
+
+              // Calculate total points across all available subcategories (should be 110)
               const calculateTotalPoints = () => {
                 let totalEarned = 0;
-                let totalPossible = 0;
+                let totalPossible = 110; // Max LEED points as specified
                 let completedTasks = 0;
-                let totalTasks = 0;
+                let totalTasks = leedTasks.length;
 
-                Object.values(leedCategoryGroups).forEach((categorySubcategories) => {
-                  categorySubcategories.forEach((subcategory) => {
-                    totalPossible += subcategory.maxScore;
-                    
-                    // Find matching project tasks for this subcategory
-                    const matchingTasks = leedTasks.filter(task => 
-                      task.leed_subcategory_id === subcategory.subcategoryId
-                    );
-
-                    if (matchingTasks.length > 0) {
-                      totalTasks += matchingTasks.length;
-                      matchingTasks.forEach(task => {
-                        if (task.status === 'completed') {
-                          completedTasks++;
-                          totalEarned += (task.leed_points_achieved || task.leed_points_possible || subcategory.maxScore);
-                        }
-                      });
-                    }
-                  });
+                leedTasks.forEach((task) => {
+                  if (task.status === 'completed') {
+                    completedTasks++;
+                    totalEarned += (task.leed_points_achieved || task.leed_points_possible || 0);
+                  }
                 });
 
                 return { totalEarned, totalPossible, completedTasks, totalTasks };
@@ -1246,9 +1241,19 @@ Return detailed JSON analysis with specific recommendations and quantified benef
                     </div>
                   </div>
 
-                  {/* Detailed LEED Category Breakdown */}
+                  {/* Available Subcategories Summary */}
+                  <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-medium text-blue-800 mb-2">Project Scope</h4>
+                    <p className="text-sm text-blue-700">
+                      This project includes <span className="font-semibold">{availableSubcategories.length} LEED subcategories</span> across{' '}
+                      <span className="font-semibold">{Object.keys(leedTasksByCategory).length} categories</span> with{' '}
+                      <span className="font-semibold">{totalTasks} total tasks</span>.
+                    </p>
+                  </div>
+
+                  {/* Detailed LEED Category Breakdown - Only categories with tasks */}
                   <div className="space-y-8">
-                    {Object.entries(leedCategoryGroups).map(([categoryId, categorySubcategories]) => {
+                    {Object.entries(leedTasksByCategory).map(([categoryId, categoryTasks]) => {
                       const categoryMeta = getCategoryMetadata(categoryId);
                       
                       // Get the icon component dynamically
@@ -1268,51 +1273,23 @@ Return detailed JSON analysis with specific recommendations and quantified benef
                       
                       const IconComponent = getIconComponent(categoryMeta.icon);
                       
-                      // Calculate category points
+                      // Calculate category points from actual tasks
                       let categoryEarned = 0;
                       let categoryTotal = 0;
-                      const categoryTaskData: any[] = [];
 
-                      categorySubcategories.forEach((subcategory) => {
-                        categoryTotal += subcategory.maxScore;
+                      // Group tasks by subcategory for better display
+                      const tasksBySubcategory: Record<string, any[]> = {};
+                      categoryTasks.forEach(task => {
+                        const subcategoryId = task.leed_subcategory_id;
+                        if (!tasksBySubcategory[subcategoryId]) {
+                          tasksBySubcategory[subcategoryId] = [];
+                        }
+                        tasksBySubcategory[subcategoryId].push(task);
                         
-                        // Find matching project tasks for this subcategory
-                        const matchingTasks = leedTasks.filter(task => 
-                          task.leed_subcategory_id === subcategory.subcategoryId
-                        );
-
-                        if (matchingTasks.length > 0) {
-                          // Tasks exist for this subcategory
-                          matchingTasks.forEach(task => {
-                            categoryTaskData.push({
-                              title: task.title,
-                              subcategoryId: subcategory.subcategoryId,
-                              subcategory: subcategory.subcategory,
-                              status: task.status,
-                              maxScore: subcategory.maxScore,
-                              earnedScore: task.status === 'completed' 
-                                ? (task.leed_points_achieved || task.leed_points_possible || subcategory.maxScore)
-                                : 0,
-                              isPrerequisite: subcategory.isPrerequisite,
-                              hasTask: true
-                            });
-
-                            if (task.status === 'completed') {
-                              categoryEarned += (task.leed_points_achieved || task.leed_points_possible || subcategory.maxScore);
-                            }
-                          });
-                        } else {
-                          // No tasks for this subcategory - show it with 0 points
-                          categoryTaskData.push({
-                            title: subcategory.subcategory,
-                            subcategoryId: subcategory.subcategoryId,
-                            subcategory: subcategory.subcategory,
-                            status: 'no_task',
-                            maxScore: subcategory.maxScore,
-                            earnedScore: 0,
-                            isPrerequisite: subcategory.isPrerequisite,
-                            hasTask: false
-                          });
+                        // Add to category totals
+                        categoryTotal += (task.leed_points_possible || 0);
+                        if (task.status === 'completed') {
+                          categoryEarned += (task.leed_points_achieved || task.leed_points_possible || 0);
                         }
                       });
                       
@@ -1336,53 +1313,80 @@ Return detailed JSON analysis with specific recommendations and quantified benef
                             </div>
                           </div>
                           
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            {categoryTaskData.map((taskData, index) => {
-                              const isCompleted = taskData.status === 'completed';
-                              const hasNoTask = taskData.status === 'no_task';
-                              const earnedTaskPoints = taskData.earnedScore;
-                              const possibleTaskPoints = taskData.maxScore;
+                          {/* Group tasks by subcategory */}
+                          <div className="space-y-4">
+                            {Object.entries(tasksBySubcategory).map(([subcategoryId, subcategoryTasks]) => {
+                              // Find the subcategory info from static data
+                              const subcategoryInfo = LEED_V4_1_BD_C_SUBCATEGORIES.find(
+                                sub => sub.subcategoryId === subcategoryId
+                              );
+                              
+                              const subcategoryTotal = subcategoryTasks.reduce((sum, task) => 
+                                sum + (task.leed_points_possible || 0), 0
+                              );
+                              const subcategoryEarned = subcategoryTasks.reduce((sum, task) => 
+                                sum + (task.status === 'completed' ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0), 0
+                              );
                               
                               return (
-                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                  <div className="flex-1">
-                                    <span className="text-sm font-medium">{taskData.title}</span>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      {possibleTaskPoints > 0 ? (
-                                        <>
-                                          <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                                            <div 
-                                              className={`h-1.5 rounded-full ${
-                                                isCompleted ? `bg-${categoryMeta.color}-500` : 'bg-gray-300'
-                                              }`}
-                                              style={{ width: `${isCompleted ? 100 : 0}%` }}
-                                            />
-                                          </div>
-                                          <span className="text-xs text-muted-foreground">
-                                            {earnedTaskPoints}/{possibleTaskPoints}
-                                          </span>
-                                        </>
-                                      ) : (
-                                        <span className={`text-xs text-${categoryMeta.color}-600 font-medium`}>
-                                          Prerequisite
-                                        </span>
-                                      )}
-                                    </div>
+                                <div key={subcategoryId} className="border-l-4 border-gray-200 pl-4">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h5 className="font-medium text-sm">
+                                      {subcategoryId}: {subcategoryInfo?.subcategory || 'Unknown Subcategory'}
+                                    </h5>
+                                    <Badge variant="outline" className="text-xs">
+                                      {subcategoryEarned}/{subcategoryTotal} pts
+                                    </Badge>
                                   </div>
-                                  <Badge 
-                                    variant="outline" 
-                                    className={`text-xs ${
-                                      hasNoTask
-                                        ? 'text-gray-500 border-gray-300'
-                                        : isCompleted 
-                                          ? `text-${categoryMeta.color}-600 border-${categoryMeta.color}-600` 
-                                          : taskData.status === 'in_progress' 
-                                            ? 'text-amber-600 border-amber-600'
-                                            : 'text-gray-600 border-gray-600'
-                                    }`}
-                                  >
-                                    {hasNoTask ? 'No Task' : isCompleted ? 'Completed' : taskData.status === 'in_progress' ? 'In Progress' : 'Pending'}
-                                  </Badge>
+                                  
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                                    {subcategoryTasks.map((task, taskIndex) => {
+                                      const isCompleted = task.status === 'completed';
+                                      const earnedTaskPoints = isCompleted ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0;
+                                      const possibleTaskPoints = task.leed_points_possible || 0;
+                                      
+                                      return (
+                                        <div key={taskIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                          <div className="flex-1">
+                                            <span className="text-xs font-medium">{task.title}</span>
+                                            <div className="flex items-center gap-2 mt-1">
+                                              {possibleTaskPoints > 0 ? (
+                                                <>
+                                                  <div className="w-16 bg-gray-200 rounded-full h-1">
+                                                    <div 
+                                                      className={`h-1 rounded-full ${
+                                                        isCompleted ? `bg-${categoryMeta.color}-500` : 'bg-gray-300'
+                                                      }`}
+                                                      style={{ width: `${isCompleted ? 100 : 0}%` }}
+                                                    />
+                                                  </div>
+                                                  <span className="text-xs text-muted-foreground">
+                                                    {earnedTaskPoints}/{possibleTaskPoints}
+                                                  </span>
+                                                </>
+                                              ) : (
+                                                <span className={`text-xs text-${categoryMeta.color}-600 font-medium`}>
+                                                  Prerequisite
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <Badge 
+                                            variant="outline" 
+                                            className={`text-xs ${
+                                              isCompleted 
+                                                ? `text-${categoryMeta.color}-600 border-${categoryMeta.color}-600` 
+                                                : task.status === 'in_progress' 
+                                                  ? 'text-amber-600 border-amber-600'
+                                                  : 'text-gray-600 border-gray-600'
+                                            }`}
+                                          >
+                                            {isCompleted ? 'Completed' : task.status === 'in_progress' ? 'In Progress' : 'Pending'}
+                                          </Badge>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
                               );
                             })}
@@ -1393,7 +1397,18 @@ Return detailed JSON analysis with specific recommendations and quantified benef
                   </div>
                 </>
               );
-            })()}
+            })() : (
+              <div className="text-center py-12">
+                <Award className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-600 mb-2">No LEED Tasks Found</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  This project doesn't have any LEED certification tasks yet.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Add LEED tasks to the project to see detailed scoring breakdown.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
