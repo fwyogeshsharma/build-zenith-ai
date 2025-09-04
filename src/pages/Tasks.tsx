@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { TaskList } from '@/components/Tasks/TaskList';
 import { TaskKanban } from '@/components/Tasks/TaskKanban';
 import { TaskCalendar } from '@/components/Tasks/TaskCalendar';
+import { TaskGanttChart } from '@/components/Project/TaskGanttChart';
 import { CreateTaskDialog } from '@/components/Tasks/CreateTaskDialog';
 import { 
   Search, 
@@ -21,6 +22,7 @@ import {
   Calendar,
   List,
   Columns3,
+  BarChart3,
   Target,
   Clock,
   CheckCircle,
@@ -76,7 +78,7 @@ const Tasks = () => {
   const [phaseFilter, setPhaseFilter] = useState('all');
   const [projectFilter, setProjectFilter] = useState('all');
   const [assigneeFilter, setAssigneeFilter] = useState('all');
-  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'calendar'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'calendar' | 'gantt'>('list');
   const [taskStats, setTaskStats] = useState<TaskStats>({
     total: 0,
     pending: 0,
@@ -98,7 +100,7 @@ const Tasks = () => {
       const { data: tasksData, error } = await supabase
         .from('tasks')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('start_date', { ascending: true, nullsLast: true });
 
       if (error) throw error;
 
@@ -413,6 +415,13 @@ const Tasks = () => {
                   >
                     <Calendar className="h-4 w-4" />
                   </Button>
+                  <Button
+                    variant={viewMode === 'gantt' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('gantt')}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </CardHeader>
@@ -492,6 +501,41 @@ const Tasks = () => {
                 onTaskUpdate={fetchTasks}
                 projects={projects}
               />
+            )}
+            
+            {viewMode === 'gantt' && (
+              <div className="space-y-6">
+                {projects.filter(project => 
+                  filteredTasks.some(task => task.project_id === project.id)
+                ).map(project => {
+                  const projectTasks = filteredTasks.filter(task => task.project_id === project.id);
+                  const tasksWithDates = projectTasks.filter(task => 
+                    task.start_date || task.due_date || task.created_at
+                  );
+                  
+                  return (
+                    <div key={project.id}>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold">{project.name}</h3>
+                        <div className="text-sm text-muted-foreground">
+                          {tasksWithDates.length} of {projectTasks.length} tasks with timing data
+                        </div>
+                      </div>
+                      <TaskGanttChart 
+                        projectId={project.id} 
+                        tasks={projectTasks}
+                      />
+                    </div>
+                  );
+                })}
+                {projects.filter(project => 
+                  filteredTasks.some(task => task.project_id === project.id)
+                ).length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    No tasks found for Gantt chart view. Create tasks with start dates and due dates to see the timeline.
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

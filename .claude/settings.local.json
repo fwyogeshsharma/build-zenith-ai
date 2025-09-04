@@ -8,7 +8,17 @@
       "Bash(grep:*)",
       "Bash(node:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\pages/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Project/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\pages/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\pages/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Project/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\integrations\\supabase/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Project/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\pages/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\components\\Project/**)",
+      "Read(/D:\\Projects\\build-zenith-ai\\src\\integrations\\supabase/**)"
     ],
     "deny": [],
     "ask": []
