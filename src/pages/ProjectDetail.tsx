@@ -34,7 +34,6 @@ const ProjectSchedule = lazy(() => import('@/components/Project/ProjectSchedule'
 const ProjectAnalytics = lazy(() => import('@/components/Project/ProjectAnalytics'));
 const CertificationManagement = lazy(() => import('@/components/Project/CertificationManagement'));
 const ProjectSpecificAIInsights = lazy(() => import('@/components/Dashboard/ProjectSpecificAIInsights'));
-const LEEDReport = lazy(() => import('@/components/Project/LEEDReport'));
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -297,10 +296,6 @@ const ProjectDetail = () => {
                 <BarChart3 className="h-4 w-4 mr-2" />
                 Analytics
               </TabsTrigger>
-              <TabsTrigger value="leed-report">
-                <Leaf className="h-4 w-4 mr-2" />
-                LEED Report
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -358,12 +353,6 @@ const ProjectDetail = () => {
             <TabsContent value="analytics">
               <Suspense fallback={<ComponentLoadingSkeleton />}>
                 <ProjectAnalytics projectId={project.id} />
-              </Suspense>
-            </TabsContent>
-            
-            <TabsContent value="leed-report">
-              <Suspense fallback={<ComponentLoadingSkeleton />}>
-                <LEEDReport projectId={project.id} />
               </Suspense>
             </TabsContent>
           </Tabs>
