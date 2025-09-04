@@ -1150,161 +1150,238 @@ Return detailed JSON analysis with specific recommendations and quantified benef
             </p>
           </CardHeader>
           <CardContent>
-            {leedTasks.length > 0 ? (
-              <>
-                {/* Certification Level and Total Score */}
-                {(() => {
-                  const totalEarnedPoints = leedTasks.reduce((sum, task) => 
-                    sum + (task.status === 'completed' ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0), 0
-                  );
-                  const totalPossiblePoints = leedTasks.reduce((sum, task) => sum + (task.leed_points_possible || 0), 0);
-                  
-                  const getCertificationLevel = (points: number) => {
-                    if (points >= 80) return 'Platinum';
-                    if (points >= 60) return 'Gold';
-                    if (points >= 50) return 'Silver';
-                    if (points >= 40) return 'Certified';
-                    return 'Not Certified';
-                  };
-                  
-                  const certLevel = getCertificationLevel(totalEarnedPoints);
-                  
-                  return (
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-                      <div className="text-center p-6 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-200">
-                        <div className="text-4xl font-bold text-amber-600 mb-2">
-                          {totalEarnedPoints}
-                        </div>
-                        <p className="text-sm text-amber-700 font-medium">Total LEED Points</p>
-                        <p className="text-xs text-amber-600 mt-1">Out of {totalPossiblePoints} possible</p>
-                      </div>
-                      
-                      <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
-                        <div className="text-2xl font-bold text-green-600 mb-2">
-                          {certLevel}
-                        </div>
-                        <p className="text-sm text-green-700 font-medium">Certification Level</p>
-                        <p className="text-xs text-green-600 mt-1">
-                          {certLevel === 'Platinum' ? '80+' : 
-                           certLevel === 'Gold' ? '60-79' : 
-                           certLevel === 'Silver' ? '50-59' : 
-                           certLevel === 'Certified' ? '40-49' : '0-39'} points
-                        </p>
-                      </div>
-                      
-                      <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
-                        <div className="text-2xl font-bold text-blue-600 mb-2">
-                          {Math.round((totalEarnedPoints / Math.max(totalPossiblePoints, 1)) * 100)}%
-                        </div>
-                        <p className="text-sm text-blue-700 font-medium">Progress to Platinum</p>
-                        <p className="text-xs text-blue-600 mt-1">
-                          {Math.max(80 - totalEarnedPoints, 0)} points needed
-                        </p>
-                      </div>
-                      
-                      <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-200">
-                        <div className="text-2xl font-bold text-purple-600 mb-2">
-                          {leedTasks.filter(t => t.status === 'completed').length}
-                        </div>
-                        <p className="text-sm text-purple-700 font-medium">Completed Tasks</p>
-                        <p className="text-xs text-purple-600 mt-1">Out of {leedTasks.length} total</p>
-                      </div>
-                    </div>
-                  );
-                })()}
+            {(() => {
+              // Import LEED static data
+              const { LEED_V4_1_BD_C_SUBCATEGORIES } = require('@/lib/leedSubcategories');
+              
+              // Group static LEED subcategories by category
+              const leedCategoryGroups: Record<string, any[]> = {};
+              LEED_V4_1_BD_C_SUBCATEGORIES.forEach((subcategory: any) => {
+                if (!leedCategoryGroups[subcategory.categoryId]) {
+                  leedCategoryGroups[subcategory.categoryId] = [];
+                }
+                leedCategoryGroups[subcategory.categoryId].push(subcategory);
+              });
 
-                {/* Detailed LEED Category Breakdown */}
-                <div className="space-y-8">
-                  {Object.entries(groupLEEDTasksByCategory(leedTasks)).map(([categoryId, categoryTasks]) => {
-                    const { earnedPoints, totalPoints } = calculateCategoryScore(categoryTasks);
-                    const categoryMeta = getCategoryMetadata(categoryId);
-                    const IconComponent = require('lucide-react')[categoryMeta.icon] || require('lucide-react').FileText;
+              // Calculate total points across all LEED categories
+              const calculateTotalPoints = () => {
+                let totalEarned = 0;
+                let totalPossible = 0;
+                let completedTasks = 0;
+                let totalTasks = 0;
+
+                Object.values(leedCategoryGroups).forEach((categorySubcategories) => {
+                  categorySubcategories.forEach((subcategory) => {
+                    totalPossible += subcategory.maxScore;
                     
-                    return (
-                      <div key={categoryId} className="border rounded-lg p-6">
-                        <div className="flex items-center justify-between mb-6">
-                          <div className="flex items-center gap-3">
-                            <IconComponent className={`h-6 w-6 text-${categoryMeta.color}-600`} />
-                            <div>
-                              <h3 className={`text-lg font-semibold text-${categoryMeta.color}-700`}>
-                                {categoryMeta.name}
-                              </h3>
-                              <p className="text-sm text-muted-foreground">{categoryMeta.description}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className={`text-2xl font-bold text-${categoryMeta.color}-600`}>
-                              {earnedPoints}/{totalPoints}
-                            </div>
-                            <p className="text-xs text-muted-foreground">points earned</p>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {categoryTasks.map((task, index) => {
-                            const isCompleted = task.status === 'completed';
-                            const earnedTaskPoints = isCompleted ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0;
-                            const possibleTaskPoints = task.leed_points_possible || 0;
-                            
-                            return (
-                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex-1">
-                                  <span className="text-sm font-medium">{task.title}</span>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    {possibleTaskPoints > 0 ? (
-                                      <>
-                                        <div className="w-20 bg-gray-200 rounded-full h-1.5">
-                                          <div 
-                                            className={`h-1.5 rounded-full ${
-                                              isCompleted ? `bg-${categoryMeta.color}-500` : 'bg-gray-300'
-                                            }`}
-                                            style={{ width: `${isCompleted ? 100 : 0}%` }}
-                                          />
-                                        </div>
-                                        <span className="text-xs text-muted-foreground">
-                                          {earnedTaskPoints}/{possibleTaskPoints}
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <span className={`text-xs text-${categoryMeta.color}-600 font-medium`}>
-                                        Prerequisite
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                <Badge 
-                                  variant="outline" 
-                                  className={`text-xs ${
-                                    isCompleted 
-                                      ? `text-${categoryMeta.color}-600 border-${categoryMeta.color}-600` 
-                                      : task.status === 'in_progress' 
-                                        ? 'text-amber-600 border-amber-600'
-                                        : 'text-gray-600 border-gray-600'
-                                  }`}
-                                >
-                                  {isCompleted ? 'Completed' : task.status === 'in_progress' ? 'In Progress' : 'Pending'}
-                                </Badge>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
+                    // Find matching project tasks for this subcategory
+                    const matchingTasks = leedTasks.filter(task => 
+                      task.leed_subcategory_id === subcategory.subcategoryId
                     );
-                  })}
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <Award className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-600 mb-2">No LEED Tasks Found</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  This project doesn't have any LEED certification tasks yet.
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Add a LEED certification to the project to see detailed scoring breakdown.
-                </p>
-              </div>
-            )}
+
+                    if (matchingTasks.length > 0) {
+                      totalTasks += matchingTasks.length;
+                      matchingTasks.forEach(task => {
+                        if (task.status === 'completed') {
+                          completedTasks++;
+                          totalEarned += (task.leed_points_achieved || task.leed_points_possible || subcategory.maxScore);
+                        }
+                      });
+                    }
+                  });
+                });
+
+                return { totalEarned, totalPossible, completedTasks, totalTasks };
+              };
+
+              const { totalEarned, totalPossible, completedTasks, totalTasks } = calculateTotalPoints();
+              
+              const getCertificationLevel = (points: number) => {
+                if (points >= 80) return 'Platinum';
+                if (points >= 60) return 'Gold';
+                if (points >= 50) return 'Silver';
+                if (points >= 40) return 'Certified';
+                return 'Not Certified';
+              };
+              
+              const certLevel = getCertificationLevel(totalEarned);
+              
+              return (
+                <>
+                  {/* Certification Level and Total Score */}
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                    <div className="text-center p-6 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-200">
+                      <div className="text-4xl font-bold text-amber-600 mb-2">
+                        {totalEarned}
+                      </div>
+                      <p className="text-sm text-amber-700 font-medium">Total LEED Points</p>
+                      <p className="text-xs text-amber-600 mt-1">Out of {totalPossible} possible</p>
+                    </div>
+                    
+                    <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
+                      <div className="text-2xl font-bold text-green-600 mb-2">
+                        {certLevel}
+                      </div>
+                      <p className="text-sm text-green-700 font-medium">Certification Level</p>
+                      <p className="text-xs text-green-600 mt-1">
+                        {certLevel === 'Platinum' ? '80+' : 
+                         certLevel === 'Gold' ? '60-79' : 
+                         certLevel === 'Silver' ? '50-59' : 
+                         certLevel === 'Certified' ? '40-49' : '0-39'} points
+                      </p>
+                    </div>
+                    
+                    <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
+                      <div className="text-2xl font-bold text-blue-600 mb-2">
+                        {Math.round((totalEarned / Math.max(totalPossible, 1)) * 100)}%
+                      </div>
+                      <p className="text-sm text-blue-700 font-medium">Progress to Platinum</p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        {Math.max(80 - totalEarned, 0)} points needed
+                      </p>
+                    </div>
+                    
+                    <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-200">
+                      <div className="text-2xl font-bold text-purple-600 mb-2">
+                        {completedTasks}
+                      </div>
+                      <p className="text-sm text-purple-700 font-medium">Completed Tasks</p>
+                      <p className="text-xs text-purple-600 mt-1">Out of {totalTasks} total</p>
+                    </div>
+                  </div>
+
+                  {/* Detailed LEED Category Breakdown */}
+                  <div className="space-y-8">
+                    {Object.entries(leedCategoryGroups).map(([categoryId, categorySubcategories]) => {
+                      const categoryMeta = getCategoryMetadata(categoryId);
+                      const IconComponent = require('lucide-react')[categoryMeta.icon] || require('lucide-react').FileText;
+                      
+                      // Calculate category points
+                      let categoryEarned = 0;
+                      let categoryTotal = 0;
+                      const categoryTaskData: any[] = [];
+
+                      categorySubcategories.forEach((subcategory) => {
+                        categoryTotal += subcategory.maxScore;
+                        
+                        // Find matching project tasks for this subcategory
+                        const matchingTasks = leedTasks.filter(task => 
+                          task.leed_subcategory_id === subcategory.subcategoryId
+                        );
+
+                        if (matchingTasks.length > 0) {
+                          // Tasks exist for this subcategory
+                          matchingTasks.forEach(task => {
+                            categoryTaskData.push({
+                              title: task.title,
+                              subcategoryId: subcategory.subcategoryId,
+                              subcategory: subcategory.subcategory,
+                              status: task.status,
+                              maxScore: subcategory.maxScore,
+                              earnedScore: task.status === 'completed' 
+                                ? (task.leed_points_achieved || task.leed_points_possible || subcategory.maxScore)
+                                : 0,
+                              isPrerequisite: subcategory.isPrerequisite,
+                              hasTask: true
+                            });
+
+                            if (task.status === 'completed') {
+                              categoryEarned += (task.leed_points_achieved || task.leed_points_possible || subcategory.maxScore);
+                            }
+                          });
+                        } else {
+                          // No tasks for this subcategory - show it with 0 points
+                          categoryTaskData.push({
+                            title: subcategory.subcategory,
+                            subcategoryId: subcategory.subcategoryId,
+                            subcategory: subcategory.subcategory,
+                            status: 'no_task',
+                            maxScore: subcategory.maxScore,
+                            earnedScore: 0,
+                            isPrerequisite: subcategory.isPrerequisite,
+                            hasTask: false
+                          });
+                        }
+                      });
+                      
+                      return (
+                        <div key={categoryId} className="border rounded-lg p-6">
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                              <IconComponent className={`h-6 w-6 text-${categoryMeta.color}-600`} />
+                              <div>
+                                <h3 className={`text-lg font-semibold text-${categoryMeta.color}-700`}>
+                                  {categoryMeta.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">{categoryMeta.description}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className={`text-2xl font-bold text-${categoryMeta.color}-600`}>
+                                {categoryEarned}/{categoryTotal}
+                              </div>
+                              <p className="text-xs text-muted-foreground">points earned</p>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {categoryTaskData.map((taskData, index) => {
+                              const isCompleted = taskData.status === 'completed';
+                              const hasNoTask = taskData.status === 'no_task';
+                              const earnedTaskPoints = taskData.earnedScore;
+                              const possibleTaskPoints = taskData.maxScore;
+                              
+                              return (
+                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                  <div className="flex-1">
+                                    <span className="text-sm font-medium">{taskData.title}</span>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      {possibleTaskPoints > 0 ? (
+                                        <>
+                                          <div className="w-20 bg-gray-200 rounded-full h-1.5">
+                                            <div 
+                                              className={`h-1.5 rounded-full ${
+                                                isCompleted ? `bg-${categoryMeta.color}-500` : 'bg-gray-300'
+                                              }`}
+                                              style={{ width: `${isCompleted ? 100 : 0}%` }}
+                                            />
+                                          </div>
+                                          <span className="text-xs text-muted-foreground">
+                                            {earnedTaskPoints}/{possibleTaskPoints}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <span className={`text-xs text-${categoryMeta.color}-600 font-medium`}>
+                                          Prerequisite
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <Badge 
+                                    variant="outline" 
+                                    className={`text-xs ${
+                                      hasNoTask
+                                        ? 'text-gray-500 border-gray-300'
+                                        : isCompleted 
+                                          ? `text-${categoryMeta.color}-600 border-${categoryMeta.color}-600` 
+                                          : taskData.status === 'in_progress' 
+                                            ? 'text-amber-600 border-amber-600'
+                                            : 'text-gray-600 border-gray-600'
+                                    }`}
+                                  >
+                                    {hasNoTask ? 'No Task' : isCompleted ? 'Completed' : taskData.status === 'in_progress' ? 'In Progress' : 'Pending'}
+                                  </Badge>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
           </CardContent>
         </Card>
 
