@@ -973,7 +973,7 @@ Return detailed JSON analysis with specific recommendations and quantified benef
             </div>
           </div>
           <p className="text-muted-foreground mt-1">
-            Comprehensive sustainability analysis powered by Zenith AI
+            Comprehensive sustainability analysis powered by Future Build AI
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -1033,7 +1033,7 @@ Return detailed JSON analysis with specific recommendations and quantified benef
           <div className="space-y-3">
             <div className="flex justify-center items-center gap-3">
               <Brain className="h-8 w-8 text-blue-500" />
-              <span className="text-lg font-semibold text-blue-600">Zenith AI</span>
+              <span className="text-lg font-semibold text-blue-600">Future Build AI</span>
             </div>
             <h1 className="text-4xl font-bold text-gray-900">{project?.name || 'Project Name'}</h1>
             <p className="text-xl text-gray-600">LEED v4.1 AI-Enhanced Performance Report</p>
@@ -2815,9 +2815,9 @@ Return detailed JSON analysis with specific recommendations and quantified benef
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="font-medium mb-2">Zenith AI Sustainability Platform</h4>
+              <h4 className="font-medium mb-2">Future Build AI Sustainability Platform</h4>
               <p className="text-sm text-muted-foreground">
-                This comprehensive LEED v4.1 performance report is powered by Zenith AI's advanced sustainability analytics platform. 
+                This comprehensive LEED v4.1 performance report is powered by Future Build AI's advanced sustainability analytics platform.
                 Our AI-driven insights provide predictive analysis, personalized recommendations, and data-driven optimization 
                 strategies based on real project data and industry benchmarks.
               </p>
@@ -2860,14 +2860,14 @@ Return detailed JSON analysis with specific recommendations and quantified benef
               <div className="flex justify-between items-center">
                 <div>
                   <p>Report generated on {new Date().toLocaleString()}</p>
-                  <p>LEED v4.1 BD+C | Powered by Zenith AI Sustainability Platform</p>
+                  <p>LEED v4.1 BD+C | Powered by Future Build AI Sustainability Platform</p>
                 </div>
                 <div className="text-right">
                   <p className="flex items-center gap-1">
                     <Lightbulb className="h-3 w-3" />
                     AI-Enhanced Analysis
                   </p>
-                  <p>© {new Date().getFullYear()} Zenith AI Technologies</p>
+                  <p>© {new Date().getFullYear()} Future Build AI Technologies</p>
                 </div>
               </div>
             </div>
