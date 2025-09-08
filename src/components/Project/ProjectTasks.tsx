@@ -33,6 +33,7 @@ import { TaskDetail } from '../Tasks/TaskDetail';
 import { TaskProgressDialog } from '../Progress/TaskProgressDialog';
 import { TaskResourcesDialog } from '../Tasks/TaskResourcesDialog';
 import { TaskGanttChart } from './TaskGanttChart';
+import { StartTaskDialog } from '../Tasks/StartTaskDialog';
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
@@ -59,6 +60,7 @@ const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
   const [viewingTask, setViewingTask] = useState<TaskWithProject | null>(null);
   const [progressTask, setProgressTask] = useState<TaskWithProject | null>(null);
   const [resourcesTask, setResourcesTask] = useState<TaskWithProject | null>(null);
+  const [startingTask, setStartingTask] = useState<TaskWithProject | null>(null);
   const [showGantt, setShowGantt] = useState(false);
   const { toast } = useToast();
 
@@ -185,7 +187,7 @@ const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
     }
   };
 
-  const updateTaskStatus = async (taskId: string, status: string) => {
+  const updateTaskStatus = async (taskId: string, status: string, customStartDate?: string) => {
     try {
       // Get the old status before updating
       const task = tasks.find(t => t.id === taskId);
@@ -197,9 +199,9 @@ const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
         progress_percentage: status === 'completed' ? 100 : (task?.progress_percentage || 0)
       };
 
-      // Auto-set start_date when task starts
-      if (status === 'in_progress' && task && !task.start_date) {
-        updateData.start_date = new Date().toISOString().split('T')[0];
+      // Set start_date when task starts
+      if (status === 'in_progress') {
+        updateData.start_date = customStartDate || new Date().toISOString().split('T')[0];
       }
 
       const { error } = await supabase
@@ -229,6 +231,13 @@ const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const handleStartTask = (customStartDate?: string) => {
+    if (startingTask) {
+      updateTaskStatus(startingTask.id, 'in_progress', customStartDate);
+      setStartingTask(null);
     }
   };
 
@@ -530,7 +539,7 @@ const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => updateTaskStatus(task.id, 'in_progress')}
+                        onClick={() => setStartingTask(task)}
                       >
                         Start
                       </Button>
@@ -648,6 +657,17 @@ const ProjectTasks = ({ projectId, initialPhaseFilter }: ProjectTasksProps) => {
           onClose={() => setResourcesTask(null)}
           taskId={resourcesTask.id}
           taskTitle={resourcesTask.title}
+        />
+      )}
+
+      {/* Start Task Dialog */}
+      {startingTask && (
+        <StartTaskDialog
+          open={!!startingTask}
+          onOpenChange={(open) => !open && setStartingTask(null)}
+          taskTitle={startingTask.title}
+          onStartTask={handleStartTask}
+          isRestart={startingTask.status !== 'pending'}
         />
       )}
     </div>

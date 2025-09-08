@@ -433,12 +433,13 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
     
     // Color based on time efficiency and status
     if (task.status === 'completed') {
-      if (isOvertime) {
-        baseClasses += ' bg-gradient-to-r from-orange-400 to-orange-600'; // Took longer than planned
-      } else if (efficiency > 120) {
+      // For completed tasks, prioritize efficiency over overtime
+      if (efficiency > 120) {
         baseClasses += ' bg-gradient-to-r from-green-400 to-green-600'; // Completed faster than planned
+      } else if (isOvertime || efficiency < 80) {
+        baseClasses += ' bg-gradient-to-r from-orange-400 to-orange-600'; // Took longer than planned
       } else {
-        baseClasses += ' bg-gradient-to-r from-blue-400 to-blue-600'; // Completed as planned
+        baseClasses += ' bg-gradient-to-r from-green-500 to-green-700'; // Completed on time
       }
     } else if (task.status === 'in_progress') {
       if (isOverdue) {
@@ -936,7 +937,7 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
                   <span>Fast Completion (⚡)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-gradient-to-r from-blue-400 to-blue-600 rounded"></div>
+                  <div className="w-4 h-4 bg-gradient-to-r from-green-500 to-green-700 rounded"></div>
                   <span>On-Time Completion (✓)</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -946,6 +947,14 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-gradient-to-r from-red-500 to-red-700 rounded"></div>
                   <span>Overdue/Blocked</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-700 rounded"></div>
+                  <span>In Progress</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-gradient-to-r from-gray-300 to-gray-500 rounded"></div>
+                  <span>Pending/Not Started</span>
                 </div>
               </div>
             </div>
