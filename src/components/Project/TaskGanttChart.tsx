@@ -172,7 +172,16 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
       actualHours = task.actual_hours || calculatedHours;
     }
     
-    const efficiency = plannedHours > 0 ? (plannedHours / Math.max(actualHours, 0.1)) * 100 : 100;
+    // Calculate efficiency with proper bounds
+    let efficiency = 100;
+    if (plannedHours > 0 && actualHours > 0) {
+      efficiency = (plannedHours / actualHours) * 100;
+      // Cap efficiency at reasonable bounds (max 300% for very fast completion)
+      efficiency = Math.min(efficiency, 300);
+    } else if (plannedHours > 0 && actualHours === 0) {
+      // For tasks with no actual time recorded, show neutral efficiency
+      efficiency = 100;
+    }
     
     return {
       planned: plannedHours,

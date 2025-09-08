@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart, ComposedChart } from 'recharts';
-import { FileDown, Award, TrendingUp, Leaf, Zap, Droplet, Trash, Car, Users, Building, CheckCircle, AlertTriangle, Star, Target, Activity, TrendingDown, Brain, Lightbulb, MapPin, Package, Home, RefreshCw, FileText } from 'lucide-react';
-import { LEED_V4_1_BD_C_SUBCATEGORIES } from '@/lib/leedSubcategories';
+import { FileDown, Award, TrendingUp, Leaf, Zap, Droplet, Trash, Car, Users, Building, CheckCircle, AlertTriangle, Star, Target, Activity, TrendingDown, Brain, Lightbulb, MapPin, Package, Home, RefreshCw, FileText, Settings } from 'lucide-react';
+import { LEED_V4_1_BD_C_SUBCATEGORIES, LEEDSubcategory } from '@/lib/leedSubcategories';
+import { loadCSVData } from '@/lib/csvParser';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { geminiService } from '@/lib/geminiService';
@@ -73,6 +74,8 @@ const LEEDReport = ({ projectId, certificateId, certificationType, version }: LE
   const [metrics, setMetrics] = useState<ProjectMetrics>({});
   const [loading, setLoading] = useState(true);
   const [leedTasks, setLeedTasks] = useState<any[]>([]);
+  const [csvSubcategories, setCsvSubcategories] = useState<LEEDSubcategory[]>([]);
+  const [syncingTasks, setSyncingTasks] = useState(false);
   
   // State for missing data inputs
   const [missingDataInputs, setMissingDataInputs] = useState<Record<string, any>>({});
@@ -111,7 +114,141 @@ const LEEDReport = ({ projectId, certificateId, certificationType, version }: LE
 
   useEffect(() => {
     loadProjectData();
+    loadLEEDSubcategories();
   }, [projectId]);
+
+  const loadLEEDSubcategories = async () => {
+    try {
+      const subcategories = await loadCSVData();
+      setCsvSubcategories(subcategories);
+      
+      // Debug: Log CSV subcategories for Building Design and Construction
+      const bdcSubcategories = subcategories.filter(sub => 
+        sub.certification.includes('Building Design and Construction')
+      );
+      console.log('BD+C Subcategories loaded from CSV:', bdcSubcategories.length);
+      console.log('Sample BD+C Subcategories:', bdcSubcategories.slice(0, 5));
+    } catch (error) {
+      console.error('Error loading LEED subcategories:', error);
+    }
+  };
+
+  const getSubcategoryInfo = (subcategoryId: string): LEEDSubcategory | undefined => {
+    // First try CSV data - filter for Building Design and Construction
+    const csvMatch = csvSubcategories.find(sub => 
+      sub.subcategoryId === subcategoryId && 
+      sub.certification.includes('Building Design and Construction')
+    );
+    if (csvMatch) return csvMatch;
+    
+    // Fallback to hardcoded data
+    return LEED_V4_1_BD_C_SUBCATEGORIES.find(sub => sub.subcategoryId === subcategoryId);
+  };
+
+  const calculateTaskPoints = (task: any): { possible: number; achieved: number } => {
+    const subcategoryInfo = getSubcategoryInfo(task.leed_subcategory_id);
+    const possiblePoints = subcategoryInfo?.maxScore || task.leed_points_possible || 0;
+    
+    // For completed tasks, use achieved points or full possible points
+    const achievedPoints = task.status === 'completed' 
+      ? (task.leed_points_achieved || possiblePoints)
+      : 0;
+    
+    // Debug logging for point calculations
+    if (task.leed_subcategory_id) {
+      console.log(`=== LEED Points Calculation ===`);
+      console.log(`Task: ${task.title}`);
+      console.log(`Subcategory ID: ${task.leed_subcategory_id}`);
+      console.log(`Task Status: ${task.status}`);
+      console.log(`Task Possible Points (from DB): ${task.leed_points_possible}`);
+      console.log(`Task Achieved Points (from DB): ${task.leed_points_achieved}`);
+      console.log(`Subcategory Info:`, subcategoryInfo);
+      console.log(`Calculated Possible Points: ${possiblePoints}`);
+      console.log(`Calculated Achieved Points: ${achievedPoints}`);
+      console.log(`===============================`);
+    } else {
+      console.warn(`Task "${task.title}" has no leed_subcategory_id - skipping LEED points calculation`);
+    }
+    
+    return { possible: possiblePoints, achieved: achievedPoints };
+  };
+
+  const syncLEEDTasks = async () => {
+    if (!csvSubcategories.length) {
+      toast({
+        title: "Error",
+        description: "LEED subcategories not loaded yet. Please wait.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSyncingTasks(true);
+    try {
+      // Get all tasks for this project
+      const { data: allTasks } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('project_id', projectId);
+
+      if (!allTasks) return;
+
+      let updatedCount = 0;
+      const updates: any[] = [];
+
+      // Find tasks that match LEED subcategory patterns
+      for (const task of allTasks) {
+        const title = task.title || '';
+        
+        // Extract potential subcategory ID from title (e.g., "SSc1: Site Assessment")
+        const match = title.match(/^([A-Z]{1,4}[cp]?\d+)/);
+        if (match) {
+          const subcategoryId = match[1];
+          const subcategoryInfo = csvSubcategories.find(sub => sub.subcategoryId === subcategoryId);
+          
+          if (subcategoryInfo && !task.leed_subcategory_id) {
+            updates.push({
+              id: task.id,
+              leed_subcategory_id: subcategoryId,
+              leed_points_possible: subcategoryInfo.maxScore,
+              leed_points_achieved: task.status === 'completed' ? subcategoryInfo.maxScore : null
+            });
+            updatedCount++;
+          }
+        }
+      }
+
+      // Perform batch updates
+      for (const update of updates) {
+        await supabase
+          .from('tasks')
+          .update({
+            leed_subcategory_id: update.leed_subcategory_id,
+            leed_points_possible: update.leed_points_possible,
+            leed_points_achieved: update.leed_points_achieved
+          })
+          .eq('id', update.id);
+      }
+
+      toast({
+        title: "Success",
+        description: `Synced ${updatedCount} LEED tasks with subcategory IDs and points.`
+      });
+
+      // Reload the project data
+      await loadProjectData();
+      
+    } catch (error) {
+      console.error('Error syncing LEED tasks:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sync LEED tasks. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSyncingTasks(false);
+    }
+  };
 
   const loadProjectData = async () => {
     try {
@@ -140,6 +277,46 @@ const LEEDReport = ({ projectId, certificateId, certificationType, version }: LE
       const { data: projectLeedTasks, error: leedTasksError } = await leedTasksQuery;
       
       if (leedTasksError) throw leedTasksError;
+      
+      console.log('LEED Tasks found:', projectLeedTasks?.length || 0);
+      console.log('Sample LEED task:', projectLeedTasks?.[0]);
+      
+      // Debug: Log all LEED tasks with their subcategory info
+      if (projectLeedTasks && projectLeedTasks.length > 0) {
+        console.log('=== All LEED Tasks Debug ===');
+        projectLeedTasks.forEach((task, index) => {
+          console.log(`Task ${index + 1}:`, {
+            title: task.title,
+            status: task.status,
+            leed_subcategory_id: task.leed_subcategory_id,
+            leed_points_possible: task.leed_points_possible,
+            leed_points_achieved: task.leed_points_achieved
+          });
+        });
+        console.log('=== End LEED Tasks Debug ===');
+      }
+      
+      // If no LEED tasks found, try to find tasks that might be LEED tasks by title pattern
+      if (!projectLeedTasks || projectLeedTasks.length === 0) {
+        console.log('No LEED tasks found, checking all tasks for LEED patterns...');
+        const { data: allTasks } = await supabase
+          .from('tasks')
+          .select('*')
+          .eq('project_id', projectId);
+          
+        console.log('Total tasks in project:', allTasks?.length || 0);
+        
+        // Look for tasks that might have LEED subcategory patterns in title
+        const potentialLeedTasks = allTasks?.filter(task => {
+          const title = task.title || '';
+          return /^[A-Z]{1,4}[cp]?\d+/.test(title); // Pattern like SSc1, EAp1, etc.
+        }) || [];
+        
+        console.log('Potential LEED tasks by title pattern:', potentialLeedTasks.length);
+        potentialLeedTasks.forEach(task => {
+          console.log(`- ${task.title} (Status: ${task.status})`);
+        });
+      }
       
       setLeedTasks(projectLeedTasks || []);
       
@@ -268,9 +445,13 @@ const LEEDReport = ({ projectId, certificateId, certificationType, version }: LE
 
   // Helper function to calculate category scores
   const calculateCategoryScore = (categoryTasks: any[]) => {
-    const totalPoints = categoryTasks.reduce((sum, task) => sum + (task.leed_points_possible || 0), 0);
+    const totalPoints = categoryTasks.reduce((sum, task) => {
+      const { possible } = calculateTaskPoints(task);
+      return sum + possible;
+    }, 0);
     const earnedPoints = categoryTasks.reduce((sum, task) => {
-      return sum + (task.status === 'completed' ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0);
+      const { achieved } = calculateTaskPoints(task);
+      return sum + achieved;
     }, 0);
     
     return { earnedPoints, totalPoints };
@@ -983,6 +1164,15 @@ Return detailed JSON analysis with specific recommendations and quantified benef
               Complete Missing Data
             </Button>
           )}
+          <Button 
+            onClick={syncLEEDTasks} 
+            variant="outline" 
+            disabled={syncingTasks}
+            className="flex items-center gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            {syncingTasks ? 'Syncing...' : 'Sync LEED Tasks'}
+          </Button>
           <Button onClick={exportToPDF} className="flex items-center gap-2">
             <FileDown className="h-4 w-4" />
             Export PDF
@@ -1300,11 +1490,10 @@ Return detailed JSON analysis with specific recommendations and quantified benef
                         }
                         tasksBySubcategory[subcategoryId].push(task);
                         
-                        // Add to category totals
-                        categoryTotal += (task.leed_points_possible || 0);
-                        if (task.status === 'completed') {
-                          categoryEarned += (task.leed_points_achieved || task.leed_points_possible || 0);
-                        }
+                        // Add to category totals using calculateTaskPoints function
+                        const { possible, achieved } = calculateTaskPoints(task);
+                        categoryTotal += possible;
+                        categoryEarned += achieved;
                       });
                       
                       return (
@@ -1335,18 +1524,20 @@ Return detailed JSON analysis with specific recommendations and quantified benef
                                 sub => sub.subcategoryId === subcategoryId
                               );
                               
-                              const subcategoryTotal = subcategoryTasks.reduce((sum, task) => 
-                                sum + (task.leed_points_possible || 0), 0
-                              );
-                              const subcategoryEarned = subcategoryTasks.reduce((sum, task) => 
-                                sum + (task.status === 'completed' ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0), 0
-                              );
+                              const subcategoryTotal = subcategoryTasks.reduce((sum, task) => {
+                                const { possible } = calculateTaskPoints(task);
+                                return sum + possible;
+                              }, 0);
+                              const subcategoryEarned = subcategoryTasks.reduce((sum, task) => {
+                                const { achieved } = calculateTaskPoints(task);
+                                return sum + achieved;
+                              }, 0);
                               
                               return (
                                 <div key={subcategoryId} className="border-l-4 border-gray-200 pl-4">
                                   <div className="flex items-center justify-between mb-2">
                                     <h5 className="font-medium text-sm">
-                                      {subcategoryId}: {subcategoryInfo?.subcategory || 'Unknown Subcategory'}
+                                      {subcategoryId}: {getSubcategoryInfo(subcategoryId)?.subcategory || 'Unknown Subcategory'}
                                     </h5>
                                     <Badge variant="outline" className="text-xs">
                                       {subcategoryEarned}/{subcategoryTotal} pts
@@ -1356,8 +1547,7 @@ Return detailed JSON analysis with specific recommendations and quantified benef
                                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                                     {subcategoryTasks.map((task, taskIndex) => {
                                       const isCompleted = task.status === 'completed';
-                                      const earnedTaskPoints = isCompleted ? (task.leed_points_achieved || task.leed_points_possible || 0) : 0;
-                                      const possibleTaskPoints = task.leed_points_possible || 0;
+                                      const { possible: possibleTaskPoints, achieved: earnedTaskPoints } = calculateTaskPoints(task);
                                       
                                       return (
                                         <div key={taskIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded">

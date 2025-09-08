@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { populateTaskLEEDPoints } from '@/lib/leedPointsSync';
 import { EditTaskDialog } from './EditTaskDialog';
 import { TaskDetail } from './TaskDetail';
 import { TaskDocumentUpload } from './TaskDocumentUpload';
@@ -98,6 +99,13 @@ export const TaskKanban = ({ tasks, onTaskUpdate, projects }: TaskKanbanProps) =
       // Set completion date when task is completed
       if (newStatus === 'completed') {
         updateData.completed_date = new Date().toISOString().split('T')[0];
+        
+        // If this is a LEED task and no achieved points set, use max points
+        const task = tasks.find(t => t.id === taskId);
+        if (task?.leed_subcategory_id && !task.leed_points_achieved) {
+          const updatedTask = await populateTaskLEEDPoints({ ...task, status: newStatus });
+          updateData.leed_points_achieved = updatedTask.leed_points_achieved;
+        }
       }
       
       const { error } = await supabase
