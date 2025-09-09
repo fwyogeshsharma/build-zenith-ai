@@ -45,6 +45,8 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
   const [timeMarkers, setTimeMarkers] = useState<TimeMarker[]>([]);
   const [viewStartDate, setViewStartDate] = useState<Date>();
   const [viewEndDate, setViewEndDate] = useState<Date>();
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [ganttWidth, setGanttWidth] = useState(100);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -62,7 +64,42 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
 
   useEffect(() => {
     generateTimeMarkers();
+    updateGanttWidth();
   }, [timelineStart, timelineEnd, timeScale, viewStartDate, viewEndDate]);
+
+  const updateGanttWidth = () => {
+    if (!timelineStart || !timelineEnd) return;
+    
+    const start = viewStartDate || timelineStart;
+    const end = viewEndDate || timelineEnd;
+    const currentViewDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+    
+    // Adjust width based on time scale and current view
+    let multiplier = 1;
+    switch (timeScale) {
+      case 'hourly':
+        multiplier = Math.max(2, currentViewDays * 24 / 168); // 24 hours view as baseline
+        break;
+      case 'daily':
+        multiplier = Math.max(1, currentViewDays / 30); // 30 days view as baseline
+        break;
+      case 'weekly':
+        multiplier = Math.max(0.5, currentViewDays / 84); // 12 weeks view as baseline
+        break;
+      case 'monthly':
+        multiplier = Math.max(0.3, currentViewDays / 365); // 1 year view as baseline
+        break;
+      case 'yearly':
+        multiplier = Math.max(0.1, currentViewDays / 1825); // 5 years view as baseline
+        break;
+    }
+    
+    // Set minimum width to enable scrolling for detailed views
+    const minWidth = timeScale === 'hourly' ? 300 : timeScale === 'daily' ? 200 : 150;
+    const calculatedWidth = Math.max(minWidth, multiplier * 100);
+    
+    setGanttWidth(calculatedWidth);
+  };
 
   const fetchTasks = async () => {
     try {
@@ -405,6 +442,68 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
   const resetView = () => {
     setViewStartDate(undefined);
     setViewEndDate(undefined);
+    setScrollPosition(0);
+  };
+
+  const handleTimeScaleChange = (newScale: TimeScale) => {
+    setTimeScale(newScale);
+    
+    // Auto-adjust view based on time scale
+    if (!timelineStart || !timelineEnd) return;
+    
+    const now = new Date();
+    let newStart: Date;
+    let newEnd: Date;
+    
+    switch (newScale) {
+      case 'hourly':
+        // Show last 24 hours or next 24 hours from now
+        newStart = new Date(now.getTime() - (12 * 60 * 60 * 1000)); // 12 hours before
+        newEnd = new Date(now.getTime() + (12 * 60 * 60 * 1000)); // 12 hours after
+        break;
+      case 'daily':
+        // Show last 7 days
+        newStart = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+        newEnd = new Date(now.getTime() + (1 * 24 * 60 * 60 * 1000));
+        break;
+      case 'weekly':
+        // Show last 4 weeks
+        newStart = new Date(now.getTime() - (28 * 24 * 60 * 60 * 1000));
+        newEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+        break;
+      case 'monthly':
+        // Show last 3 months
+        newStart = new Date(now.getTime() - (90 * 24 * 60 * 60 * 1000));
+        newEnd = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+        break;
+      case 'yearly':
+        // Show full project timeline
+        newStart = timelineStart;
+        newEnd = timelineEnd;
+        break;
+      default:
+        return;
+    }
+    
+    // Ensure we don't go beyond project boundaries
+    newStart = new Date(Math.max(newStart.getTime(), timelineStart.getTime()));
+    newEnd = new Date(Math.min(newEnd.getTime(), timelineEnd.getTime()));
+    
+    setViewStartDate(newStart);
+    setViewEndDate(newEnd);
+    setScrollPosition(0);
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollLeft = e.currentTarget.scrollLeft;
+    const scrollWidth = e.currentTarget.scrollWidth;
+    const clientWidth = e.currentTarget.clientWidth;
+    
+    // Calculate scroll percentage
+    const maxScroll = scrollWidth - clientWidth;
+    const scrollPercentage = maxScroll > 0 ? scrollLeft / maxScroll : 0;
+    
+    setScrollPosition(scrollPercentage);
   };
 
   const getStatusColor = (task: Task) => {
@@ -547,7 +646,7 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span className="text-sm font-medium">Time Scale:</span>
-              <Select value={timeScale} onValueChange={(value: TimeScale) => setTimeScale(value)}>
+              <Select value={timeScale} onValueChange={handleTimeScaleChange}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -607,48 +706,63 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
         </div>
       </CardHeader>
       <CardContent>
-        {/* Enhanced Timeline Header */}
+        {/* Enhanced Timeline Header with Horizontal Scrolling */}
         {timelineStart && timelineEnd && (
           <div className="mb-6">
-            <div className="relative h-12 border-b border-gray-200">
-              {/* Time markers */}
-              {timeMarkers.map((marker, index) => (
-                <div
-                  key={index}
-                  className="absolute top-0 h-full flex flex-col items-center"
-                  style={{ left: `${marker.position}%` }}
-                >
-                  <div className={`w-px bg-gray-300 ${
-                    marker.type === 'major' ? 'h-full' : 'h-2/3 mt-auto'
-                  }`} />
-                  <div className={`text-xs mt-1 ${
-                    marker.type === 'major' ? 'font-medium text-gray-700' : 'text-gray-500'
-                  } transform -translate-x-1/2 whitespace-nowrap`}>
-                    {marker.label}
-                  </div>
-                </div>
-              ))}
-              
-              {/* Current time indicator */}
-              {(() => {
-                const now = new Date();
-                const start = viewStartDate || timelineStart;
-                const end = viewEndDate || timelineEnd;
-                if (now >= start && now <= end) {
-                  const position = ((now.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100;
-                  return (
-                    <div 
-                      className="absolute top-0 h-full w-0.5 bg-red-500 z-10"
-                      style={{ left: `${position}%` }}
-                    >
-                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                        <div className="w-0 h-0 border-l-2 border-r-2 border-b-4 border-transparent border-b-red-500" />
-                      </div>
+            <div 
+              className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+              onScroll={handleScroll}
+              style={{ 
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#d1d5db #f3f4f6'
+              }}
+            >
+              <div 
+                className="relative h-12 border-b border-gray-200"
+                style={{ 
+                  width: `${ganttWidth}%`,
+                  minWidth: `${Math.max(ganttWidth, 100)}%`
+                }}
+              >
+                {/* Time markers */}
+                {timeMarkers.map((marker, index) => (
+                  <div
+                    key={index}
+                    className="absolute top-0 h-full flex flex-col items-center"
+                    style={{ left: `${marker.position}%` }}
+                  >
+                    <div className={`w-px bg-gray-300 ${
+                      marker.type === 'major' ? 'h-full' : 'h-2/3 mt-auto'
+                    }`} />
+                    <div className={`text-xs mt-1 ${
+                      marker.type === 'major' ? 'font-medium text-gray-700' : 'text-gray-500'
+                    } transform -translate-x-1/2 whitespace-nowrap`}>
+                      {marker.label}
                     </div>
-                  );
-                }
-                return null;
-              })()}
+                  </div>
+                ))}
+              
+                {/* Current time indicator */}
+                {(() => {
+                  const now = new Date();
+                  const start = viewStartDate || timelineStart;
+                  const end = viewEndDate || timelineEnd;
+                  if (now >= start && now <= end) {
+                    const position = ((now.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100;
+                    return (
+                      <div 
+                        className="absolute top-0 h-full w-0.5 bg-red-500 z-10"
+                        style={{ left: `${position}%` }}
+                      >
+                        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                          <div className="w-0 h-0 border-l-2 border-r-2 border-b-4 border-transparent border-b-red-500" />
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
             </div>
             
             {/* Timeline info */}
@@ -659,7 +773,7 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
           </div>
         )}
 
-        {/* Gantt Chart */}
+        {/* Gantt Chart with Horizontal Scrolling */}
         <div className="space-y-2">
           {ganttTasks.map((task) => (
             <div key={task.id} className="relative">
@@ -721,8 +835,22 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
                 </div>
               </div>
 
-              {/* Enhanced Progress Bar with Time Tracking */}
-              <div className="relative h-10 bg-gray-100 rounded ml-2 border border-gray-200 shadow-sm">
+              {/* Enhanced Progress Bar with Horizontal Scrolling */}
+              <div 
+                className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                onScroll={handleScroll}
+                style={{ 
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#d1d5db #f3f4f6'
+                }}
+              >
+                <div 
+                  className="relative h-10 bg-gray-100 rounded ml-2 border border-gray-200 shadow-sm"
+                  style={{ 
+                    width: `${ganttWidth}%`,
+                    minWidth: `${Math.max(ganttWidth, 100)}%`
+                  }}
+                >
                 <div
                   className={getTaskBarClasses(task)}
                   style={{
@@ -781,80 +909,81 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
                   )}
                 </div>
                 
-                {/* Task dates tooltip area */}
-                <div 
-                  className="absolute inset-0 cursor-pointer"
-                  title={(() => {
-                    // Comprehensive time tracking tooltip
-                    const actualStart = task.actualStartTime || new Date(task.created_at);
-                    const startLabel = task.start_date ? 'Scheduled Start' : 'Created';
-                    
-                    let timeAnalysis = '';
-                    let statusInfo = '';
-                    
-                    if (task.status === 'completed') {
-                      const completionDate = task.actualEndTime || new Date(task.updated_at);
-                      const totalTime = (completionDate.getTime() - actualStart.getTime()) / (1000 * 60 * 60);
+                  {/* Task dates tooltip area */}
+                  <div 
+                    className="absolute inset-0 cursor-pointer"
+                    title={(() => {
+                      // Comprehensive time tracking tooltip
+                      const actualStart = task.actualStartTime || new Date(task.created_at);
+                      const startLabel = task.start_date ? 'Scheduled Start' : 'Created';
                       
-                      timeAnalysis = `Completed: ${completionDate.toLocaleDateString()}`;
-                      timeAnalysis += `\nActual Duration: ${task.actualDuration?.toFixed(1) || totalTime.toFixed(1)}h`;
+                      let timeAnalysis = '';
+                      let statusInfo = '';
                       
-                      if (task.plannedDuration) {
-                        timeAnalysis += `\nPlanned Duration: ${task.plannedDuration.toFixed(1)}h`;
-                        timeAnalysis += `\nTime Efficiency: ${task.timeEfficiency}%`;
+                      if (task.status === 'completed') {
+                        const completionDate = task.actualEndTime || new Date(task.updated_at);
+                        const totalTime = (completionDate.getTime() - actualStart.getTime()) / (1000 * 60 * 60);
                         
-                        if (task.timeEfficiency && task.timeEfficiency > 120) {
-                          timeAnalysis += ' ⚡ (Faster than planned)';
-                        } else if (task.timeEfficiency && task.timeEfficiency < 80) {
-                          timeAnalysis += ' ⏰ (Slower than planned)';
-                        } else {
-                          timeAnalysis += ' ✅ (On track)';
-                        }
-                      }
-                      
-                      if (task.isOvertime) {
-                        timeAnalysis += `\n⚠️ Overtime: +${((task.actualDuration || 0) - (task.plannedDuration || 0)).toFixed(1)}h`;
-                      }
-                    } else {
-                      // For active/pending tasks
-                      if (task.due_date) {
-                        const dueDate = new Date(task.due_date);
-                        const isOverdue = dueDate < new Date();
-                        timeAnalysis = `Due: ${dueDate.toLocaleDateString()}${isOverdue ? ' 🚨 OVERDUE' : ''}`;
-                        
-                        if (task.actualDuration && task.actualDuration > 0) {
-                          timeAnalysis += `\nTime Spent: ${task.actualDuration.toFixed(1)}h`;
-                        }
+                        timeAnalysis = `Completed: ${completionDate.toLocaleDateString()}`;
+                        timeAnalysis += `\nActual Duration: ${task.actualDuration?.toFixed(1) || totalTime.toFixed(1)}h`;
                         
                         if (task.plannedDuration) {
-                          timeAnalysis += `\nPlanned: ${task.plannedDuration.toFixed(1)}h`;
+                          timeAnalysis += `\nPlanned Duration: ${task.plannedDuration.toFixed(1)}h`;
+                          timeAnalysis += `\nTime Efficiency: ${task.timeEfficiency}%`;
                           
-                          if (task.actualDuration && task.actualDuration > task.plannedDuration) {
-                            timeAnalysis += `\n⚠️ Over planned time by ${(task.actualDuration - task.plannedDuration).toFixed(1)}h`;
+                          if (task.timeEfficiency && task.timeEfficiency > 120) {
+                            timeAnalysis += ' ⚡ (Faster than planned)';
+                          } else if (task.timeEfficiency && task.timeEfficiency < 80) {
+                            timeAnalysis += ' ⏰ (Slower than planned)';
+                          } else {
+                            timeAnalysis += ' ✅ (On track)';
                           }
                         }
-                      } else if (task.plannedDuration) {
-                        timeAnalysis = `Estimated Duration: ${task.plannedDuration.toFixed(1)}h`;
                         
-                        if (task.actualDuration && task.actualDuration > 0) {
-                          timeAnalysis += `\nTime Spent: ${task.actualDuration.toFixed(1)}h`;
+                        if (task.isOvertime) {
+                          timeAnalysis += `\n⚠️ Overtime: +${((task.actualDuration || 0) - (task.plannedDuration || 0)).toFixed(1)}h`;
+                        }
+                      } else {
+                        // For active/pending tasks
+                        if (task.due_date) {
+                          const dueDate = new Date(task.due_date);
+                          const isOverdue = dueDate < new Date();
+                          timeAnalysis = `Due: ${dueDate.toLocaleDateString()}${isOverdue ? ' 🚨 OVERDUE' : ''}`;
+                          
+                          if (task.actualDuration && task.actualDuration > 0) {
+                            timeAnalysis += `\nTime Spent: ${task.actualDuration.toFixed(1)}h`;
+                          }
+                          
+                          if (task.plannedDuration) {
+                            timeAnalysis += `\nPlanned: ${task.plannedDuration.toFixed(1)}h`;
+                            
+                            if (task.actualDuration && task.actualDuration > task.plannedDuration) {
+                              timeAnalysis += `\n⚠️ Over planned time by ${(task.actualDuration - task.plannedDuration).toFixed(1)}h`;
+                            }
+                          }
+                        } else if (task.plannedDuration) {
+                          timeAnalysis = `Estimated Duration: ${task.plannedDuration.toFixed(1)}h`;
+                          
+                          if (task.actualDuration && task.actualDuration > 0) {
+                            timeAnalysis += `\nTime Spent: ${task.actualDuration.toFixed(1)}h`;
+                          }
                         }
                       }
-                    }
-                    
-                    // Status and progress info
-                    const displayProgress = task.status === 'completed' ? 100 : (task.progress_percentage || 0);
-                    statusInfo = `\nStatus: ${task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ')}`;
-                    statusInfo += `\nProgress: ${displayProgress}%${task.status === 'completed' ? ' ✓ COMPLETE' : ''}`;
-                    statusInfo += `\nPhase: ${task.phase.charAt(0).toUpperCase() + task.phase.slice(1).replace('_', ' ')}`;
-                    statusInfo += `\nPriority: ${task.priority.toUpperCase()}`;
-                    
-                    // Time scale specific info
-                    const timeScaleInfo = `\nView: ${timeScale.charAt(0).toUpperCase() + timeScale.slice(1)} scale`;
-                    
-                    return `${task.title}\n\n${startLabel}: ${actualStart.toLocaleDateString()}\n${timeAnalysis}${statusInfo}${timeScaleInfo}`;
-                  })()}
-                />
+                      
+                      // Status and progress info
+                      const displayProgress = task.status === 'completed' ? 100 : (task.progress_percentage || 0);
+                      statusInfo = `\nStatus: ${task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ')}`;
+                      statusInfo += `\nProgress: ${displayProgress}%${task.status === 'completed' ? ' ✓ COMPLETE' : ''}`;
+                      statusInfo += `\nPhase: ${task.phase.charAt(0).toUpperCase() + task.phase.slice(1).replace('_', ' ')}`;
+                      statusInfo += `\nPriority: ${task.priority.toUpperCase()}`;
+                      
+                      // Time scale specific info
+                      const timeScaleInfo = `\nView: ${timeScale.charAt(0).toUpperCase() + timeScale.slice(1)} scale`;
+                      
+                      return `${task.title}\n\n${startLabel}: ${actualStart.toLocaleDateString()}\n${timeAnalysis}${statusInfo}${timeScaleInfo}`;
+                    })()}
+                  />
+                </div>
               </div>
             </div>
           ))}
@@ -977,6 +1106,8 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
             <p>• Tasks are ordered chronologically by start time (earliest first)</p>
             <p>• Bar colors indicate time efficiency: Green=Fast, Blue=On-time, Orange=Overtime, Red=Overdue</p>
             <p>• Time badges show actual hours spent and efficiency percentages</p>
+            <p>• <strong>Horizontal Scrolling:</strong> Use mouse wheel or scroll bars when tasks span long periods</p>
+            <p>• <strong>Smart Time Filtering:</strong> Daily view shows last 7 days, Weekly shows 4 weeks, etc.</p>
             <p>• Use time scale controls to zoom from hourly detail to yearly overview</p>
             <p>• Navigate timeline with arrow buttons or zoom in/out for better focus</p>
             <p>• Hover over task bars for detailed time analysis and efficiency metrics</p>
