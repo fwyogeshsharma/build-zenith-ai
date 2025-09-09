@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -47,6 +47,8 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
   const [viewEndDate, setViewEndDate] = useState<Date>();
   const [scrollPosition, setScrollPosition] = useState(0);
   const [ganttWidth, setGanttWidth] = useState(100);
+  const timelineScrollRef = useRef<HTMLDivElement>(null);
+  const tasksContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -66,6 +68,7 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
     generateTimeMarkers();
     updateGanttWidth();
   }, [timelineStart, timelineEnd, timeScale, viewStartDate, viewEndDate]);
+
 
   const updateGanttWidth = () => {
     if (!timelineStart || !timelineEnd) return;
@@ -494,7 +497,7 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
     setScrollPosition(0);
   };
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>, isTimeline = false) => {
     const scrollLeft = e.currentTarget.scrollLeft;
     const scrollWidth = e.currentTarget.scrollWidth;
     const clientWidth = e.currentTarget.clientWidth;
@@ -504,6 +507,19 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
     const scrollPercentage = maxScroll > 0 ? scrollLeft / maxScroll : 0;
     
     setScrollPosition(scrollPercentage);
+
+    // Synchronize scroll containers
+    if (isTimeline) {
+      // Timeline scrolled, sync tasks container
+      if (tasksContainerRef.current && tasksContainerRef.current !== e.currentTarget) {
+        tasksContainerRef.current.scrollLeft = scrollLeft;
+      }
+    } else {
+      // Tasks container scrolled, sync timeline
+      if (timelineScrollRef.current && timelineScrollRef.current !== e.currentTarget) {
+        timelineScrollRef.current.scrollLeft = scrollLeft;
+      }
+    }
   };
 
   const getStatusColor = (task: Task) => {
@@ -710,8 +726,9 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
         {timelineStart && timelineEnd && (
           <div className="mb-6">
             <div 
+              ref={timelineScrollRef}
               className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-              onScroll={handleScroll}
+              onScroll={(e) => handleScroll(e, true)}
               style={{ 
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#d1d5db #f3f4f6'
@@ -773,84 +790,85 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
           </div>
         )}
 
-        {/* Gantt Chart with Horizontal Scrolling */}
-        <div className="space-y-2">
-          {ganttTasks.map((task) => (
-            <div key={task.id} className="relative">
-              {/* Task Info */}
-              <div className="flex items-center mb-2">
-                <div className="w-2/5 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm font-medium truncate">{task.title}</div>
-                    {getTimeEfficiencyIndicator(task) && (
-                      <span className={`text-xs ${getTimeEfficiencyIndicator(task)?.color}`}>
-                        {getTimeEfficiencyIndicator(task)?.icon}
-                      </span>
-                    )}
+        {/* Gantt Chart with Single Unified Horizontal Scrolling */}
+        <div 
+          ref={tasksContainerRef}
+          className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+          onScroll={(e) => handleScroll(e, false)}
+          style={{ 
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#d1d5db #f3f4f6'
+          }}
+        >
+          <div 
+            style={{ 
+              width: `${ganttWidth}%`,
+              minWidth: `${Math.max(ganttWidth, 100)}%`
+            }}
+          >
+            <div className="space-y-2">
+              {ganttTasks.map((task, taskIndex) => (
+                <div key={task.id} className="relative">
+                  {/* Task Info */}
+                  <div className="flex items-center mb-2">
+                    <div className="w-2/5 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm font-medium truncate">{task.title}</div>
+                        {getTimeEfficiencyIndicator(task) && (
+                          <span className={`text-xs ${getTimeEfficiencyIndicator(task)?.color}`}>
+                            {getTimeEfficiencyIndicator(task)?.icon}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${getPriorityColor(task.priority)}`}
+                        >
+                          {task.priority}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {task.phase.replace('_', ' ')}
+                        </Badge>
+                        {task.actualDuration && (
+                          <Badge variant="outline" className="text-xs bg-blue-50">
+                            {task.actualDuration.toFixed(1)}h
+                          </Badge>
+                        )}
+                        {/* Show completion badge for completed tasks */}
+                        {task.status === 'completed' ? (
+                          <Badge 
+                            variant="outline" 
+                            className="text-xs bg-green-50 text-green-700 border-green-200"
+                          >
+                            ✓ 100% Complete
+                          </Badge>
+                        ) : task.timeEfficiency && task.status === 'in_progress' && (
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${
+                              task.timeEfficiency > 120 ? 'bg-green-50 text-green-700' :
+                              task.timeEfficiency < 80 ? 'bg-red-50 text-red-700' :
+                              'bg-blue-50 text-blue-700'
+                            }`}
+                          >
+                            {task.timeEfficiency}% eff
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="w-1/5 text-xs text-muted-foreground text-right">
+                      {task.actualStartTime && (
+                        <div>Start: {task.actualStartTime.toLocaleDateString()}</div>
+                      )}
+                      {task.actualEndTime && task.status === 'completed' && (
+                        <div>End: {task.actualEndTime.toLocaleDateString()}</div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs ${getPriorityColor(task.priority)}`}
-                    >
-                      {task.priority}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {task.phase.replace('_', ' ')}
-                    </Badge>
-                    {task.actualDuration && (
-                      <Badge variant="outline" className="text-xs bg-blue-50">
-                        {task.actualDuration.toFixed(1)}h
-                      </Badge>
-                    )}
-                    {/* Show completion badge for completed tasks */}
-                    {task.status === 'completed' ? (
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs bg-green-50 text-green-700 border-green-200"
-                      >
-                        ✓ 100% Complete
-                      </Badge>
-                    ) : task.timeEfficiency && task.status === 'in_progress' && (
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          task.timeEfficiency > 120 ? 'bg-green-50 text-green-700' :
-                          task.timeEfficiency < 80 ? 'bg-red-50 text-red-700' :
-                          'bg-blue-50 text-blue-700'
-                        }`}
-                      >
-                        {task.timeEfficiency}% eff
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                <div className="w-1/5 text-xs text-muted-foreground text-right">
-                  {task.actualStartTime && (
-                    <div>Start: {task.actualStartTime.toLocaleDateString()}</div>
-                  )}
-                  {task.actualEndTime && task.status === 'completed' && (
-                    <div>End: {task.actualEndTime.toLocaleDateString()}</div>
-                  )}
-                </div>
-              </div>
 
-              {/* Enhanced Progress Bar with Horizontal Scrolling */}
-              <div 
-                className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-                onScroll={handleScroll}
-                style={{ 
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#d1d5db #f3f4f6'
-                }}
-              >
-                <div 
-                  className="relative h-10 bg-gray-100 rounded ml-2 border border-gray-200 shadow-sm"
-                  style={{ 
-                    width: `${ganttWidth}%`,
-                    minWidth: `${Math.max(ganttWidth, 100)}%`
-                  }}
-                >
+                  {/* Enhanced Progress Bar */}
+                  <div className="relative h-10 bg-gray-100 rounded ml-2 border border-gray-200 shadow-sm">
                 <div
                   className={getTaskBarClasses(task)}
                   style={{
@@ -983,10 +1001,11 @@ export const TaskGanttChart = ({ projectId, tasks: propTasks }: TaskGanttChartPr
                       return `${task.title}\n\n${startLabel}: ${actualStart.toLocaleDateString()}\n${timeAnalysis}${statusInfo}${timeScaleInfo}`;
                     })()}
                   />
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
 
         {/* Enhanced Timeline Summary with Time Analysis */}
